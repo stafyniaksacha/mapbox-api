@@ -236,19 +236,19 @@ class OptimizationApiResponse {
 
     switch (code) {
       case 'NoTrips':
-        error = new NavigationNoTripsError();
+        error = NavigationNoTripsError();
         break;
       case 'NotImplemented':
-        error = new NavigationNotImplementedError();
+        error = NavigationNotImplementedError();
         break;
       case 'NoSegment':
-        error = new NavigationNoSegmentError();
+        error = NavigationNoSegmentError();
         break;
       case 'ProfileNotFound':
-        error = new NavigationProfileNotFoundError();
+        error = NavigationProfileNotFoundError();
         break;
       case 'InvalidInput':
-        error = new NavigationInvalidInputError();
+        error = NavigationInvalidInputError();
         break;
     }
 

@@ -210,19 +210,19 @@ class MapMatchingApiResponse {
 
     switch (code) {
       case 'NoMatch':
-        error = new NavigationNoMatchError();
+        error = NavigationNoMatchError();
         break;
       case 'NoSegment':
-        error = new NavigationNoSegmentError();
+        error = NavigationNoSegmentError();
         break;
       case 'TooManyCoordinates':
-        error = new NavigationTooManyCoordinatesError();
+        error = NavigationTooManyCoordinatesError();
         break;
       case 'ProfileNotFound':
-        error = new NavigationProfileNotFoundError();
+        error = NavigationProfileNotFoundError();
         break;
       case 'InvalidInput':
-        error = new NavigationInvalidInputError();
+        error = NavigationInvalidInputError();
         break;
     }
 

@@ -10,6 +10,8 @@ This is a work in progress, feel free open an issue for questions and remarks. (
 
 ## Examples
 
+See `examples/examples.dart`
+
 ```dart
 import 'package:mapbox_api/mapbox_api.dart';
 

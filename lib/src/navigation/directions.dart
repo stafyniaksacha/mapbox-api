@@ -285,16 +285,16 @@ class DirectionsApiResponse {
 
     switch (code) {
       case 'NoRoute':
-        error = new NavigationNoRouteError();
+        error = NavigationNoRouteError();
         break;
       case 'NoSegment':
-        error = new NavigationNoSegmentError();
+        error = NavigationNoSegmentError();
         break;
       case 'ProfileNotFound':
-        error = new NavigationProfileNotFoundError();
+        error = NavigationProfileNotFoundError();
         break;
       case 'InvalidInput':
-        error = new NavigationInvalidInputError();
+        error = NavigationInvalidInputError();
         break;
     }
 
