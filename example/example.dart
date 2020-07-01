@@ -32,11 +32,12 @@ void main() async {
     return;
   }
 
-  if (response.routes.length > 0) {
+  if (response.routes.isNotEmpty) {
     final route = response.routes[0];
     final eta = Duration(
       seconds: route.duration.toInt(),
     );
+    print(eta.toString());
 
     /*
     // Draw direction to mapbox_gl (flutter)

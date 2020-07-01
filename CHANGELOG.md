@@ -1,3 +1,7 @@
+## 0.1.2 2020-07-01
+
+* Updated example folder
+
 ## 0.1.1 2020-07-01
 
 * Added example folder

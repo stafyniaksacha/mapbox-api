@@ -172,10 +172,10 @@ class MatrixApiResponse {
 
     switch (code) {
       case 'ProfileNotFound':
-        error = new NavigationProfileNotFoundError();
+        error = NavigationProfileNotFoundError();
         break;
       case 'InvalidInput':
-        error = new NavigationInvalidInputError();
+        error = NavigationInvalidInputError();
         break;
     }
 

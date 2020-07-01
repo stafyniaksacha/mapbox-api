@@ -141,6 +141,16 @@ enum NavigationManeuverType {
   EXIT_ROTARY,
 }
 
+enum NavigationDestination {
+  ANY,
+  LAST,
+}
+
+enum NavigationSource {
+  ANY,
+  FIRST,
+}
+
 class NavigationBearings {
   NavigationBearings(
     this.angle,
@@ -758,9 +768,6 @@ class NavigationInstructionPropertyComponent {
           break;
         case 'delimiter':
           type = NavigationPropertyComponentType.DELIMITER;
-          break;
-        case 'exit_number':
-          type = NavigationPropertyComponentType.EXIT_NUMBER;
           break;
         case 'exit_number':
           type = NavigationPropertyComponentType.EXIT_NUMBER;

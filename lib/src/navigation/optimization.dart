@@ -4,15 +4,6 @@ import 'package:http/http.dart';
 
 import '../../mapbox_api.dart';
 
-enum DirectionsDestination {
-  ANY,
-  LAST,
-}
-enum DirectionsSource {
-  ANY,
-  FIRST,
-}
-
 /// The Mapbox Optimization API returns a duration-optimized route
 /// between the input coordinates.
 ///
@@ -32,13 +23,13 @@ class OptimizationApi {
     List<NavigationAnnotations> annotations = const <NavigationAnnotations>[],
     List<NavigationApproaches> approaches = const <NavigationApproaches>[],
     List<NavigationBearings> bearings = const <NavigationBearings>[],
-    DirectionsDestination destination = DirectionsDestination.ANY,
+    NavigationDestination destination = NavigationDestination.ANY,
     List<List<int>> distributions = const <List<int>>[],
     NavigationGeometries geometries = NavigationGeometries.POLYLINE,
     String language = 'en',
     NavigationOverview overview = NavigationOverview.SIMPLIFIED,
     List<double> radiuses = const <double>[],
-    DirectionsSource source = DirectionsSource.ANY,
+    NavigationSource source = NavigationSource.ANY,
     bool steps = false,
     bool roundtrip = true,
   }) async {
@@ -84,10 +75,10 @@ class OptimizationApi {
     if (!roundtrip) {
       url += '&roundtrip=false';
     }
-    if (destination == DirectionsDestination.LAST) {
+    if (destination == NavigationDestination.LAST) {
       url += '&destination=last';
     }
-    if (source == DirectionsSource.FIRST) {
+    if (source == NavigationSource.FIRST) {
       url += '&source=first';
     }
 
