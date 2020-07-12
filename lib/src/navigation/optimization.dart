@@ -33,7 +33,7 @@ class OptimizationApi {
     bool steps = false,
     bool roundtrip = true,
   }) async {
-    String url = this.endpoint + '/' + this.version;
+    var url = endpoint + '/' + version;
 
     switch (profile) {
       case NavigationProfile.DRIVING_TRAFFIC:
@@ -64,7 +64,7 @@ class OptimizationApi {
       }
     }
 
-    url += '?access_token=' + this.api.accessToken;
+    url += '?access_token=' + api.accessToken;
 
     if (language != 'en') {
       url += '&language=' + language;
@@ -193,8 +193,8 @@ class OptimizationApi {
     }
 
     try {
-      Response response = await get(url);
-      Map<String, dynamic> json = jsonDecode(
+      final response = await get(url);
+      final json = jsonDecode(
         response.body,
       ) as Map<String, dynamic>;
       return OptimizationApiResponse.fromJson(json);
