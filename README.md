@@ -46,7 +46,7 @@ if (response.error == null) {
   // response.waypoints ...
 }
 ```
-> see basic example: [`example/example.dart`](https://github.com/stafyniaksacha/mapbox-api/blob/master/example/example.dart)
+> see basic example: [`example/example.dart`](https://github.com/stafyniaksacha/mapbox-api/blob/master/example/example.dart)  
 > see full example with flutter_gl: [`example/example_directions_flutter.dart`](https://github.com/stafyniaksacha/mapbox-api/blob/master/example/example_directions_flutter.dart)
 
 #### Request forward geocoding services
