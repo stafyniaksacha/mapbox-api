@@ -1053,18 +1053,74 @@ class NavigationManeuver {
   NavigationManeuverType type;
 }
 
-class NavigationNoMatchError extends Error {}
+class NavigationError extends Error {
+  NavigationError({
+    this.message,
+  });
 
-class NavigationNoTripsError extends Error {}
+  String message;
+}
 
-class NavigationNotImplementedError extends Error {}
+class NavigationNoMatchError extends NavigationError {
+  NavigationNoMatchError({
+    String message,
+  }) : super(
+          message: message,
+        );
+}
 
-class NavigationTooManyCoordinatesError extends Error {}
+class NavigationNoTripsError extends NavigationError {
+  NavigationNoTripsError({
+    String message,
+  }) : super(
+          message: message,
+        );
+}
 
-class NavigationNoRouteError extends Error {}
+class NavigationNotImplementedError extends NavigationError {
+  NavigationNotImplementedError({
+    String message,
+  }) : super(
+          message: message,
+        );
+}
 
-class NavigationNoSegmentError extends Error {}
+class NavigationTooManyCoordinatesError extends NavigationError {
+  NavigationTooManyCoordinatesError({
+    String message,
+  }) : super(
+          message: message,
+        );
+}
 
-class NavigationProfileNotFoundError extends Error {}
+class NavigationNoRouteError extends NavigationError {
+  NavigationNoRouteError({
+    String message,
+  }) : super(
+          message: message,
+        );
+}
 
-class NavigationInvalidInputError extends Error {}
+class NavigationNoSegmentError extends NavigationError {
+  NavigationNoSegmentError({
+    String message,
+  }) : super(
+          message: message,
+        );
+}
+
+class NavigationProfileNotFoundError extends NavigationError {
+  NavigationProfileNotFoundError({
+    String message,
+  }) : super(
+          message: message,
+        );
+}
+
+class NavigationInvalidInputError extends NavigationError {
+  NavigationInvalidInputError({
+    String message,
+  }) : super(
+          message: message,
+        );
+}

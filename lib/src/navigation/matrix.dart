@@ -30,7 +30,7 @@ class MatrixApi {
     int fallbackSpeed = 0,
     List<int> sources = const <int>[],
   }) async {
-    String url = this.endpoint + '/' + this.version;
+    var url = endpoint + '/' + version;
 
     switch (profile) {
       case NavigationProfile.DRIVING_TRAFFIC:
@@ -61,7 +61,7 @@ class MatrixApi {
       }
     }
 
-    url += '?access_token=' + this.api.accessToken;
+    url += '?access_token=' + api.accessToken;
 
     for (var i = 0; i < annotations.length; i++) {
       if (i == 0) {
@@ -137,8 +137,8 @@ class MatrixApi {
     }
 
     try {
-      Response response = await get(url);
-      Map<String, dynamic> json = jsonDecode(
+      final response = await get(url);
+      final json = jsonDecode(
         response.body,
       ) as Map<String, dynamic>;
       return MatrixApiResponse.fromJson(json);

@@ -1,14 +1,35 @@
 import 'package:mapbox_api/mapbox_api.dart';
 
 void main() async {
-  MapboxApi mapbox = MapboxApi(
+  /**
+   * Get your Mapbox API token on https://www.mapbox.com/
+   */
+  final mapbox = MapboxApi(
     accessToken: '<Mapbox API token>',
   );
 
-  DirectionsApiResponse response = await mapbox.directions.request(
+  /**
+   * Here is a simple HTTPS call to directions API.
+   * All parameters matches official documentation
+   * and are described at https://docs.mapbox.com/api/
+   *
+   * Available APIs:
+   *  - mapbox.directions
+   *  - mapbox.isochrome
+   *  - mapbox.mapMatching
+   *  - mapbox.matrix
+   *  - mapbox.optimization
+   *  - mapbox.forwardGeocoding
+   *  - mapbox.reverseGeocoding
+   *  - mapbox.intersection
+   *
+   * See https://github.com/stafyniaksacha/mapbox-api/tree/master/example
+   * for all available examples
+   */
+  final response = await mapbox.directions.request(
     profile: NavigationProfile.DRIVING_TRAFFIC,
     overview: NavigationOverview.FULL,
-    geometries: NavigationGeometries.POLYLINE6,
+    geometries: NavigationGeometries.GEOJSON,
     steps: true,
     coordinates: <List<double>>[
       <double>[
@@ -38,43 +59,5 @@ void main() async {
       seconds: route.duration.toInt(),
     );
     print(eta.toString());
-
-    /*
-    // Draw direction to mapbox_gl (flutter)
-
-    import 'package:mapbox_gl/mapbox_gl.dart';
-    import 'package:polyline/polyline.dart';
-
-    final polyline = Polyline.Decode(
-      encodedString: route.geometry as String,
-      precision: 6,
-    );
-    final coordinates = polyline.decodedCoords;
-    final path = <LatLng>[];
-
-    for (var i = 0; i < coordinates.length; i++) {
-      path.add(
-        LatLng(
-          coordinates[i][0],
-          coordinates[i][1],
-        ),
-      );
-    }
-
-    if (path.length > 0) {
-      // here we assume that controller was created from flutter and mapbox_gl
-      final controller = MapboxMapController();
-
-      await controller.addLine(
-        LineOptions(
-          geometry: path,
-          lineColor: "#2196F3",
-          lineWidth: 3.0,
-          lineOpacity: 1,
-          draggable: false,
-        ),
-      );
-    }
-    */
   }
 }

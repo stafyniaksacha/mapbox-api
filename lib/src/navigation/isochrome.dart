@@ -29,7 +29,7 @@ class IsochroneApi {
     double denoise = 1.0,
     double generalize,
   }) async {
-    String url = this.endpoint + '/' + this.version;
+    var url = endpoint + '/' + version;
 
     switch (profile) {
       case NavigationProfile.DRIVING_TRAFFIC:
@@ -51,7 +51,7 @@ class IsochroneApi {
     url += ',';
     url += coordinates[LATITUDE].toString();
 
-    url += '?access_token=' + this.api.accessToken;
+    url += '?access_token=' + api.accessToken;
 
     for (var i = 0; i < contoursMinutes.length; i++) {
       if (i == 0) {
@@ -92,8 +92,8 @@ class IsochroneApi {
     }
 
     try {
-      Response response = await get(url);
-      Map<String, dynamic> json = jsonDecode(
+      final response = await get(url);
+      final json = jsonDecode(
         response.body,
       ) as Map<String, dynamic>;
       return IsochroneApiResponse.fromJson(json);
@@ -120,6 +120,12 @@ class IsochroneApiResponse {
   }
 
   IsochroneApiResponse.fromJson(Map<String, dynamic> json) {
+    final _message = json['message'] as String;
+
+    if (_message != null) {
+      error = NavigationError(message: _message);
+    }
+
     code = json['code'] as String;
     uuid = json['uuid'] as String;
 
