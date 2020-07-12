@@ -1,3 +1,9 @@
+## 0.2.1 2020-07-12
+
+* Fix: `instruction` in maneuver object (navigation API)
+* Fix: updated `weight` datatype from `int` to `double` (navigation API)
+
+
 ## 0.2.0 2020-07-12
 
 * Added `forwardGeocoding` API

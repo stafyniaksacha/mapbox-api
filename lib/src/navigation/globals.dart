@@ -338,7 +338,7 @@ class NavigationRoute {
     duration = (json['duration'] as num)?.toDouble();
     distance = (json['distance'] as num)?.toDouble();
     weightName = json['weightName'] as String;
-    weight = (json['weight'] as num)?.toInt();
+    weight = (json['weight'] as num)?.toDouble();
     geometry = json['geometry'] as dynamic;
     voiceLocale = json['voiceLocale'] as String;
 
@@ -356,7 +356,7 @@ class NavigationRoute {
   double duration;
   double distance;
   String weightName;
-  int weight;
+  double weight;
   dynamic geometry;
   List<NavigationLeg> legs;
   String voiceLocale;
@@ -368,7 +368,7 @@ class NavigationMatchRoute extends NavigationRoute {
     double duration,
     double distance,
     String weightName,
-    int weight,
+    double weight,
     dynamic geometry,
     List<NavigationLeg> legs,
     String voiceLocale,
@@ -387,7 +387,7 @@ class NavigationMatchRoute extends NavigationRoute {
     duration = (json['duration'] as num)?.toDouble();
     distance = (json['distance'] as num)?.toDouble();
     weightName = json['weightName'] as String;
-    weight = (json['weight'] as num)?.toInt();
+    weight = (json['weight'] as num)?.toDouble();
     geometry = json['geometry'] as dynamic;
     voiceLocale = json['voiceLocale'] as String;
 
@@ -947,7 +947,7 @@ class NavigationManeuver {
   NavigationManeuver({
     this.bearingBefore,
     this.bearingAfter,
-    this.instructions,
+    this.instruction,
     this.location,
     this.modifier,
     this.type,
@@ -955,7 +955,7 @@ class NavigationManeuver {
   NavigationManeuver.fromJson(Map<String, dynamic> json) {
     bearingBefore = (json['bearing_before'] as num)?.toInt();
     bearingAfter = (json['bearing_after'] as num)?.toInt();
-    instructions = json['instructions'] as String;
+    instruction = json['instruction'] as String;
 
     if (json.containsKey('location') && json['location'] != null) {
       location = List<double>.from(
@@ -1047,7 +1047,7 @@ class NavigationManeuver {
 
   int bearingBefore;
   int bearingAfter;
-  String instructions;
+  String instruction;
   List<double> location;
   NavigationManeuverModifier modifier;
   NavigationManeuverType type;
