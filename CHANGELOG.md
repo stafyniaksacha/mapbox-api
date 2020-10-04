@@ -1,3 +1,8 @@
+## 0.2.3 2020-10-04
+
+* Fix: Added "distance" support for Matrix API _([SaltySpaghetti](https://github.com/SaltySpaghetti))_
+* Dependencies: updated `http` package
+
 ## 0.2.1 2020-07-12
 
 * Fix: `instruction` in maneuver object (navigation API)
