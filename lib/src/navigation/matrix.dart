@@ -8,6 +8,10 @@ import '../../mapbox_api.dart';
 ///
 /// https://docs.mapbox.com/api/navigation/#matrix
 class MatrixApi {
+  MapboxApi api;
+  String version;
+  String endpoint;
+
   MatrixApi(
     this.api, {
     this.version = 'v1',
@@ -146,25 +150,26 @@ class MatrixApi {
       return MatrixApiResponse.withError(error);
     }
   }
-
-  String version;
-  String endpoint;
-  MapboxApi api;
 }
 
 class MatrixApiResponse {
+  String code;
+  List<NavigationWaypoint> destinations;
+  List<List<double>> distances;
+  List<List<double>> durations;
+  Error error;
+  List<NavigationWaypoint> sources;
+  String uuid;
+
   MatrixApiResponse({
     this.code,
-    this.uuid,
-    this.durations,
     this.destinations,
-    this.sources,
+    this.distances,
+    this.durations,
     this.error,
+    this.sources,
+    this.uuid,
   });
-
-  MatrixApiResponse.withError(Error error) {
-    error = error;
-  }
 
   MatrixApiResponse.fromJson(Map<String, dynamic> json) {
     code = json['code'] as String;
@@ -184,6 +189,16 @@ class MatrixApiResponse {
         (json['durations'] as List<dynamic>).map(
           (durations) => List<double>.from(
             durations as List<dynamic>,
+          ),
+        ),
+      );
+    }
+
+    if (json.containsKey('distances') && json['distances'] != null) {
+      distances = List<List<double>>.from(
+        (json['distances'] as List<dynamic>).map(
+          (duration) => List<double>.from(
+            duration as List<dynamic>,
           ),
         ),
       );
@@ -210,10 +225,7 @@ class MatrixApiResponse {
     }
   }
 
-  String code;
-  String uuid;
-  List<List<double>> durations;
-  List<NavigationWaypoint> destinations;
-  List<NavigationWaypoint> sources;
-  Error error;
+  MatrixApiResponse.withError(Error error) {
+    error = error;
+  }
 }
