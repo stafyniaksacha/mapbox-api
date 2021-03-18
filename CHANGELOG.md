@@ -1,3 +1,7 @@
+## 0.3.0 2021-03-18
+
+* Dependencies: updated `http` package _([MohsinN](https://github.com/MohsinN))_
+
 ## 0.2.3 2020-10-04
 
 * Fix: Added "distance" support for Matrix API _([SaltySpaghetti](https://github.com/SaltySpaghetti))_
