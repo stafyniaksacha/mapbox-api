@@ -92,7 +92,7 @@ class IsochroneApi {
     }
 
     try {
-      final response = await get(url);
+      final response = await get(Uri.parse(url));
       final json = jsonDecode(
         response.body,
       ) as Map<String, dynamic>;
