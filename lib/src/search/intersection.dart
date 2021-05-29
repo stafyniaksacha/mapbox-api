@@ -32,10 +32,10 @@ class IntersectionApi {
       url += '/mapbox.places';
     }
 
-    url += '/${street1} and ${street2}.json';
+    url += '/$street1 and $street2.json';
     url += '?access_token=' + api.accessToken!;
 
-    if (types != null && types.isNotEmpty) {
+    if (types.isNotEmpty) {
       for (var i = 0; i < types.length; i++) {
         if (i == 0) {
           url += '&types=';
@@ -80,7 +80,7 @@ class IntersectionApi {
       }
     }
 
-    if (proximity != null && proximity.isNotEmpty) {
+    if (proximity.isNotEmpty) {
       url += '&proximity=';
       url += '${proximity[LONGITUDE]},${proximity[LATITUDE]}';
     }

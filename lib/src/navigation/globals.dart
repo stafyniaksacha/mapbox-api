@@ -788,7 +788,6 @@ class NavigationInstructionPropertyComponent {
             switch (direction as String) {
               case 'right':
                 return NavigationDirection.RIGHT;
-                break;
             }
 
             return NavigationDirection.LEFT;
@@ -859,19 +858,14 @@ class NavigationIntersection {
             switch (classElement as String) {
               case 'ferry':
                 return NavigationIntersectionClass.FERRY;
-                break;
               case 'toll':
                 return NavigationIntersectionClass.TOLL;
-                break;
               case 'restricted':
                 return NavigationIntersectionClass.RESTRICTED;
-                break;
               case 'motorway':
                 return NavigationIntersectionClass.MOTORWAY;
-                break;
               case 'tunnel':
                 return NavigationIntersectionClass.TUNNEL;
-                break;
             }
 
             return NavigationIntersectionClass.UNKNOWN;
@@ -908,28 +902,20 @@ class NavigationIntersectionLane {
             switch (classElement as String) {
               case 'uturn':
                 return NavigationIndicationType.UTURN;
-                break;
               case 'sharp_right':
                 return NavigationIndicationType.SHARP_RIGHT;
-                break;
               case 'right':
                 return NavigationIndicationType.RIGHT;
-                break;
               case 'slight_right':
                 return NavigationIndicationType.SLIGHT_RIGHT;
-                break;
               case 'sharp_left':
                 return NavigationIndicationType.SHARP_LEFT;
-                break;
               case 'left':
                 return NavigationIndicationType.LEFT;
-                break;
               case 'slight_left':
                 return NavigationIndicationType.SLIGHT_LEFT;
-                break;
               case 'straight':
                 return NavigationIndicationType.STRAIGHT;
-                break;
             }
 
             return NavigationIndicationType.NONE;

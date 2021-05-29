@@ -38,7 +38,7 @@ class ForwardGeocodingApi {
       url += '/mapbox.places';
     }
 
-    url += '/${searchText}.json';
+    url += '/$searchText.json';
 
     url += _urlQuery(
       autocomplete: autocomplete,
@@ -160,7 +160,7 @@ class ForwardGeocodingApi {
     }
 
     if (limit != null && limit != 5) {
-      url += '&limit=${limit}';
+      url += '&limit=$limit';
     }
 
     if (bbox != null) {

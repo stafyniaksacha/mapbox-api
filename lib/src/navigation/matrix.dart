@@ -92,7 +92,7 @@ class MatrixApi {
       }
     }
 
-    if (approaches != null) {
+    if (approaches.isNotEmpty) {
       for (var i = 0; i < approaches.length; i++) {
         if (i == 0) {
           url += '&approaches=';

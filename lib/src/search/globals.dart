@@ -255,31 +255,22 @@ class GeocoderFeature {
             switch (type as String) {
               case 'country':
                 return GeocoderPlaceType.COUNTRY;
-                break;
               case 'region':
                 return GeocoderPlaceType.REGION;
-                break;
               case 'postcode':
                 return GeocoderPlaceType.POSTCODE;
-                break;
               case 'district':
                 return GeocoderPlaceType.DISTRICT;
-                break;
               case 'place':
                 return GeocoderPlaceType.PLACE;
-                break;
               case 'locality':
                 return GeocoderPlaceType.LOCALITY;
-                break;
               case 'neighborhood':
                 return GeocoderPlaceType.NEIGHBORHOOD;
-                break;
               case 'address':
                 return GeocoderPlaceType.ADDRESS;
-                break;
               case 'poi':
                 return GeocoderPlaceType.POI;
-                break;
             }
 
             return GeocoderPlaceType.EMPTY;
