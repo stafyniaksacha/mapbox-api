@@ -19,7 +19,7 @@ class MapMatchingApi {
   /// Return a path on the road and path network that is
   /// closest to the input traces.
   Future<MapMatchingApiResponse> request({
-    NavigationProfile profile,
+    NavigationProfile? profile,
     List<List<double>> coordinates = const <List<double>>[],
     List<NavigationAnnotations> annotations = const <NavigationAnnotations>[],
     NavigationApproaches approaches = NavigationApproaches.UNRESTRICTED,
@@ -35,19 +35,21 @@ class MapMatchingApi {
   }) async {
     var url = endpoint + '/' + version;
 
-    switch (profile) {
-      case NavigationProfile.DRIVING_TRAFFIC:
-        url += '/mapbox/driving-traffic';
-        break;
-      case NavigationProfile.DRIVING:
-        url += '/mapbox/driving';
-        break;
-      case NavigationProfile.CYCLING:
-        url += '/mapbox/cycling';
-        break;
-      case NavigationProfile.WALKING:
-        url += '/mapbox/walking';
-        break;
+    if (profile != null) {
+      switch (profile) {
+        case NavigationProfile.DRIVING_TRAFFIC:
+          url += '/mapbox/driving-traffic';
+          break;
+        case NavigationProfile.DRIVING:
+          url += '/mapbox/driving';
+          break;
+        case NavigationProfile.CYCLING:
+          url += '/mapbox/cycling';
+          break;
+        case NavigationProfile.WALKING:
+          url += '/mapbox/walking';
+          break;
+      }
     }
 
     for (var i = 0; i < coordinates.length; i++) {
@@ -66,7 +68,7 @@ class MapMatchingApi {
       }
     }
 
-    url += '?access_token=' + api.accessToken;
+    url += '?access_token=' + api.accessToken!;
 
     if (language != 'en') {
       url += '&language=' + language;
@@ -181,7 +183,7 @@ class MapMatchingApi {
         response.body,
       ) as Map<String, dynamic>;
       return MapMatchingApiResponse.fromJson(json);
-    } catch (error) {
+    } on Error catch (error) {
       return MapMatchingApiResponse.withError(error);
     }
   }
@@ -205,8 +207,8 @@ class MapMatchingApiResponse {
   }
 
   MapMatchingApiResponse.fromJson(Map<String, dynamic> json) {
-    code = json['code'] as String;
-    uuid = json['uuid'] as String;
+    code = json['code'] as String?;
+    uuid = json['uuid'] as String?;
 
     switch (code) {
       case 'NoMatch':
@@ -247,9 +249,9 @@ class MapMatchingApiResponse {
     }
   }
 
-  String code;
-  String uuid;
-  List<NavigationMatchRoute> matchings;
-  List<NavigationTracepoint> tracepoints;
-  Error error;
+  String? code;
+  String? uuid;
+  List<NavigationMatchRoute>? matchings;
+  List<NavigationTracepoint>? tracepoints;
+  Error? error;
 }

@@ -19,8 +19,8 @@ class IntersectionApi {
   /// feature collection with the accuracy property set to intersection
   Future<GeocodingApiResponse> request({
     GeocoderEndpoint endpoint = GeocoderEndpoint.PLACES,
-    String street1,
-    String street2,
+    String? street1,
+    String? street2,
     List<double> proximity = const <double>[],
     List<GeocoderPlaceType> types = const <GeocoderPlaceType>[],
   }) async {
@@ -33,7 +33,7 @@ class IntersectionApi {
     }
 
     url += '/${street1} and ${street2}.json';
-    url += '?access_token=' + api.accessToken;
+    url += '?access_token=' + api.accessToken!;
 
     if (types != null && types.isNotEmpty) {
       for (var i = 0; i < types.length; i++) {
@@ -91,7 +91,7 @@ class IntersectionApi {
         response.body,
       ) as Map<String, dynamic>;
       return GeocodingApiResponse.fromJson(json);
-    } catch (error) {
+    } on Error catch (error) {
       return GeocodingApiResponse.withError(error);
     }
   }

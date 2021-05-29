@@ -18,7 +18,7 @@ class DirectionsApi {
   /// Directions requests must specify at least two waypoints
   /// as starting and ending points.
   Future<DirectionsApiResponse> request({
-    NavigationProfile profile,
+    NavigationProfile? profile,
     List<List<double>> coordinates = const <List<double>>[],
     bool alternatives = false,
     List<NavigationAnnotations> annotations = const <NavigationAnnotations>[],
@@ -44,19 +44,21 @@ class DirectionsApi {
   }) async {
     var url = endpoint + '/' + version;
 
-    switch (profile) {
-      case NavigationProfile.DRIVING_TRAFFIC:
-        url += '/mapbox/driving-traffic';
-        break;
-      case NavigationProfile.DRIVING:
-        url += '/mapbox/driving';
-        break;
-      case NavigationProfile.CYCLING:
-        url += '/mapbox/cycling';
-        break;
-      case NavigationProfile.WALKING:
-        url += '/mapbox/walking';
-        break;
+    if (profile != null) {
+      switch (profile) {
+        case NavigationProfile.DRIVING_TRAFFIC:
+          url += '/mapbox/driving-traffic';
+          break;
+        case NavigationProfile.DRIVING:
+          url += '/mapbox/driving';
+          break;
+        case NavigationProfile.CYCLING:
+          url += '/mapbox/cycling';
+          break;
+        case NavigationProfile.WALKING:
+          url += '/mapbox/walking';
+          break;
+      }
     }
 
     for (var i = 0; i < coordinates.length; i++) {
@@ -73,7 +75,7 @@ class DirectionsApi {
       }
     }
 
-    url += '?access_token=' + api.accessToken;
+    url += '?access_token=' + api.accessToken!;
 
     if (profile == NavigationProfile.WALKING) {
       if (walkingSpeed != 1.42) {
@@ -256,7 +258,7 @@ class DirectionsApi {
         response.body,
       ) as Map<String, dynamic>;
       return DirectionsApiResponse.fromJson(json);
-    } catch (error) {
+    } on Error catch (error) {
       return DirectionsApiResponse.withError(error);
     }
   }
@@ -280,8 +282,8 @@ class DirectionsApiResponse {
   }
 
   DirectionsApiResponse.fromJson(Map<String, dynamic> json) {
-    code = json['code'] as String;
-    uuid = json['uuid'] as String;
+    code = json['code'] as String?;
+    uuid = json['uuid'] as String?;
 
     switch (code) {
       case 'NoRoute':
@@ -319,9 +321,9 @@ class DirectionsApiResponse {
     }
   }
 
-  String code;
-  String uuid;
-  List<NavigationWaypoint> waypoints;
-  List<NavigationRoute> routes;
-  Error error;
+  String? code;
+  String? uuid;
+  List<NavigationWaypoint>? waypoints;
+  List<NavigationRoute>? routes;
+  Error? error;
 }

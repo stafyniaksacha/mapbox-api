@@ -18,7 +18,7 @@ class OptimizationApi {
   /// A call to this endpoint retrieves a duration-optimized
   /// route between input coordinates.
   Future<OptimizationApiResponse> request({
-    NavigationProfile profile,
+    NavigationProfile? profile,
     List<List<double>> coordinates = const <List<double>>[],
     List<NavigationAnnotations> annotations = const <NavigationAnnotations>[],
     List<NavigationApproaches> approaches = const <NavigationApproaches>[],
@@ -35,19 +35,21 @@ class OptimizationApi {
   }) async {
     var url = endpoint + '/' + version;
 
-    switch (profile) {
-      case NavigationProfile.DRIVING_TRAFFIC:
-        url += '/mapbox/driving-traffic';
-        break;
-      case NavigationProfile.DRIVING:
-        url += '/mapbox/driving';
-        break;
-      case NavigationProfile.CYCLING:
-        url += '/mapbox/cycling';
-        break;
-      case NavigationProfile.WALKING:
-        url += '/mapbox/walking';
-        break;
+    if (profile != null) {
+      switch (profile) {
+        case NavigationProfile.DRIVING_TRAFFIC:
+          url += '/mapbox/driving-traffic';
+          break;
+        case NavigationProfile.DRIVING:
+          url += '/mapbox/driving';
+          break;
+        case NavigationProfile.CYCLING:
+          url += '/mapbox/cycling';
+          break;
+        case NavigationProfile.WALKING:
+          url += '/mapbox/walking';
+          break;
+      }
     }
 
     for (var i = 0; i < coordinates.length; i++) {
@@ -64,7 +66,7 @@ class OptimizationApi {
       }
     }
 
-    url += '?access_token=' + api.accessToken;
+    url += '?access_token=' + api.accessToken!;
 
     if (language != 'en') {
       url += '&language=' + language;
@@ -198,7 +200,7 @@ class OptimizationApi {
         response.body,
       ) as Map<String, dynamic>;
       return OptimizationApiResponse.fromJson(json);
-    } catch (error) {
+    } on Error catch (error) {
       return OptimizationApiResponse.withError(error);
     }
   }
@@ -222,8 +224,8 @@ class OptimizationApiResponse {
   }
 
   OptimizationApiResponse.fromJson(Map<String, dynamic> json) {
-    code = json['code'] as String;
-    uuid = json['uuid'] as String;
+    code = json['code'] as String?;
+    uuid = json['uuid'] as String?;
 
     switch (code) {
       case 'NoTrips':
@@ -264,9 +266,9 @@ class OptimizationApiResponse {
     }
   }
 
-  String code;
-  String uuid;
-  List<NavigationOptimizedWaypoint> waypoints;
-  List<NavigationRoute> trips;
-  Error error;
+  String? code;
+  String? uuid;
+  List<NavigationOptimizedWaypoint>? waypoints;
+  List<NavigationRoute>? trips;
+  Error? error;
 }

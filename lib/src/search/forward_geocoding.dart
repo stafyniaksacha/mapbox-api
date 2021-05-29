@@ -19,12 +19,12 @@ class ForwardGeocodingApi {
   /// GeoJSON feature collection in Mapbox Geocoding Response format.
   Future<GeocodingApiResponse> request({
     GeocoderEndpoint endpoint = GeocoderEndpoint.PLACES,
-    String searchText,
+    String? searchText,
     bool autocomplete = true,
-    GeocoderBbox bbox,
+    GeocoderBbox? bbox,
     List<String> country = const <String>[],
     bool fuzzyMatch = true,
-    String language,
+    String? language,
     int limit = 5,
     List<double> proximity = const <double>[],
     bool routing = false,
@@ -58,7 +58,7 @@ class ForwardGeocodingApi {
         response.body,
       ) as Map<String, dynamic>;
       return GeocodingApiResponse.fromJson(json);
-    } catch (error) {
+    } on Error catch (error) {
       return GeocodingApiResponse.withError(error);
     }
   }
@@ -69,10 +69,10 @@ class ForwardGeocodingApi {
     GeocoderEndpoint endpoint = GeocoderEndpoint.PLACES_PERMANENT,
     List<String> searchTexts = const <String>[],
     bool autocomplete = true,
-    GeocoderBbox bbox,
+    GeocoderBbox? bbox,
     List<String> country = const <String>[],
     bool fuzzyMatch = true,
-    String language,
+    String? language,
     int limit = 5,
     List<double> proximity = const <double>[],
     bool routing = false,
@@ -125,23 +125,23 @@ class ForwardGeocodingApi {
         response.body,
       ) as Map<String, dynamic>;
       return GeocodingApiResponse.fromJson(json);
-    } catch (error) {
+    } on Error catch (error) {
       return GeocodingApiResponse.withError(error);
     }
   }
 
   String _urlQuery({
-    bool autocomplete,
-    GeocoderBbox bbox,
-    List<String> country,
-    bool fuzzyMatch,
-    String language,
-    int limit,
-    List<double> proximity,
-    bool routing,
-    List<GeocoderPlaceType> types,
+    bool? autocomplete,
+    GeocoderBbox? bbox,
+    List<String>? country,
+    bool? fuzzyMatch,
+    String? language,
+    int? limit,
+    List<double>? proximity,
+    bool? routing,
+    List<GeocoderPlaceType>? types,
   }) {
-    var url = '?access_token=' + api.accessToken;
+    var url = '?access_token=' + api.accessToken!;
 
     if (autocomplete != null && !autocomplete) {
       url += '&autocomplete=false';

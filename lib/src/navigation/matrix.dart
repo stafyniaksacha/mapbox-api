@@ -26,29 +26,31 @@ class MatrixApi {
   /// you can also generate an asymmetric matrix that uses only
   /// some coordinates as sources or destinations.
   Future<MatrixApiResponse> request({
-    NavigationProfile profile,
+    NavigationProfile? profile,
     List<List<double>> coordinates = const <List<double>>[],
     List<NavigationAnnotations> annotations = const <NavigationAnnotations>[],
     List<NavigationApproaches> approaches = const <NavigationApproaches>[],
-    List<int> destinations,
+    List<int>? destinations,
     int fallbackSpeed = 0,
     List<int> sources = const <int>[],
   }) async {
     var url = endpoint + '/' + version;
 
-    switch (profile) {
-      case NavigationProfile.DRIVING_TRAFFIC:
-        url += '/mapbox/driving-traffic';
-        break;
-      case NavigationProfile.DRIVING:
-        url += '/mapbox/driving';
-        break;
-      case NavigationProfile.CYCLING:
-        url += '/mapbox/cycling';
-        break;
-      case NavigationProfile.WALKING:
-        url += '/mapbox/walking';
-        break;
+    if (profile != null) {
+      switch (profile) {
+        case NavigationProfile.DRIVING_TRAFFIC:
+          url += '/mapbox/driving-traffic';
+          break;
+        case NavigationProfile.DRIVING:
+          url += '/mapbox/driving';
+          break;
+        case NavigationProfile.CYCLING:
+          url += '/mapbox/cycling';
+          break;
+        case NavigationProfile.WALKING:
+          url += '/mapbox/walking';
+          break;
+      }
     }
 
     for (var i = 0; i < coordinates.length; i++) {
@@ -65,7 +67,7 @@ class MatrixApi {
       }
     }
 
-    url += '?access_token=' + api.accessToken;
+    url += '?access_token=' + api.accessToken!;
 
     for (var i = 0; i < annotations.length; i++) {
       if (i == 0) {
@@ -111,7 +113,7 @@ class MatrixApi {
       }
     }
 
-    for (var i = 0; i < destinations.length; i++) {
+    for (var i = 0; i < destinations!.length; i++) {
       if (i == 0) {
         url += '&destinations=';
       }
@@ -146,20 +148,20 @@ class MatrixApi {
         response.body,
       ) as Map<String, dynamic>;
       return MatrixApiResponse.fromJson(json);
-    } catch (error) {
+    } on Error catch (error) {
       return MatrixApiResponse.withError(error);
     }
   }
 }
 
 class MatrixApiResponse {
-  String code;
-  List<NavigationWaypoint> destinations;
-  List<List<double>> distances;
-  List<List<double>> durations;
-  Error error;
-  List<NavigationWaypoint> sources;
-  String uuid;
+  String? code;
+  List<NavigationWaypoint>? destinations;
+  List<List<double>>? distances;
+  List<List<double>>? durations;
+  Error? error;
+  List<NavigationWaypoint>? sources;
+  String? uuid;
 
   MatrixApiResponse({
     this.code,
@@ -172,8 +174,8 @@ class MatrixApiResponse {
   });
 
   MatrixApiResponse.fromJson(Map<String, dynamic> json) {
-    code = json['code'] as String;
-    uuid = json['uuid'] as String;
+    code = json['code'] as String?;
+    uuid = json['uuid'] as String?;
 
     switch (code) {
       case 'ProfileNotFound':

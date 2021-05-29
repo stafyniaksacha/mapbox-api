@@ -27,8 +27,8 @@ void main() async {
     return;
   }
 
-  if (response.features != null && response.features.isNotEmpty) {
-    for (final feature in response.features) {
+  if (response.features != null && response.features!.isNotEmpty) {
+    for (final feature in response.features!) {
       print(feature.placeName);
     }
   }

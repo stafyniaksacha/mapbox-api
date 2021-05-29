@@ -1,12 +1,8 @@
-# mapbox-api
+# mapbox_api
 
 This package aim to :
 - be a **Dart SDK** for **Mapbox API** with only [http](https://github.com/dart-lang/http) as dependency
 - follow the [official documentation](https://docs.mapbox.com/api/)
-
-### :construction: WIP Notice
-
-This is a work in progress, feel free open an issue for questions and remarks. (PR are welcome :))
 
 ## Examples
 

@@ -158,12 +158,12 @@ class NavigationBearings {
   );
 
   NavigationBearings.fromJson(Map<String, dynamic> json) {
-    angle = (json['angle'] as num)?.toDouble();
-    degree = (json['degree'] as num)?.toDouble();
+    angle = (json['angle'] as num?)?.toDouble();
+    degree = (json['degree'] as num?)?.toDouble();
   }
 
-  double angle;
-  double degree;
+  double? angle;
+  double? degree;
 }
 
 class NavigationFeature {
@@ -174,7 +174,7 @@ class NavigationFeature {
   });
 
   NavigationFeature.fromJson(Map<String, dynamic> json) {
-    type = json['type'] as String;
+    type = json['type'] as String?;
 
     if (json.containsKey('properties') && json['properties'] != null) {
       properties = NavigationFeatureProperty.fromJson(
@@ -189,9 +189,9 @@ class NavigationFeature {
     }
   }
 
-  String type;
-  NavigationFeatureProperty properties;
-  NavigationFeatureGeometry geometry;
+  String? type;
+  NavigationFeatureProperty? properties;
+  NavigationFeatureGeometry? geometry;
 }
 
 class NavigationFeatureProperty {
@@ -205,20 +205,20 @@ class NavigationFeatureProperty {
   });
 
   NavigationFeatureProperty.fromJson(Map<String, dynamic> json) {
-    contour = (json['contour'] as num)?.toInt();
-    color = json['color'] as String;
-    opacity = (json['opacity'] as num)?.toDouble();
-    fill = json['fill'] as String;
-    fillColor = json['fillColor'] as String;
-    fillOpacity = (json['fillOpacity'] as num)?.toDouble();
+    contour = (json['contour'] as num?)?.toInt();
+    color = json['color'] as String?;
+    opacity = (json['opacity'] as num?)?.toDouble();
+    fill = json['fill'] as String?;
+    fillColor = json['fillColor'] as String?;
+    fillOpacity = (json['fillOpacity'] as num?)?.toDouble();
   }
 
-  int contour;
-  String color;
-  double opacity;
-  String fill;
-  String fillColor;
-  double fillOpacity;
+  int? contour;
+  String? color;
+  double? opacity;
+  String? fill;
+  String? fillColor;
+  double? fillOpacity;
 }
 
 class NavigationFeatureGeometry {
@@ -228,7 +228,7 @@ class NavigationFeatureGeometry {
   });
 
   NavigationFeatureGeometry.fromJson(Map<String, dynamic> json) {
-    type = json['type'] as String;
+    type = json['type'] as String?;
 
     if (json.containsKey('coordinates') && json['coordinates'] != null) {
       coordinates = List<double>.from(
@@ -237,8 +237,8 @@ class NavigationFeatureGeometry {
     }
   }
 
-  List<double> coordinates;
-  String type;
+  List<double>? coordinates;
+  String? type;
 }
 
 class NavigationWaypoint {
@@ -249,8 +249,8 @@ class NavigationWaypoint {
   });
 
   NavigationWaypoint.fromJson(Map<String, dynamic> json) {
-    name = json['name'] as String;
-    distance = (json['distance'] as num)?.toDouble();
+    name = json['name'] as String?;
+    distance = (json['distance'] as num?)?.toDouble();
 
     if (json.containsKey('location') && json['location'] != null) {
       location = List<double>.from(
@@ -259,9 +259,9 @@ class NavigationWaypoint {
     }
   }
 
-  String name;
-  List<double> location;
-  double distance;
+  String? name;
+  List<double>? location;
+  double? distance;
 }
 
 class NavigationOptimizedWaypoint {
@@ -273,9 +273,9 @@ class NavigationOptimizedWaypoint {
   });
 
   NavigationOptimizedWaypoint.fromJson(Map<String, dynamic> json) {
-    name = json['name'] as String;
-    tripsIndex = (json['trips_index'] as num)?.toInt();
-    waypointIndex = (json['waypoint_index'] as num)?.toInt();
+    name = json['name'] as String?;
+    tripsIndex = (json['trips_index'] as num?)?.toInt();
+    waypointIndex = (json['waypoint_index'] as num?)?.toInt();
 
     if (json.containsKey('location') && json['location'] != null) {
       location = List<double>.from(
@@ -284,10 +284,10 @@ class NavigationOptimizedWaypoint {
     }
   }
 
-  String name;
-  List<double> location;
-  int tripsIndex;
-  int waypointIndex;
+  String? name;
+  List<double>? location;
+  int? tripsIndex;
+  int? waypointIndex;
 }
 
 class NavigationTracepoint extends NavigationWaypoint {
@@ -295,9 +295,9 @@ class NavigationTracepoint extends NavigationWaypoint {
     this.matchingsIndex,
     this.waypointIndex,
     this.alternativesCount,
-    String name,
-    List<double> location,
-    double distance,
+    String? name,
+    List<double>? location,
+    double? distance,
   }) : super(
           name: name,
           location: location,
@@ -305,11 +305,11 @@ class NavigationTracepoint extends NavigationWaypoint {
         );
 
   NavigationTracepoint.fromJson(Map<String, dynamic> json) {
-    name = json['name'] as String;
-    distance = (json['distance'] as num)?.toDouble();
-    matchingsIndex = (json['matchings_index'] as num)?.toInt();
-    waypointIndex = (json['waypoint_index'] as num)?.toInt();
-    alternativesCount = (json['alternatives_count'] as num)?.toInt();
+    name = json['name'] as String?;
+    distance = (json['distance'] as num?)?.toDouble();
+    matchingsIndex = (json['matchings_index'] as num?)?.toInt();
+    waypointIndex = (json['waypoint_index'] as num?)?.toInt();
+    alternativesCount = (json['alternatives_count'] as num?)?.toInt();
 
     if (json.containsKey('location') && json['location'] != null) {
       location = List<double>.from(
@@ -318,9 +318,9 @@ class NavigationTracepoint extends NavigationWaypoint {
     }
   }
 
-  int matchingsIndex;
-  int waypointIndex;
-  int alternativesCount;
+  int? matchingsIndex;
+  int? waypointIndex;
+  int? alternativesCount;
 }
 
 class NavigationRoute {
@@ -335,12 +335,12 @@ class NavigationRoute {
   });
 
   NavigationRoute.fromJson(Map<String, dynamic> json) {
-    duration = (json['duration'] as num)?.toDouble();
-    distance = (json['distance'] as num)?.toDouble();
-    weightName = json['weightName'] as String;
-    weight = (json['weight'] as num)?.toDouble();
+    duration = (json['duration'] as num?)?.toDouble();
+    distance = (json['distance'] as num?)?.toDouble();
+    weightName = json['weightName'] as String?;
+    weight = (json['weight'] as num?)?.toDouble();
     geometry = json['geometry'] as dynamic;
-    voiceLocale = json['voiceLocale'] as String;
+    voiceLocale = json['voiceLocale'] as String?;
 
     if (json.containsKey('legs') && json['legs'] != null) {
       legs = List<NavigationLeg>.from(
@@ -353,25 +353,25 @@ class NavigationRoute {
     }
   }
 
-  double duration;
-  double distance;
-  String weightName;
-  double weight;
+  double? duration;
+  double? distance;
+  String? weightName;
+  double? weight;
   dynamic geometry;
-  List<NavigationLeg> legs;
-  String voiceLocale;
+  List<NavigationLeg>? legs;
+  String? voiceLocale;
 }
 
 class NavigationMatchRoute extends NavigationRoute {
   NavigationMatchRoute({
     this.confidence,
-    double duration,
-    double distance,
-    String weightName,
-    double weight,
+    double? duration,
+    double? distance,
+    String? weightName,
+    double? weight,
     dynamic geometry,
-    List<NavigationLeg> legs,
-    String voiceLocale,
+    List<NavigationLeg>? legs,
+    String? voiceLocale,
   }) : super(
           duration: duration,
           distance: distance,
@@ -383,13 +383,13 @@ class NavigationMatchRoute extends NavigationRoute {
         );
 
   NavigationMatchRoute.fromJson(Map<String, dynamic> json) {
-    confidence = (json['confidence'] as num)?.toDouble();
-    duration = (json['duration'] as num)?.toDouble();
-    distance = (json['distance'] as num)?.toDouble();
-    weightName = json['weightName'] as String;
-    weight = (json['weight'] as num)?.toDouble();
+    confidence = (json['confidence'] as num?)?.toDouble();
+    duration = (json['duration'] as num?)?.toDouble();
+    distance = (json['distance'] as num?)?.toDouble();
+    weightName = json['weightName'] as String?;
+    weight = (json['weight'] as num?)?.toDouble();
     geometry = json['geometry'] as dynamic;
-    voiceLocale = json['voiceLocale'] as String;
+    voiceLocale = json['voiceLocale'] as String?;
 
     if (json.containsKey('legs') && json['legs'] != null) {
       legs = List<NavigationLeg>.from(
@@ -402,7 +402,7 @@ class NavigationMatchRoute extends NavigationRoute {
     }
   }
 
-  double confidence;
+  double? confidence;
 }
 
 class NavigationLeg {
@@ -415,9 +415,9 @@ class NavigationLeg {
   });
 
   NavigationLeg.fromJson(Map<String, dynamic> json) {
-    duration = (json['duration'] as num)?.toDouble();
-    distance = (json['distance'] as num)?.toDouble();
-    summary = json['summary'] as String;
+    duration = (json['duration'] as num?)?.toDouble();
+    distance = (json['distance'] as num?)?.toDouble();
+    summary = json['summary'] as String?;
 
     if (json.containsKey('steps') && json['steps'] != null) {
       steps = List<NavigationStep>.from(
@@ -435,11 +435,11 @@ class NavigationLeg {
     }
   }
 
-  double duration;
-  double distance;
-  List<NavigationStep> steps;
-  String summary;
-  NavigationAnnotation annotation;
+  double? duration;
+  double? distance;
+  List<NavigationStep>? steps;
+  String? summary;
+  NavigationAnnotation? annotation;
 }
 
 class NavigationAnnotation {
@@ -473,10 +473,10 @@ class NavigationAnnotation {
     }
   }
 
-  List<double> duration;
-  List<double> distance;
-  List<double> speed;
-  List<String> congestion;
+  List<double>? duration;
+  List<double>? distance;
+  List<double>? speed;
+  List<String>? congestion;
 }
 
 class NavigationStep {
@@ -496,15 +496,15 @@ class NavigationStep {
   });
 
   NavigationStep.fromJson(Map<String, dynamic> json) {
-    duration = (json['duration'] as num)?.toDouble();
-    distance = (json['distance'] as num)?.toDouble();
+    duration = (json['duration'] as num?)?.toDouble();
+    distance = (json['distance'] as num?)?.toDouble();
     geometry = json['geometry'] as dynamic;
-    name = json['name'] as String;
-    destinations = json['destinations'] as String;
-    pronunciation = json['pronunciation'] as String;
+    name = json['name'] as String?;
+    destinations = json['destinations'] as String?;
+    pronunciation = json['pronunciation'] as String?;
 
     if (json.containsKey('driving_side') && json['driving_side'] != null) {
-      switch (json['driving_side'] as String) {
+      switch (json['driving_side'] as String?) {
         case 'right':
           drivingSide = NavigationDrivingSide.RIGHT;
           break;
@@ -515,7 +515,7 @@ class NavigationStep {
     }
 
     if (json.containsKey('mode') && json['mode'] != null) {
-      switch (json['mode'] as String) {
+      switch (json['mode'] as String?) {
         case 'driving':
           mode = NavigationStepMode.DRIVING;
           break;
@@ -539,7 +539,7 @@ class NavigationStep {
 
     if (json.containsKey('ref') && json['ref'] != null) {
       ref = json['ref'] is String
-          ? <String>[json['ref']]
+          ? <String?>[json['ref']]
           : List<String>.from(json['ref'] as List<dynamic>);
     }
 
@@ -579,20 +579,20 @@ class NavigationStep {
     }
   }
 
-  NavigationManeuver maneuver;
-  double duration;
-  double distance;
+  NavigationManeuver? maneuver;
+  double? duration;
+  double? distance;
   dynamic geometry;
-  String name;
-  List<String> ref;
-  String destinations;
-  String exits;
-  NavigationDrivingSide drivingSide;
-  NavigationStepMode mode;
-  String pronunciation;
-  List<NavigationIntersection> intersections;
-  List<NavigationVoiceInstruction> voiceInstructions;
-  List<NavigationBannerInstruction> bannerInstructions;
+  String? name;
+  List<String?>? ref;
+  String? destinations;
+  String? exits;
+  NavigationDrivingSide? drivingSide;
+  NavigationStepMode? mode;
+  String? pronunciation;
+  List<NavigationIntersection>? intersections;
+  List<NavigationVoiceInstruction>? voiceInstructions;
+  List<NavigationBannerInstruction>? bannerInstructions;
 }
 
 class NavigationVoiceInstruction {
@@ -603,14 +603,14 @@ class NavigationVoiceInstruction {
   });
 
   NavigationVoiceInstruction.fromJson(Map<String, dynamic> json) {
-    distanceAlongGeometry = (json['distanceAlongGeometry'] as num)?.toDouble();
-    announcement = json['announcement'] as String;
-    ssmlAnnouncement = json['ssmlAnnouncement'] as String;
+    distanceAlongGeometry = (json['distanceAlongGeometry'] as num?)?.toDouble();
+    announcement = json['announcement'] as String?;
+    ssmlAnnouncement = json['ssmlAnnouncement'] as String?;
   }
 
-  double distanceAlongGeometry;
-  String announcement;
-  String ssmlAnnouncement;
+  double? distanceAlongGeometry;
+  String? announcement;
+  String? ssmlAnnouncement;
 }
 
 class NavigationBannerInstruction {
@@ -622,7 +622,7 @@ class NavigationBannerInstruction {
   });
 
   NavigationBannerInstruction.fromJson(Map<String, dynamic> json) {
-    distanceAlongGeometry = (json['distanceAlongGeometry'] as num)?.toDouble();
+    distanceAlongGeometry = (json['distanceAlongGeometry'] as num?)?.toDouble();
 
     if (json.containsKey('primary') && json['primary'] != null) {
       primary = NavigationInstructionProperty.fromJson(
@@ -641,10 +641,10 @@ class NavigationBannerInstruction {
     }
   }
 
-  double distanceAlongGeometry;
-  NavigationInstructionProperty primary;
-  NavigationInstructionProperty secondary;
-  NavigationInstructionProperty sub;
+  double? distanceAlongGeometry;
+  NavigationInstructionProperty? primary;
+  NavigationInstructionProperty? secondary;
+  NavigationInstructionProperty? sub;
 }
 
 class NavigationInstructionProperty {
@@ -658,11 +658,11 @@ class NavigationInstructionProperty {
   });
 
   NavigationInstructionProperty.fromJson(Map<String, dynamic> json) {
-    text = json['text'] as String;
-    degrees = (json['degrees'] as num)?.toDouble();
+    text = json['text'] as String?;
+    degrees = (json['degrees'] as num?)?.toDouble();
 
     if (json.containsKey('type') && json['type'] != null) {
-      switch (json['type'] as String) {
+      switch (json['type'] as String?) {
         case 'turn':
           type = NavigationInstructionType.TURN;
           break;
@@ -685,7 +685,7 @@ class NavigationInstructionProperty {
     }
 
     if (json.containsKey('modifier') && json['modifier'] != null) {
-      switch (json['modifier'] as String) {
+      switch (json['modifier'] as String?) {
         case 'uturn':
           modifier = NavigationInstructionModifier.UTURN;
           break;
@@ -711,7 +711,7 @@ class NavigationInstructionProperty {
     }
 
     if (json.containsKey('driving_side') && json['driving_side'] != null) {
-      switch (json['driving_side'] as String) {
+      switch (json['driving_side'] as String?) {
         case 'right':
           drivingSide = NavigationDrivingSide.RIGHT;
           break;
@@ -732,12 +732,12 @@ class NavigationInstructionProperty {
     }
   }
 
-  String text;
-  NavigationInstructionType type;
-  NavigationInstructionModifier modifier;
-  double degrees;
-  NavigationDrivingSide drivingSide;
-  List<NavigationInstructionPropertyComponent> components;
+  String? text;
+  NavigationInstructionType? type;
+  NavigationInstructionModifier? modifier;
+  double? degrees;
+  NavigationDrivingSide? drivingSide;
+  List<NavigationInstructionPropertyComponent>? components;
 }
 
 class NavigationInstructionPropertyComponent {
@@ -752,14 +752,14 @@ class NavigationInstructionPropertyComponent {
   });
 
   NavigationInstructionPropertyComponent.fromJson(Map<String, dynamic> json) {
-    text = json['text'] as String;
-    abbr = json['abbr'] as String;
-    abbrPriority = (json['abbr_priority'] as num)?.toInt();
-    imageBaseURL = json['imageBaseURL'] as String;
-    active = json['active'] as bool;
+    text = json['text'] as String?;
+    abbr = json['abbr'] as String?;
+    abbrPriority = (json['abbr_priority'] as num?)?.toInt();
+    imageBaseURL = json['imageBaseURL'] as String?;
+    active = json['active'] as bool?;
 
     if (json.containsKey('type') && json['type'] != null) {
-      switch (json['type'] as String) {
+      switch (json['type'] as String?) {
         case 'text':
           type = NavigationPropertyComponentType.TEXT;
           break;
@@ -798,13 +798,13 @@ class NavigationInstructionPropertyComponent {
     }
   }
 
-  NavigationPropertyComponentType type;
-  String text;
-  String abbr;
-  int abbrPriority;
-  String imageBaseURL;
-  List<NavigationDirection> directions;
-  bool active;
+  NavigationPropertyComponentType? type;
+  String? text;
+  String? abbr;
+  int? abbrPriority;
+  String? imageBaseURL;
+  List<NavigationDirection>? directions;
+  bool? active;
 }
 
 class NavigationIntersection {
@@ -821,10 +821,10 @@ class NavigationIntersection {
   });
 
   NavigationIntersection.fromJson(Map<String, dynamic> json) {
-    geometryIndex = (json['geometry_index'] as num)?.toInt();
-    inIndex = (json['in'] as num)?.toInt();
-    outIndex = (json['outIndex'] as num)?.toInt();
-    duration = (json['duration'] as num)?.toDouble();
+    geometryIndex = (json['geometry_index'] as num?)?.toInt();
+    inIndex = (json['in'] as num?)?.toInt();
+    outIndex = (json['outIndex'] as num?)?.toInt();
+    duration = (json['duration'] as num?)?.toDouble();
 
     if (json.containsKey('location') && json['location'] != null) {
       location = List<double>.from(
@@ -881,15 +881,15 @@ class NavigationIntersection {
     }
   }
 
-  List<double> location;
-  List<int> bearings;
-  List<NavigationIntersectionClass> classes;
-  List<bool> entry;
-  int geometryIndex;
-  int inIndex;
-  int outIndex;
-  List<NavigationIntersectionLane> lanes;
-  double duration;
+  List<double>? location;
+  List<int>? bearings;
+  List<NavigationIntersectionClass>? classes;
+  List<bool>? entry;
+  int? geometryIndex;
+  int? inIndex;
+  int? outIndex;
+  List<NavigationIntersectionLane>? lanes;
+  double? duration;
 }
 
 class NavigationIntersectionLane {
@@ -899,7 +899,7 @@ class NavigationIntersectionLane {
   });
 
   NavigationIntersectionLane.fromJson(Map<String, dynamic> json) {
-    valid = json['valid'] as bool;
+    valid = json['valid'] as bool?;
 
     if (json.containsKey('classes') && json['classes'] != null) {
       indications = List<NavigationIndicationType>.from(
@@ -939,8 +939,8 @@ class NavigationIntersectionLane {
     }
   }
 
-  bool valid;
-  List<NavigationIndicationType> indications;
+  bool? valid;
+  List<NavigationIndicationType>? indications;
 }
 
 class NavigationManeuver {
@@ -953,9 +953,9 @@ class NavigationManeuver {
     this.type,
   });
   NavigationManeuver.fromJson(Map<String, dynamic> json) {
-    bearingBefore = (json['bearing_before'] as num)?.toInt();
-    bearingAfter = (json['bearing_after'] as num)?.toInt();
-    instruction = json['instruction'] as String;
+    bearingBefore = (json['bearing_before'] as num?)?.toInt();
+    bearingAfter = (json['bearing_after'] as num?)?.toInt();
+    instruction = json['instruction'] as String?;
 
     if (json.containsKey('location') && json['location'] != null) {
       location = List<double>.from(
@@ -964,7 +964,7 @@ class NavigationManeuver {
     }
 
     if (json.containsKey('modifier') && json['modifier'] != null) {
-      switch (json['modifier'] as String) {
+      switch (json['modifier'] as String?) {
         case 'uturn':
           modifier = NavigationManeuverModifier.UTURN;
           break;
@@ -992,7 +992,7 @@ class NavigationManeuver {
       }
     }
     if (json.containsKey('type') && json['type'] != null) {
-      switch (json['type'] as String) {
+      switch (json['type'] as String?) {
         case 'turn':
           type = NavigationManeuverType.TURN;
           break;
@@ -1045,12 +1045,12 @@ class NavigationManeuver {
     }
   }
 
-  int bearingBefore;
-  int bearingAfter;
-  String instruction;
-  List<double> location;
-  NavigationManeuverModifier modifier;
-  NavigationManeuverType type;
+  int? bearingBefore;
+  int? bearingAfter;
+  String? instruction;
+  List<double>? location;
+  NavigationManeuverModifier? modifier;
+  NavigationManeuverType? type;
 }
 
 class NavigationError extends Error {
@@ -1058,12 +1058,12 @@ class NavigationError extends Error {
     this.message,
   });
 
-  String message;
+  String? message;
 }
 
 class NavigationNoMatchError extends NavigationError {
   NavigationNoMatchError({
-    String message,
+    String? message,
   }) : super(
           message: message,
         );
@@ -1071,7 +1071,7 @@ class NavigationNoMatchError extends NavigationError {
 
 class NavigationNoTripsError extends NavigationError {
   NavigationNoTripsError({
-    String message,
+    String? message,
   }) : super(
           message: message,
         );
@@ -1079,7 +1079,7 @@ class NavigationNoTripsError extends NavigationError {
 
 class NavigationNotImplementedError extends NavigationError {
   NavigationNotImplementedError({
-    String message,
+    String? message,
   }) : super(
           message: message,
         );
@@ -1087,7 +1087,7 @@ class NavigationNotImplementedError extends NavigationError {
 
 class NavigationTooManyCoordinatesError extends NavigationError {
   NavigationTooManyCoordinatesError({
-    String message,
+    String? message,
   }) : super(
           message: message,
         );
@@ -1095,7 +1095,7 @@ class NavigationTooManyCoordinatesError extends NavigationError {
 
 class NavigationNoRouteError extends NavigationError {
   NavigationNoRouteError({
-    String message,
+    String? message,
   }) : super(
           message: message,
         );
@@ -1103,7 +1103,7 @@ class NavigationNoRouteError extends NavigationError {
 
 class NavigationNoSegmentError extends NavigationError {
   NavigationNoSegmentError({
-    String message,
+    String? message,
   }) : super(
           message: message,
         );
@@ -1111,7 +1111,7 @@ class NavigationNoSegmentError extends NavigationError {
 
 class NavigationProfileNotFoundError extends NavigationError {
   NavigationProfileNotFoundError({
-    String message,
+    String? message,
   }) : super(
           message: message,
         );
@@ -1119,7 +1119,7 @@ class NavigationProfileNotFoundError extends NavigationError {
 
 class NavigationInvalidInputError extends NavigationError {
   NavigationInvalidInputError({
-    String message,
+    String? message,
   }) : super(
           message: message,
         );

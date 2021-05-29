@@ -45,10 +45,10 @@ class GeocoderBbox {
     maxY = (json[3] as num).toDouble();
   }
 
-  double minX;
-  double minY;
-  double maxX;
-  double maxY;
+  double? minX;
+  double? minY;
+  double? maxX;
+  double? maxY;
 }
 
 class GeocoderGeometry {
@@ -60,9 +60,9 @@ class GeocoderGeometry {
   });
 
   GeocoderGeometry.fromJson(Map<String, dynamic> json) {
-    type = json['type'] as String;
-    interpolated = json['interpolated'] as bool;
-    omitted = json['omitted'] as bool;
+    type = json['type'] as String?;
+    interpolated = json['interpolated'] as bool?;
+    omitted = json['omitted'] as bool?;
 
     if (json.containsKey('coordinates') && json['coordinates'] != null) {
       coordinates = List<double>.from(
@@ -71,10 +71,10 @@ class GeocoderGeometry {
     }
   }
 
-  String type;
-  List<double> coordinates;
-  bool interpolated;
-  bool omitted;
+  String? type;
+  List<double>? coordinates;
+  bool? interpolated;
+  bool? omitted;
 }
 
 class GeocoderContext {
@@ -86,16 +86,16 @@ class GeocoderContext {
   });
 
   GeocoderContext.fromJson(Map<String, dynamic> json) {
-    id = json['id'] as String;
-    text = json['text'] as String;
-    shortCode = json['short_code'] as String;
-    wikidata = json['wikidata'] as String;
+    id = json['id'] as String?;
+    text = json['text'] as String?;
+    shortCode = json['short_code'] as String?;
+    wikidata = json['wikidata'] as String?;
   }
 
-  String id;
-  String text;
-  String shortCode;
-  String wikidata;
+  String? id;
+  String? text;
+  String? shortCode;
+  String? wikidata;
 }
 
 class GeocoderRoutablePoints {
@@ -115,7 +115,7 @@ class GeocoderRoutablePoints {
     }
   }
 
-  List<List<double>> points;
+  List<List<double>>? points;
 }
 
 class GeocoderFeatureProperty {
@@ -131,16 +131,16 @@ class GeocoderFeatureProperty {
   });
 
   GeocoderFeatureProperty.fromJson(Map<String, dynamic> json) {
-    address = json['address'] as String;
-    category = json['category'] as String;
-    maki = json['maki'] as String;
-    landmark = json['landmark'] as bool;
-    wikidata = json['wikidata'] as String;
-    shortCode = json['short_code'] as String;
-    tel = json['tel'] as String;
+    address = json['address'] as String?;
+    category = json['category'] as String?;
+    maki = json['maki'] as String?;
+    landmark = json['landmark'] as bool?;
+    wikidata = json['wikidata'] as String?;
+    shortCode = json['short_code'] as String?;
+    tel = json['tel'] as String?;
 
     if (json.containsKey('accuracy') && json['accuracy'] != null) {
-      switch (json['accuracy'] as String) {
+      switch (json['accuracy'] as String?) {
         case 'rooftop':
           accuracy = GeocoderFeaturePropertyAccuracy.ROOFTOP;
           break;
@@ -166,14 +166,14 @@ class GeocoderFeatureProperty {
     }
   }
 
-  GeocoderFeaturePropertyAccuracy accuracy;
-  String address;
-  String category;
-  String maki;
-  bool landmark;
-  String wikidata;
-  String shortCode;
-  String tel;
+  GeocoderFeaturePropertyAccuracy? accuracy;
+  String? address;
+  String? category;
+  String? maki;
+  bool? landmark;
+  String? wikidata;
+  String? shortCode;
+  String? tel;
 }
 
 class GeocoderFeature {
@@ -200,15 +200,15 @@ class GeocoderFeature {
   });
 
   GeocoderFeature.fromJson(Map<String, dynamic> json) {
-    id = json['id'] as String;
-    type = json['type'] as String;
-    relevance = (json['relevance'] as num)?.toDouble();
-    address = json['address'] as String;
-    text = json['text'] as String;
-    placeName = json['place_name'] as String;
-    matchingText = json['matching_text'] as String;
-    matchingPlaceName = json['matching_place_name'] as String;
-    language = json['language'] as String;
+    id = json['id'] as String?;
+    type = json['type'] as String?;
+    relevance = (json['relevance'] as num?)?.toDouble();
+    address = json['address'] as String?;
+    text = json['text'] as String?;
+    placeName = json['place_name'] as String?;
+    matchingText = json['matching_text'] as String?;
+    matchingPlaceName = json['matching_place_name'] as String?;
+    language = json['language'] as String?;
 
     if (json.containsKey('geometry') && json['geometry'] != null) {
       geometry = GeocoderGeometry.fromJson(
@@ -311,25 +311,25 @@ class GeocoderFeature {
         '}';
   }
 
-  String id;
-  String type;
-  List<GeocoderPlaceType> placeType;
-  double relevance;
-  String address;
-  GeocoderFeatureProperty properties;
-  String text;
-  String placeName;
-  String matchingText;
-  String matchingPlaceName;
+  String? id;
+  String? type;
+  List<GeocoderPlaceType>? placeType;
+  double? relevance;
+  String? address;
+  GeocoderFeatureProperty? properties;
+  String? text;
+  String? placeName;
+  String? matchingText;
+  String? matchingPlaceName;
   // todo: text_{language}
   // todo: place_name_{language}
-  String language;
+  String? language;
   // todo: language_{language}
-  GeocoderBbox bbox;
-  List<double> center;
-  GeocoderGeometry geometry;
-  List<GeocoderContext> context;
-  GeocoderRoutablePoints routablePoints;
+  GeocoderBbox? bbox;
+  List<double>? center;
+  GeocoderGeometry? geometry;
+  List<GeocoderContext>? context;
+  GeocoderRoutablePoints? routablePoints;
 }
 
 class GeocoderError extends Error {
@@ -344,7 +344,7 @@ class GeocoderError extends Error {
         '}';
   }
 
-  String message;
+  String? message;
 }
 
 class GeocodingApiResponse {
@@ -361,14 +361,14 @@ class GeocodingApiResponse {
   }
 
   GeocodingApiResponse.fromJson(Map<String, dynamic> json) {
-    final _message = json['message'] as String;
+    final _message = json['message'] as String?;
 
     if (_message != null) {
       error = GeocoderError(message: _message);
     }
 
-    type = json['type'] as String;
-    attribution = json['attribution'] as String;
+    type = json['type'] as String?;
+    attribution = json['attribution'] as String?;
 
     if (json.containsKey('query') && json['query'] != null) {
       query = List<String>.from(
@@ -398,9 +398,9 @@ class GeocodingApiResponse {
         '}';
   }
 
-  String type;
-  List<String> query;
-  String attribution;
-  List<GeocoderFeature> features;
-  Error error;
+  String? type;
+  List<String>? query;
+  String? attribution;
+  List<GeocoderFeature>? features;
+  Error? error;
 }

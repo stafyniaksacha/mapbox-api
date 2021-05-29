@@ -22,7 +22,7 @@ class ReverseGeocodingApi {
     GeocoderEndpoint endpoint = GeocoderEndpoint.PLACES,
     List<double> coordinate = const <double>[],
     List<String> country = const <String>[],
-    String language,
+    String? language,
     int limit = 5,
     GeocoderReverseMode reverseMode = GeocoderReverseMode.DISTANCE,
     bool routing = false,
@@ -53,7 +53,7 @@ class ReverseGeocodingApi {
         response.body,
       ) as Map<String, dynamic>;
       return GeocodingApiResponse.fromJson(json);
-    } catch (error) {
+    } on Error catch (error) {
       return GeocodingApiResponse.withError(error);
     }
   }
@@ -64,7 +64,7 @@ class ReverseGeocodingApi {
     GeocoderEndpoint endpoint = GeocoderEndpoint.PLACES_PERMANENT,
     List<List<double>> coordinates = const <List<double>>[],
     List<String> country = const <String>[],
-    String language,
+    String? language,
     int limit = 5,
     GeocoderReverseMode reverseMode = GeocoderReverseMode.DISTANCE,
     bool routing = false,
@@ -114,20 +114,20 @@ class ReverseGeocodingApi {
         response.body,
       ) as Map<String, dynamic>;
       return GeocodingApiResponse.fromJson(json);
-    } catch (error) {
+    } on Error catch (error) {
       return GeocodingApiResponse.withError(error);
     }
   }
 
   String _urlQuery({
-    List<String> country,
-    String language,
-    int limit,
-    GeocoderReverseMode reverseMode,
-    bool routing,
-    List<GeocoderPlaceType> types,
+    List<String>? country,
+    String? language,
+    int? limit,
+    GeocoderReverseMode? reverseMode,
+    bool? routing,
+    List<GeocoderPlaceType>? types,
   }) {
-    var url = '?access_token=' + api.accessToken;
+    var url = '?access_token=' + api.accessToken!;
 
     if (routing != null && routing) {
       url += '&routing=true';
@@ -138,7 +138,7 @@ class ReverseGeocodingApi {
     }
 
     if (limit != null && limit != 5) {
-      url += '&limit=${limit}';
+      url += '&limit=$limit';
     }
 
     if (reverseMode != null) {

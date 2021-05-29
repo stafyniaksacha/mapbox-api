@@ -43,15 +43,15 @@ class MapboxApi {
     intersection = IntersectionApi(this);
   }
 
-  DirectionsApi directions;
-  MapMatchingApi mapMatching;
-  IsochroneApi isochrone;
-  MatrixApi matrix;
-  OptimizationApi optimization;
+  late DirectionsApi directions;
+  MapMatchingApi? mapMatching;
+  IsochroneApi? isochrone;
+  MatrixApi? matrix;
+  OptimizationApi? optimization;
 
-  ForwardGeocodingApi forwardGeocoding;
-  ReverseGeocodingApi reverseGeocoding;
-  IntersectionApi intersection;
+  late ForwardGeocodingApi forwardGeocoding;
+  late ReverseGeocodingApi reverseGeocoding;
+  late IntersectionApi intersection;
 
-  String accessToken;
+  String? accessToken;
 }

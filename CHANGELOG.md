@@ -1,3 +1,7 @@
+## 1.0.0 2021-05-30
+
+* Breaking: upgrade min dart sdk to >=2.12 (null-safety)
+
 ## 0.3.0 2021-03-18
 
 * Dependencies: updated `http` package _([MohsinN](https://github.com/MohsinN))_

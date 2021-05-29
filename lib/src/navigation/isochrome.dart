@@ -21,29 +21,31 @@ class IsochroneApi {
   /// are returned as either polygon or line features,
   /// depending on your input setting for the polygons parameter.
   Future<IsochroneApiResponse> request({
-    NavigationProfile profile,
+    NavigationProfile? profile,
     List<double> coordinates = const <double>[],
     List<int> contoursMinutes = const <int>[],
     List<String> contoursColors = const <String>[],
     bool polygons = false,
     double denoise = 1.0,
-    double generalize,
+    double? generalize,
   }) async {
     var url = endpoint + '/' + version;
 
-    switch (profile) {
-      case NavigationProfile.DRIVING_TRAFFIC:
-        url += '/mapbox/driving-traffic';
-        break;
-      case NavigationProfile.DRIVING:
-        url += '/mapbox/driving';
-        break;
-      case NavigationProfile.CYCLING:
-        url += '/mapbox/cycling';
-        break;
-      case NavigationProfile.WALKING:
-        url += '/mapbox/walking';
-        break;
+    if (profile != null) {
+      switch (profile) {
+        case NavigationProfile.DRIVING_TRAFFIC:
+          url += '/mapbox/driving-traffic';
+          break;
+        case NavigationProfile.DRIVING:
+          url += '/mapbox/driving';
+          break;
+        case NavigationProfile.CYCLING:
+          url += '/mapbox/cycling';
+          break;
+        case NavigationProfile.WALKING:
+          url += '/mapbox/walking';
+          break;
+      }
     }
 
     url += '/';
@@ -51,7 +53,7 @@ class IsochroneApi {
     url += ',';
     url += coordinates[LATITUDE].toString();
 
-    url += '?access_token=' + api.accessToken;
+    url += '?access_token=' + api.accessToken!;
 
     for (var i = 0; i < contoursMinutes.length; i++) {
       if (i == 0) {
@@ -97,7 +99,7 @@ class IsochroneApi {
         response.body,
       ) as Map<String, dynamic>;
       return IsochroneApiResponse.fromJson(json);
-    } catch (error) {
+    } on Error catch (error) {
       return IsochroneApiResponse.withError(error);
     }
   }
@@ -120,14 +122,14 @@ class IsochroneApiResponse {
   }
 
   IsochroneApiResponse.fromJson(Map<String, dynamic> json) {
-    final _message = json['message'] as String;
+    final _message = json['message'] as String?;
 
     if (_message != null) {
       error = NavigationError(message: _message);
     }
 
-    code = json['code'] as String;
-    uuid = json['uuid'] as String;
+    code = json['code'] as String?;
+    uuid = json['uuid'] as String?;
 
     // todo: handle errors from 'message' field
 
@@ -142,8 +144,8 @@ class IsochroneApiResponse {
     }
   }
 
-  String code;
-  String uuid;
-  List<NavigationFeature> features;
-  Error error;
+  String? code;
+  String? uuid;
+  List<NavigationFeature>? features;
+  Error? error;
 }
