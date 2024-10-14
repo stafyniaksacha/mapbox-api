@@ -24,7 +24,7 @@ class IntersectionApi {
     List<double> proximity = const <double>[],
     List<GeocoderPlaceType> types = const <GeocoderPlaceType>[],
   }) async {
-    var url = this.endpoint + '/' + version;
+    var url = '${this.endpoint}/$version';
 
     if (endpoint == GeocoderEndpoint.PLACES_PERMANENT) {
       url += '/mapbox.places-permanent';
@@ -33,7 +33,7 @@ class IntersectionApi {
     }
 
     url += '/$street1 and $street2.json';
-    url += '?access_token=' + api.accessToken!;
+    url += '?access_token=${api.accessToken!}';
 
     if (types.isNotEmpty) {
       for (var i = 0; i < types.length; i++) {

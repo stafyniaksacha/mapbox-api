@@ -33,7 +33,7 @@ class OptimizationApi {
     bool steps = false,
     bool roundtrip = true,
   }) async {
-    var url = endpoint + '/' + version;
+    var url = '$endpoint/$version';
 
     if (profile != null) {
       switch (profile) {
@@ -66,10 +66,10 @@ class OptimizationApi {
       }
     }
 
-    url += '?access_token=' + api.accessToken!;
+    url += '?access_token=${api.accessToken!}';
 
     if (language != 'en') {
-      url += '&language=' + language;
+      url += '&language=$language';
     }
     if (steps) {
       url += '&steps=true';

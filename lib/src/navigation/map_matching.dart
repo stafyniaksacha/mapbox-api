@@ -33,7 +33,7 @@ class MapMatchingApi {
     List<String> waypointNames = const <String>[],
     List<List<double>> waypoints = const <List<double>>[],
   }) async {
-    var url = endpoint + '/' + version;
+    var url = '$endpoint/$version';
 
     if (profile != null) {
       switch (profile) {
@@ -68,10 +68,10 @@ class MapMatchingApi {
       }
     }
 
-    url += '?access_token=' + api.accessToken!;
+    url += '?access_token=${api.accessToken!}';
 
     if (language != 'en') {
-      url += '&language=' + language;
+      url += '&language=$language';
     }
     if (steps) {
       url += '&steps=true';

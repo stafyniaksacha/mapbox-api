@@ -29,7 +29,7 @@ class IsochroneApi {
     double denoise = 1.0,
     double? generalize,
   }) async {
-    var url = endpoint + '/' + version;
+    var url = '$endpoint/$version';
 
     if (profile != null) {
       switch (profile) {
@@ -53,7 +53,7 @@ class IsochroneApi {
     url += ',';
     url += coordinates[LATITUDE].toString();
 
-    url += '?access_token=' + api.accessToken!;
+    url += '?access_token=${api.accessToken!}';
 
     for (var i = 0; i < contoursMinutes.length; i++) {
       if (i == 0) {
@@ -122,10 +122,10 @@ class IsochroneApiResponse {
   }
 
   IsochroneApiResponse.fromJson(Map<String, dynamic> json) {
-    final _message = json['message'] as String?;
+    final message = json['message'] as String?;
 
-    if (_message != null) {
-      error = NavigationError(message: _message);
+    if (message != null) {
+      error = NavigationError(message: message);
     }
 
     code = json['code'] as String?;

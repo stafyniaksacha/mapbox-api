@@ -42,7 +42,7 @@ class DirectionsApi {
     double walkwayBias = 0,
     double alleyBias = 0,
   }) async {
-    var url = endpoint + '/' + version;
+    var url = '$endpoint/$version';
 
     if (profile != null) {
       switch (profile) {
@@ -75,22 +75,22 @@ class DirectionsApi {
       }
     }
 
-    url += '?access_token=' + api.accessToken!;
+    url += '?access_token=${api.accessToken!}';
 
     if (profile == NavigationProfile.WALKING) {
       if (walkingSpeed != 1.42) {
-        url += '&walking_speed=' + walkingSpeed.toString();
+        url += '&walking_speed=$walkingSpeed';
       }
       if (walkwayBias != 0) {
-        url += '&walkway_bias=' + walkwayBias.toString();
+        url += '&walkway_bias=$walkwayBias';
       }
       if (alleyBias != 0) {
-        url += '&alley_bias=' + alleyBias.toString();
+        url += '&alley_bias=$alleyBias';
       }
     }
 
     if (language != 'en') {
-      url += '&language=' + language;
+      url += '&language=$language';
     }
     if (steps) {
       url += '&steps=true';

@@ -352,10 +352,10 @@ class GeocodingApiResponse {
   }
 
   GeocodingApiResponse.fromJson(Map<String, dynamic> json) {
-    final _message = json['message'] as String?;
+    final message = json['message'] as String?;
 
-    if (_message != null) {
-      error = GeocoderError(message: _message);
+    if (message != null) {
+      error = GeocoderError(message: message);
     }
 
     type = json['type'] as String?;

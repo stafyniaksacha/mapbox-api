@@ -30,7 +30,7 @@ class ForwardGeocodingApi {
     bool routing = false,
     List<GeocoderPlaceType> types = const <GeocoderPlaceType>[],
   }) async {
-    var url = this.endpoint + '/' + version;
+    var url = '${this.endpoint}/$version';
 
     if (endpoint == GeocoderEndpoint.PLACES_PERMANENT) {
       url += '/mapbox.places-permanent';
@@ -78,7 +78,7 @@ class ForwardGeocodingApi {
     bool routing = false,
     List<GeocoderPlaceType> types = const <GeocoderPlaceType>[],
   }) async {
-    var url = this.endpoint + '/' + version;
+    var url = '${this.endpoint}/$version';
 
     if (endpoint == GeocoderEndpoint.PLACES_PERMANENT) {
       url += '/mapbox.places-permanent';
@@ -141,7 +141,7 @@ class ForwardGeocodingApi {
     bool? routing,
     List<GeocoderPlaceType>? types,
   }) {
-    var url = '?access_token=' + api.accessToken!;
+    var url = '?access_token=${api.accessToken!}';
 
     if (autocomplete != null && !autocomplete) {
       url += '&autocomplete=false';
@@ -156,7 +156,7 @@ class ForwardGeocodingApi {
     }
 
     if (language != null) {
-      url += '&language=' + language;
+      url += '&language=$language';
     }
 
     if (limit != null && limit != 5) {

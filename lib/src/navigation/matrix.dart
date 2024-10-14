@@ -34,7 +34,7 @@ class MatrixApi {
     int fallbackSpeed = 0,
     List<int> sources = const <int>[],
   }) async {
-    var url = endpoint + '/' + version;
+    var url = '$endpoint/$version';
 
     if (profile != null) {
       switch (profile) {
@@ -67,7 +67,7 @@ class MatrixApi {
       }
     }
 
-    url += '?access_token=' + api.accessToken!;
+    url += '?access_token=${api.accessToken!}';
 
     for (var i = 0; i < annotations.length; i++) {
       if (i == 0) {
