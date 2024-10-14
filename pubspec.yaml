@@ -1,6 +1,6 @@
 name: mapbox_api
 description: Unofficial Mapbox Dart SDK that follow official Mapbox documentation.
-version: 1.0.0
+version: 1.1.0
 homepage: https://github.com/stafyniaksacha/mapbox-api
 
 dependencies:
@@ -10,4 +10,4 @@ dev_dependencies:
   lints: ^5.0.0
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.12.0 <4.0.0'

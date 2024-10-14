@@ -1,3 +1,9 @@
+## 1.1.0 2024-10-14
+
+* Dependencies: updated `http` package _([KrohnMi](https://github.com/stafyniaksacha/mapbox-api/pull/8))_
+* Upgrade max dart sdk to <4.0.0
+* Replace `pedantic` with `lints` package
+
 ## 1.0.0 2021-05-30
 
 * Breaking: upgrade min dart sdk to >=2.12 (null-safety)
