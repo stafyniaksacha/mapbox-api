@@ -123,22 +123,23 @@ enum NavigationManeuverModifier {
 }
 
 enum NavigationManeuverType {
-  TURN,
-  NEW_NAME,
-  DEPART,
   ARRIVE,
-  MERGE,
-  ON_RAMP,
-  OFF_RAMP,
-  FORK,
-  END_OF_ROAD,
+  DEPART,
   CONTINUE,
-  ROUNDABOUT,
-  ROTARY,
-  ROUNDABOUT_TURN,
+  END_OF_ROAD,
+  FORK,
+  MERGE,
+  NEW_NAME,
   NOTIFICATION,
-  EXIT_ROUNDABOUT,
-  EXIT_ROTARY,
+  OFF_RAMP,
+  ON_RAMP,
+  ROTARY,
+  ROUNDABOUT,
+  TURN,
+  UPDOWN,
+  UTURN,
+  CLOSE,
+  FLAG,
 }
 
 enum NavigationDestination {
@@ -960,72 +961,75 @@ class NavigationManeuver {
         case 'right':
           modifier = NavigationManeuverModifier.RIGHT;
           break;
-        case 'slap_right':
+        case 'slight_right':
           modifier = NavigationManeuverModifier.SLIGHT_RIGHT;
           break;
-        case 'sharp_left':
-          modifier = NavigationManeuverModifier.SHARP_LEFT;
+        case 'straight':
+          modifier = NavigationManeuverModifier.STRAIGHT;
+          break;
+        case 'slight_left':
+          modifier = NavigationManeuverModifier.SLIGHT_LEFT;
           break;
         case 'left':
           modifier = NavigationManeuverModifier.LEFT;
           break;
-        case 'slap_left':
-          modifier = NavigationManeuverModifier.SLIGHT_LEFT;
-          break;
-        case 'straight':
-          modifier = NavigationManeuverModifier.STRAIGHT;
+        case 'sharp_left':
+          modifier = NavigationManeuverModifier.SHARP_LEFT;
           break;
       }
     }
     if (json.containsKey('type') && json['type'] != null) {
       switch (json['type'] as String?) {
-        case 'turn':
-          type = NavigationManeuverType.TURN;
-          break;
-        case 'new name':
-          type = NavigationManeuverType.NEW_NAME;
+        case 'arrive':
+          type = NavigationManeuverType.ARRIVE;
           break;
         case 'depart':
           type = NavigationManeuverType.DEPART;
           break;
-        case 'arrive':
-          type = NavigationManeuverType.ARRIVE;
-          break;
-        case 'merge':
-          type = NavigationManeuverType.MERGE;
-          break;
-        case 'on ramp':
-          type = NavigationManeuverType.ON_RAMP;
-          break;
-        case 'off ramp':
-          type = NavigationManeuverType.OFF_RAMP;
-          break;
-        case 'fork':
-          type = NavigationManeuverType.FORK;
+        case 'continue':
+          type = NavigationManeuverType.CONTINUE;
           break;
         case 'end of road':
           type = NavigationManeuverType.END_OF_ROAD;
           break;
-        case 'continue':
-          type = NavigationManeuverType.CONTINUE;
+        case 'fork':
+          type = NavigationManeuverType.FORK;
           break;
-        case 'roundabout':
-          type = NavigationManeuverType.ROUNDABOUT;
+        case 'merge':
+          type = NavigationManeuverType.MERGE;
           break;
-        case 'rotary':
-          type = NavigationManeuverType.ROTARY;
-          break;
-        case 'roundabout turn':
-          type = NavigationManeuverType.ROUNDABOUT_TURN;
+        case 'new name':
+          type = NavigationManeuverType.NEW_NAME;
           break;
         case 'notification':
           type = NavigationManeuverType.NOTIFICATION;
           break;
-        case 'exit roundabout':
-          type = NavigationManeuverType.EXIT_ROUNDABOUT;
+        case 'off ramp':
+          type = NavigationManeuverType.OFF_RAMP;
           break;
-        case 'exit rotary':
-          type = NavigationManeuverType.EXIT_ROTARY;
+        case 'on ramp':
+          type = NavigationManeuverType.ON_RAMP;
+          break;
+        case 'rotary':
+          type = NavigationManeuverType.ROTARY;
+          break;
+        case 'roundabout':
+          type = NavigationManeuverType.ROUNDABOUT;
+          break;
+        case 'turn':
+          type = NavigationManeuverType.TURN;
+          break;
+        case 'updown':
+          type = NavigationManeuverType.UPDOWN;
+          break;
+        case 'uturn':
+          type = NavigationManeuverType.UTURN;
+          break;
+        case 'close':
+          type = NavigationManeuverType.CLOSE;
+          break;
+        case 'flag':
+          type = NavigationManeuverType.FLAG;
           break;
       }
     }
