@@ -50,13 +50,23 @@ enum NavigationStepMode {
 }
 
 enum NavigationInstructionType {
-  TURN,
-  MERGE,
-  DEPART,
   ARRIVE,
+  DEPART,
+  CONTINUE,
+  END_OF_ROAD,
   FORK,
+  MERGE,
+  NEW_NAME,
+  NOTIFICATION,
   OFF_RAMP,
+  ON_RAMP,
+  ROTARY,
   ROUNDABOUT,
+  TURN,
+  UPDOWN,
+  UTURN,
+  CLOSE,
+  FLAG,
 }
 
 enum NavigationInstructionModifier {
@@ -664,23 +674,59 @@ class NavigationInstructionProperty {
 
     if (json.containsKey('type') && json['type'] != null) {
       switch (json['type'] as String?) {
-        case 'turn':
-          type = NavigationInstructionType.TURN;
-          break;
-        case 'merge':
-          type = NavigationInstructionType.MERGE;
+        case 'arrive':
+          type = NavigationInstructionType.ARRIVE;
           break;
         case 'depart':
           type = NavigationInstructionType.DEPART;
           break;
+        case 'continue':
+          type = NavigationInstructionType.CONTINUE;
+          break;
+        case 'end of road':
+          type = NavigationInstructionType.END_OF_ROAD;
+          break;
         case 'fork':
           type = NavigationInstructionType.FORK;
+          break;
+        case 'merge':
+          type = NavigationInstructionType.MERGE;
+          break;
+        case 'new name':
+          type = NavigationInstructionType.NEW_NAME;
+          break;
+        case 'notification':
+          type = NavigationInstructionType.NOTIFICATION;
           break;
         case 'off ramp':
           type = NavigationInstructionType.OFF_RAMP;
           break;
+        case 'on ramp':
+          type = NavigationInstructionType.ON_RAMP;
+          break;
+        case 'rotary':
+          type = NavigationInstructionType.ROTARY;
+          break;
         case 'roundabout':
           type = NavigationInstructionType.ROUNDABOUT;
+          break;
+        case 'turn':
+          type = NavigationInstructionType.TURN;
+          break;
+        case 'updown':
+          type = NavigationInstructionType.UPDOWN;
+          break;
+        case 'uturn':
+          type = NavigationInstructionType.UTURN;
+          break;
+        case 'close':
+          type = NavigationInstructionType.CLOSE;
+          break;
+        case 'flag':
+          type = NavigationInstructionType.FLAG;
+          break;
+        default:
+          print('Unknown type: ${json['type']}');
           break;
       }
     }
@@ -690,23 +736,29 @@ class NavigationInstructionProperty {
         case 'uturn':
           modifier = NavigationInstructionModifier.UTURN;
           break;
-        case 'sharp_right':
+        case 'sharp right':
           modifier = NavigationInstructionModifier.SHARP_RIGHT;
           break;
-        case 'slight_right':
+        case 'right':
+          modifier = NavigationInstructionModifier.RIGHT;
+          break;
+        case 'slight right':
           modifier = NavigationInstructionModifier.SLIGHT_RIGHT;
           break;
         case 'straight':
           modifier = NavigationInstructionModifier.STRAIGHT;
           break;
-        case 'slight_left':
+        case 'slight left':
           modifier = NavigationInstructionModifier.SLIGHT_LEFT;
           break;
         case 'left':
           modifier = NavigationInstructionModifier.LEFT;
           break;
-        case 'sharp_left':
+        case 'sharp left':
           modifier = NavigationInstructionModifier.SHARP_LEFT;
+          break;
+        default:
+          print('Unknown modifier: ${json['modifier']}');
           break;
       }
     }
@@ -955,29 +1007,33 @@ class NavigationManeuver {
         case 'uturn':
           modifier = NavigationManeuverModifier.UTURN;
           break;
-        case 'sharp_right':
+        case 'sharp right':
           modifier = NavigationManeuverModifier.SHARP_RIGHT;
           break;
         case 'right':
           modifier = NavigationManeuverModifier.RIGHT;
           break;
-        case 'slight_right':
+        case 'slight right':
           modifier = NavigationManeuverModifier.SLIGHT_RIGHT;
           break;
         case 'straight':
           modifier = NavigationManeuverModifier.STRAIGHT;
           break;
-        case 'slight_left':
+        case 'slight left':
           modifier = NavigationManeuverModifier.SLIGHT_LEFT;
           break;
         case 'left':
           modifier = NavigationManeuverModifier.LEFT;
           break;
-        case 'sharp_left':
+        case 'sharp left':
           modifier = NavigationManeuverModifier.SHARP_LEFT;
+          break;
+        default:
+          print('Unknown modifier: ${json['modifier']}');
           break;
       }
     }
+
     if (json.containsKey('type') && json['type'] != null) {
       switch (json['type'] as String?) {
         case 'arrive':
@@ -1030,6 +1086,9 @@ class NavigationManeuver {
           break;
         case 'flag':
           type = NavigationManeuverType.FLAG;
+          break;
+        default:
+          print('Unknown type: ${json['type']}');
           break;
       }
     }
