@@ -50,19 +50,19 @@ enum NavigationStepMode {
 }
 
 enum NavigationInstructionType {
-  ARRIVE,
+  TURN,
+  MERGE,
   DEPART,
+  ARRIVE,
+  FORK,
+  OFF_RAMP,
+  ROUNDABOUT,
   CONTINUE,
   END_OF_ROAD,
-  FORK,
-  MERGE,
   NEW_NAME,
   NOTIFICATION,
-  OFF_RAMP,
   ON_RAMP,
   ROTARY,
-  ROUNDABOUT,
-  TURN,
   UPDOWN,
   UTURN,
   CLOSE,
@@ -133,19 +133,22 @@ enum NavigationManeuverModifier {
 }
 
 enum NavigationManeuverType {
-  ARRIVE,
-  DEPART,
-  CONTINUE,
-  END_OF_ROAD,
-  FORK,
-  MERGE,
-  NEW_NAME,
-  NOTIFICATION,
-  OFF_RAMP,
-  ON_RAMP,
-  ROTARY,
-  ROUNDABOUT,
   TURN,
+  NEW_NAME,
+  DEPART,
+  ARRIVE,
+  MERGE,
+  ON_RAMP,
+  OFF_RAMP,
+  FORK,
+  END_OF_ROAD,
+  CONTINUE,
+  ROUNDABOUT,
+  ROTARY,
+  ROUNDABOUT_TURN,
+  NOTIFICATION,
+  EXIT_ROUNDABOUT,
+  EXIT_ROTARY,
   UPDOWN,
   UTURN,
   CLOSE,
@@ -725,9 +728,6 @@ class NavigationInstructionProperty {
         case 'flag':
           type = NavigationInstructionType.FLAG;
           break;
-        default:
-          print('Unknown type: ${json['type']}');
-          break;
       }
     }
 
@@ -756,9 +756,6 @@ class NavigationInstructionProperty {
           break;
         case 'sharp left':
           modifier = NavigationInstructionModifier.SHARP_LEFT;
-          break;
-        default:
-          print('Unknown modifier: ${json['modifier']}');
           break;
       }
     }
@@ -1028,9 +1025,6 @@ class NavigationManeuver {
         case 'sharp left':
           modifier = NavigationManeuverModifier.SHARP_LEFT;
           break;
-        default:
-          print('Unknown modifier: ${json['modifier']}');
-          break;
       }
     }
 
@@ -1072,6 +1066,15 @@ class NavigationManeuver {
         case 'roundabout':
           type = NavigationManeuverType.ROUNDABOUT;
           break;
+        case 'roundabout turn':
+          type = NavigationManeuverType.ROUNDABOUT_TURN;
+          break;
+        case 'exit roundabout':
+          type = NavigationManeuverType.EXIT_ROUNDABOUT;
+          break;
+        case 'exit rotary':
+          type = NavigationManeuverType.EXIT_ROTARY;
+          break;
         case 'turn':
           type = NavigationManeuverType.TURN;
           break;
@@ -1086,9 +1089,6 @@ class NavigationManeuver {
           break;
         case 'flag':
           type = NavigationManeuverType.FLAG;
-          break;
-        default:
-          print('Unknown type: ${json['type']}');
           break;
       }
     }

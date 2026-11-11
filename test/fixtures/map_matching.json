@@ -1,0 +1,34 @@
+{
+  "code": "Ok",
+  "matchings": [
+    {
+      "confidence": 0.95,
+      "duration": 120.5,
+      "distance": 640.25,
+      "weight_name": "auto",
+      "weight": 130.5,
+      "geometry": "o{~hHk~gM",
+      "legs": [
+        {
+          "duration": 120.5,
+          "distance": 640.25,
+          "summary": "",
+          "steps": []
+        }
+      ]
+    }
+  ],
+  "tracepoints": [
+    {
+      "name": "Rue de Rivoli",
+      "distance": 1.5,
+      "matchings_index": 0,
+      "waypoint_index": 0,
+      "alternatives_count": 0,
+      "location": [
+        2.3522,
+        48.8566
+      ]
+    }
+  ]
+}

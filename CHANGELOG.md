@@ -1,3 +1,18 @@
+## Unreleased
+
+* Navigation: parse documented maneuver/instruction values that were missing
+  or misspelled (`slight right`, `sharp left`, `continue`, `end of road`,
+  `new name`, `on ramp`, `rotary`, …) _([emmett-deen](https://github.com/stafyniaksacha/mapbox-api/pull/9))_
+* Navigation: new enum members `NavigationManeuverType.UPDOWN/UTURN/CLOSE/FLAG`
+  and `NavigationInstructionType.CONTINUE/END_OF_ROAD/NEW_NAME/NOTIFICATION/ON_RAMP/ROTARY/UPDOWN/UTURN/CLOSE/FLAG`.
+  New members are appended, so existing `.index` values are unchanged.
+  Exhaustive `switch` statements on these enums need a new case or a default.
+* Fix (unreleased regression): restore `NavigationManeuverType.ROUNDABOUT_TURN`,
+  `EXIT_ROUNDABOUT` and `EXIT_ROTARY` and their parsing
+* Fix (unreleased regression): the library no longer prints unknown values to stdout
+* Tooling: test suite (URL goldens, response fixtures, enum compatibility),
+  GitHub Actions CI, public API check against 1.1.0, Dependabot
+
 ## 1.1.0 2024-10-14
 
 * Dependencies: updated `http` package _([KrohnMi](https://github.com/stafyniaksacha/mapbox-api/pull/8))_

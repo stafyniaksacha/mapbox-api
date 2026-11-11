@@ -1,0 +1,20 @@
+{
+  "code": "Ok",
+  "waypoints": [
+    {"name": "A", "trips_index": 0, "waypoint_index": 0, "location": [2.3522, 48.8566]},
+    {"name": "B", "trips_index": 0, "waypoint_index": 1, "location": [2.3069, 48.8698]}
+  ],
+  "trips": [
+    {
+      "duration": 1600.5,
+      "distance": 8642.25,
+      "weight_name": "routability",
+      "weight": 1700.5,
+      "geometry": "o{~hHk~gM",
+      "legs": [
+        {"duration": 800.25, "distance": 4321.1, "summary": "", "steps": []},
+        {"duration": 800.25, "distance": 4321.1, "summary": "", "steps": []}
+      ]
+    }
+  ]
+}
