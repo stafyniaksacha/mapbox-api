@@ -1,28 +1,84 @@
-## Unreleased
+## 1.2.0
 
+No public API removals or signature changes. Several fixes change observable
+behavior: read **Behavior changes** before upgrading.
+
+### Behavior changes
+
+* **Errors are now reported in `response.error`.** In 1.1.0 they were dropped
+  (`withError` assigned the error to itself) or thrown:
+  * HTTP errors without an endpoint-specific code (401 invalid token, 403,
+    422, 429 rate limit, 5xx) → new `MapboxHttpError` (`statusCode`,
+    `message`). Endpoint errors (`NavigationNoRouteError`, `GeocoderError`, …)
+    still take precedence.
+  * Network failures and non-JSON bodies → new `MapboxRequestError`
+    (were thrown as `ClientException` / `FormatException`).
+  * Parse failures → the original `Error` (was `error == null`).
+  * Missing `accessToken` → `ArgumentError`, no request sent (was a thrown
+    null-check error).
+
+  If you only checked `routes != null` / `features != null`, nothing changes.
+  If you checked `error == null`, failures that looked like empty successes
+  are now visible. Code wrapping calls in `try/catch` for network errors
+  should also check `response.error`.
+* **Parameters that were silently ignored are now sent:** Directions
+  `excludes` and `continueStraight` (only `true` is sent, since Mapbox's
+  default differs per profile), Map Matching `timestamps`.
+* **Separators follow the Mapbox docs:** `radiuses` and `waypoint_names` are
+  `;`-separated (Directions, Map Matching, Optimization), as are Matrix
+  `sources`/`destinations`. Multi-value requests sent with `,` were rejected
+  or misread.
+* **User text is percent-encoded** (search text, street names, waypoint names,
+  language, country). Plain text gives the same URL; text with `&`, `#`, `;`,
+  `/` or `?` no longer changes the request (`#` used to drop the whole query
+  string, including the access token).
+* **Matrix:** `null` cells (no route between a pair) parse as
+  `double.infinity` instead of failing the whole response; omitting
+  `destinations` no longer throws; `NoRoute` maps to `NavigationNoRouteError`;
+  unsupported `speed`/`congestion` annotations are dropped instead of sent
+  empty.
+* **Optimization:** `distributions` separator and `overview=false` (trailing
+  space) fixed; unsupported `congestion` annotation dropped.
+* **Map Matching:** `null` tracepoints (unmatched points) become an empty
+  `NavigationTracepoint` instead of failing the whole response; indexes still
+  match the input coordinates.
+
+### Fixes
+
+* Isochrone responses never parsed (geometry coordinates are nested). New
+  `NavigationFeatureGeometry.rawCoordinates` holds coordinates of any depth;
+  `coordinates` is unchanged and only set for flat (Point) geometries.
+* Integer values in responses (`573`, `[2, 48]`) no longer fail parsing.
+* `NavigationRoute.weightName` / `NavigationMatchRoute.weightName` read from
+  `weight_name`, `NavigationIntersection.outIndex` from `out` (were always
+  `null`).
 * Navigation: parse documented maneuver/instruction values that were missing
   or misspelled (`slight right`, `sharp left`, `continue`, `end of road`,
   `new name`, `on ramp`, `rotary`, …) _([emmett-deen](https://github.com/stafyniaksacha/mapbox-api/pull/9))_
-* Navigation: new enum members `NavigationManeuverType.UPDOWN/UTURN/CLOSE/FLAG`
-  and `NavigationInstructionType.CONTINUE/END_OF_ROAD/NEW_NAME/NOTIFICATION/ON_RAMP/ROTARY/UPDOWN/UTURN/CLOSE/FLAG`.
+* The library no longer prints unknown values to stdout.
+
+### Additions
+
+* `MapboxHttpError`, `MapboxRequestError` (both extend `Error`; their
+  `toString()` never includes the request URL, which carries the token).
+* `NavigationFeatureGeometry.rawCoordinates`.
+* `NavigationManeuverType.UPDOWN/UTURN/CLOSE/FLAG` and
+  `NavigationInstructionType.CONTINUE/END_OF_ROAD/NEW_NAME/NOTIFICATION/ON_RAMP/ROTARY/UPDOWN/UTURN/CLOSE/FLAG`.
   New members are appended, so existing `.index` values are unchanged.
   Exhaustive `switch` statements on these enums need a new case or a default.
-* Fix (unreleased regression): restore `NavigationManeuverType.ROUNDABOUT_TURN`,
-  `EXIT_ROUNDABOUT` and `EXIT_ROTARY` and their parsing
-* Fix (unreleased regression): the library no longer prints unknown values to stdout
-* Tooling: test suite (URL goldens, response fixtures, enum compatibility),
-  GitHub Actions CI, public API check against 1.1.0, Dependabot
-* Breaking (dependencies only): minimum Dart SDK is now 3.4. The previous
-  `>=2.12.0` constraint was not resolvable below Dart 3.2 anyway, because
-  `http ^1.2.0` requires it. No public API change.
-* Pub metadata: `repository`, `issue_tracker`, `topics`
-* Internal: removed empty stub files under `lib/src/maps` and
-  `lib/src/accounts`; renamed `lib/src/navigation/isochrome.dart` to
-  `isochrone.dart`. Only affects code importing `src/` files directly,
-  which is not supported; import `package:mapbox_api/mapbox_api.dart`.
-* Internal: line endings normalized to LF (`.gitattributes`)
-* Internal: request URLs are built with shared helpers instead of duplicated
-  `switch` blocks. Request URLs are byte-for-byte unchanged (pinned by tests).
+
+### Dependencies and tooling
+
+* Minimum Dart SDK is now 3.4. The previous `>=2.12.0` constraint was not
+  resolvable below Dart 3.2 anyway, because `http ^1.2.0` requires it.
+* Pub metadata: `repository`, `issue_tracker`, `topics`.
+* Test suite (URL goldens for every endpoint and enum value, response
+  fixtures, enum compatibility), GitHub Actions CI (including a Dart 3.4
+  consumer check and a public API check against 1.1.0), Dependabot.
+* Internal: request URLs built with shared helpers; empty stub files removed;
+  `lib/src/navigation/isochrome.dart` renamed to `isochrone.dart` (only
+  affects direct `src/` imports, which are not supported); line endings
+  normalized to LF.
 
 ## 1.1.0 2024-10-14
 

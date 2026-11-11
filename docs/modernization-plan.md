@@ -197,6 +197,12 @@ Without tests, "non-breaking" is unenforceable.
 
 ### Phase 4 — Behavior-changing bug fixes (non-breaking in API, but **your call** — decision D2)
 
+> **Status:** done for 1.2.0 (D2 = yes, D3 = wrap into `.error`). Fixed: B1–B6, B8–B13, plus B15
+> (`;` separators for radiuses / waypoint_names / matrix sources+destinations, found against the
+> docs). Choices: matrix `null` cells → `double.infinity`; unmatched tracepoints → empty
+> `NavigationTracepoint`; isochrone geometry via additive `rawCoordinates`; `continueStraight` sends
+> only `true`.
+
 These change observable behavior (in the direction of correctness). Ship as a minor release with
 clear CHANGELOG entries.
 
