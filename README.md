@@ -25,10 +25,11 @@ final mapbox = MapboxApi(accessToken: '<Mapbox access token>');
 ### Coordinates are `[latitude, longitude]`
 
 Unlike GeoJSON and the Mapbox URLs (`longitude,latitude`), this package takes
-coordinates as `[latitude, longitude]` and swaps them for you. Use the
-`LATITUDE` / `LONGITUDE` index constants when reading them back. Coordinates in
-**responses** (`location`, `center`, geometries) are as Mapbox returns them:
-`[longitude, latitude]`.
+coordinates as `[latitude, longitude]` and swaps them for you. The `LATITUDE` /
+`LONGITUDE` index constants apply to these **input** coordinates only.
+Coordinates in **responses** (`location`, `center`, geometries) are as Mapbox
+returns them, `[longitude, latitude]`: do not index them with `LATITUDE` /
+`LONGITUDE`.
 
 ### Directions
 
@@ -74,9 +75,13 @@ See [`example/example_forward_search.dart`](example/example_forward_search.dart)
   that is not JSON (`FormatException`), a timeout (`TimeoutException`), and a
   missing access token (`ArgumentError`).
 - **Returned in `response.error`:** everything the API answered with:
-  - endpoint errors such as `NavigationNoRouteError` or `GeocoderError`;
-  - other HTTP errors as `MapboxHttpError` (`statusCode`, `message`), e.g.
-    401 invalid token or 429 rate limited;
+  - endpoint errors such as `NavigationNoRouteError`;
+  - Geocoding and Isochrone: an error response with a `message` (including
+    401 invalid token and 429 rate limited) is a `GeocoderError` /
+    `NavigationError` carrying that message, as in 1.1.0. These have no
+    status code;
+  - other endpoints: HTTP errors as `MapboxHttpError` (`statusCode`,
+    `message`), e.g. 401 invalid token or 429 rate limited;
   - responses that could not be parsed.
 
 ```dart
@@ -84,7 +89,7 @@ try {
   final response = await mapbox.directions.request(/* ... */);
   final error = response.error;
   if (error is MapboxHttpError && error.statusCode == 429) {
-    // rate limited: back off and retry
+    // rate limited (Directions, Matrix, Map Matching, Optimization)
   } else if (error != null) {
     // no route, invalid input, ...
   }
@@ -98,18 +103,29 @@ try {
 The token is sent in the request URL (`access_token=…`), which is the only way
 the Mapbox web services accept it.
 
-- In apps, use a **public token (`pk.`)** restricted to your URLs or app
-  identifiers, with only the scopes you need. Never ship a secret (`sk.`)
-  token in a client.
-- Request URLs contain the token: don't log them. `MapboxHttpError` and
-  `MapboxRequestError` never include the URL, but a thrown `ClientException`
-  does in its `toString()`.
+- In clients, use a **public token (`pk.`)** with only the scopes you need.
+  Never ship a secret (`sk.`) token in a client.
+- **Browser apps:** restrict the token to your URLs.
+- **Native mobile apps:** URL restrictions make a token unusable from a mobile
+  app, so use a separate public token without URL restrictions. Mapbox does
+  not offer a restriction by app identifier: treat that token as extractable
+  and limit its scopes.
+- Request URLs contain the token: don't log them. Only the `toString()` output
+  of `MapboxHttpError` and `MapboxRequestError` is sanitized.
+  `MapboxHttpError.message` is the raw server text, `MapboxRequestError.cause`
+  can contain the request URL and token, and a thrown `ClientException`
+  includes the URL in its `toString()`.
 
 See [Mapbox: token security](https://docs.mapbox.com/help/dive-deeper/how-to-use-mapbox-securely/).
 
 ## HTTP client and timeout
 
+Add `http` as a direct dependency (`dart pub add http`), then:
+
 ```dart
+import 'package:http/http.dart' as http;
+import 'package:mapbox_api/mapbox_api.dart';
+
 final client = http.Client(); // or a retrying / instrumented client
 final mapbox = MapboxApi(
   accessToken: '<token>',

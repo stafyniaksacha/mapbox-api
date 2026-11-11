@@ -83,6 +83,10 @@ pana (CI): 150/160. The 10 missing points come from documentation: only 42 of 39
 have dartdoc comments, and pub.dev wants 20 %. Documenting the main entry points (`MapboxApi`, each
 `*Api.request`, response classes) fixes it with no code change.
 
+B17 (open): Geocoding and Isochrone map an error body's `message` to `GeocoderError` /
+`NavigationError` (1.1.0 behavior kept), which carry no HTTP status, so callers can't detect
+429 there. Additive fix: an `int? statusCode` field on those error classes.
+
 B16 (open): v5 batch geocoding with ≥ 2 queries returns a JSON **array** of feature collections;
 `GeocodingApiResponse` holds one. Needs an additive API (e.g. `batchAll()` returning
 `List<GeocodingApiResponse>`) — Phase 5, or moot if Geocoding v6 replaces it.

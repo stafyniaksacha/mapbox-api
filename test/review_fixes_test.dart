@@ -63,6 +63,19 @@ void main() {
     );
   });
 
+  test('isochrone error bodies with a message stay NavigationError (1.1.0)',
+      () async {
+    final r = (await capture(
+      () => api.isochrone!.request(coordinates: [1.0, 2.0]),
+      responseBody: jsonEncode({'message': 'Not Authorized - Invalid Token'}),
+      statusCode: 401,
+    ))
+        .result;
+    expect(r.error, isA<NavigationError>());
+    expect(r.error, isNot(isA<MapboxHttpError>()));
+    expect((r.error! as NavigationError).message, contains('Invalid Token'));
+  });
+
   test('a 2xx body that fails to parse still reports the parse error',
       () async {
     final r = (await capture(

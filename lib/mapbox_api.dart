@@ -36,8 +36,10 @@ class MapboxApi {
   /// Creates a client for the Mapbox web services.
   ///
   /// [accessToken] is sent as the `access_token` query parameter on every
-  /// request. In apps, use a public (`pk.`) token restricted to your URLs or
-  /// app identifiers; never ship a secret (`sk.`) token.
+  /// request. In clients, use a public (`pk.`) token with only the scopes
+  /// you need, and never ship a secret (`sk.`) token. Restrict browser tokens
+  /// to your URLs; native mobile apps need a separate token without URL
+  /// restrictions, which Mapbox's URL restrictions would block.
   ///
   /// [client] is used for every request when set, which allows connection
   /// reuse, custom headers, proxies or retries, and testing. When `null`,
