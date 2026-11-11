@@ -12,6 +12,15 @@
 * Fix (unreleased regression): the library no longer prints unknown values to stdout
 * Tooling: test suite (URL goldens, response fixtures, enum compatibility),
   GitHub Actions CI, public API check against 1.1.0, Dependabot
+* Breaking (dependencies only): minimum Dart SDK is now 3.4. The previous
+  `>=2.12.0` constraint was not resolvable below Dart 3.2 anyway, because
+  `http ^1.2.0` requires it. No public API change.
+* Pub metadata: `repository`, `issue_tracker`, `topics`
+* Internal: removed empty stub files under `lib/src/maps` and
+  `lib/src/accounts`; renamed `lib/src/navigation/isochrome.dart` to
+  `isochrone.dart`. Only affects code importing `src/` files directly,
+  which is not supported; import `package:mapbox_api/mapbox_api.dart`.
+* Internal: line endings normalized to LF (`.gitattributes`)
 
 ## 1.1.0 2024-10-14
 
