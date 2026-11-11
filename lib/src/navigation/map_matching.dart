@@ -66,7 +66,7 @@ class MapMatchingApi {
     url += listParam('annotations', annotations.map((a) => a.value), ',');
     url += listParam('timestamps', timestamps.map((t) => '$t'), ';');
 
-    final result = await fetchJson(url);
+    final result = await fetchJson(api, url);
     final json = result.json;
     if (json == null) {
       return MapMatchingApiResponse.withError(result.error!);

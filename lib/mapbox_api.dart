@@ -1,3 +1,5 @@
+import 'package:http/http.dart' as http;
+
 import './src/navigation/directions.dart';
 import './src/navigation/isochrone.dart';
 import './src/navigation/map_matching.dart';
@@ -31,8 +33,24 @@ const LONGITUDE = 1;
 ///
 /// https://docs.mapbox.com/api/
 class MapboxApi {
+  /// Creates a client for the Mapbox web services.
+  ///
+  /// [accessToken] is sent as the `access_token` query parameter on every
+  /// request. In apps, use a public (`pk.`) token restricted to your URLs or
+  /// app identifiers; never ship a secret (`sk.`) token.
+  ///
+  /// [client] is used for every request when set, which allows connection
+  /// reuse, custom headers, proxies or retries, and testing. When `null`,
+  /// each request uses a short-lived client from `package:http` (1.1.0
+  /// behavior). The caller owns [client] and must close it.
+  ///
+  /// [timeout] limits each request. When it elapses, the request future
+  /// throws a `TimeoutException`; the underlying HTTP request is not
+  /// aborted. `null` (default) means no timeout.
   MapboxApi({
     this.accessToken,
+    this.client,
+    this.timeout,
   }) {
     directions = DirectionsApi(this);
     mapMatching = MapMatchingApi(this);
@@ -44,15 +62,37 @@ class MapboxApi {
     intersection = IntersectionApi(this);
   }
 
+  /// Directions API: routes between two or more coordinates.
   late DirectionsApi directions;
+
+  /// Map Matching API: snaps GPS traces to the road network.
   MapMatchingApi? mapMatching;
+
+  /// Isochrone API: areas reachable within a travel time.
   IsochroneApi? isochrone;
+
+  /// Matrix API: travel times and distances between many points.
   MatrixApi? matrix;
+
+  /// Optimization API: optimal ordering of up to 12 waypoints.
   OptimizationApi? optimization;
 
+  /// Forward geocoding (v5): place name or address to coordinates.
   late ForwardGeocodingApi forwardGeocoding;
+
+  /// Reverse geocoding (v5): coordinates to place names.
   late ReverseGeocodingApi reverseGeocoding;
+
+  /// Intersection search (v5): the crossing point of two streets.
   late IntersectionApi intersection;
 
+  /// Mapbox access token sent with every request. Required.
   String? accessToken;
+
+  /// HTTP client used for every request, or `null` for `package:http`'s
+  /// default. Owned by the caller.
+  http.Client? client;
+
+  /// Per-request timeout, or `null` for none.
+  Duration? timeout;
 }

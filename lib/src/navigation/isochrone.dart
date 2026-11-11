@@ -55,7 +55,7 @@ class IsochroneApi {
       url += '&generalize=$generalize';
     }
 
-    final result = await fetchJson(url);
+    final result = await fetchJson(api, url);
     final json = result.json;
     if (json == null) {
       return IsochroneApiResponse.withError(result.error!);

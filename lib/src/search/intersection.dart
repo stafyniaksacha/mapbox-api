@@ -36,7 +36,7 @@ class IntersectionApi {
       url += '&proximity=${lonLat(proximity)}';
     }
 
-    final result = await fetchJson(url);
+    final result = await fetchJson(api, url);
     final json = result.json;
     if (json == null) {
       return GeocodingApiResponse.withError(result.error!);

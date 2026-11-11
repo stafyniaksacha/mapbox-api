@@ -48,7 +48,7 @@ class ForwardGeocodingApi {
       types: types,
     );
 
-    final result = await fetchJson(url);
+    final result = await fetchJson(api, url);
     final json = result.json;
     if (json == null) {
       return GeocodingApiResponse.withError(result.error!);
@@ -113,7 +113,7 @@ class ForwardGeocodingApi {
       types: types,
     );
 
-    final result = await fetchJson(url);
+    final result = await fetchJson(api, url);
     final json = result.json;
     if (json == null) {
       return GeocodingApiResponse.withError(result.error!);

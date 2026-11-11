@@ -78,7 +78,7 @@ class OptimizationApi {
     url += listParam('bearings', bearings.map(bearingValue), ';');
     url += listParam('approaches', approaches.map((a) => a.value), ';');
 
-    final result = await fetchJson(url);
+    final result = await fetchJson(api, url);
     final json = result.json;
     if (json == null) {
       return OptimizationApiResponse.withError(result.error!);

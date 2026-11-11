@@ -104,7 +104,7 @@ class DirectionsApi {
     url += listParam('annotations', annotations.map((a) => a.value), ',');
     url += listParam('exclude', excludes.map((e) => e.value), ',');
 
-    final result = await fetchJson(url);
+    final result = await fetchJson(api, url);
     final json = result.json;
     if (json == null) {
       return DirectionsApiResponse.withError(result.error!);
