@@ -11,6 +11,11 @@ final _api = MapboxApi(accessToken: testToken);
 /// They describe the behavior of the published 1.1.0 release, bugs
 /// included (see comments), so that refactors cannot change a URL silently.
 final Map<String, Future<Object?> Function()> urlCases = {
+  ..._baseCases,
+  ..._edgeCases(),
+};
+
+final Map<String, Future<Object?> Function()> _baseCases = {
   // ---------------------------------------------------------------- directions
   'directions/minimal': () => _api.directions.request(
         profile: NavigationProfile.DRIVING,
@@ -261,3 +266,133 @@ final Map<String, Future<Object?> Function()> urlCases = {
         types: [GeocoderPlaceType.ADDRESS],
       ),
 };
+
+const _two = [
+  [1.0, 2.0],
+  [3.0, 4.0],
+];
+
+String _n(Enum e) => e.toString().split('.').last.toLowerCase();
+
+/// One case per enum value for every builder, so each value's wire string is
+/// pinned in every endpoint (the request builders used to duplicate these
+/// mappings, and some of them differ).
+Map<String, Future<Object?> Function()> _edgeCases() {
+  final cases = <String, Future<Object?> Function()>{};
+
+  for (final p in NavigationProfile.values) {
+    cases['edge/directions/profile-${_n(p)}'] =
+        () => _api.directions.request(profile: p, coordinates: _two);
+    cases['edge/map_matching/profile-${_n(p)}'] =
+        () => _api.mapMatching!.request(profile: p, coordinates: _two);
+    cases['edge/isochrone/profile-${_n(p)}'] = () => _api.isochrone!
+        .request(profile: p, coordinates: [1.0, 2.0], contoursMinutes: [5]);
+    cases['edge/matrix/profile-${_n(p)}'] = () =>
+        _api.matrix!.request(profile: p, coordinates: _two, destinations: []);
+    cases['edge/optimization/profile-${_n(p)}'] =
+        () => _api.optimization!.request(profile: p, coordinates: _two);
+  }
+
+  for (final g in NavigationGeometries.values) {
+    cases['edge/directions/geometries-${_n(g)}'] =
+        () => _api.directions.request(coordinates: _two, geometries: g);
+    cases['edge/map_matching/geometries-${_n(g)}'] =
+        () => _api.mapMatching!.request(coordinates: _two, geometries: g);
+    cases['edge/optimization/geometries-${_n(g)}'] =
+        () => _api.optimization!.request(coordinates: _two, geometries: g);
+  }
+
+  for (final o in NavigationOverview.values) {
+    cases['edge/directions/overview-${_n(o)}'] =
+        () => _api.directions.request(coordinates: _two, overview: o);
+    cases['edge/map_matching/overview-${_n(o)}'] =
+        () => _api.mapMatching!.request(coordinates: _two, overview: o);
+    // Known 1.1.0 bug: NONE sends `overview=false ` (trailing space).
+    cases['edge/optimization/overview-${_n(o)}'] =
+        () => _api.optimization!.request(coordinates: _two, overview: o);
+  }
+
+  for (final a in NavigationApproaches.values) {
+    cases['edge/map_matching/approaches-${_n(a)}'] =
+        () => _api.mapMatching!.request(coordinates: _two, approaches: a);
+  }
+
+  for (final u in NavigationVoiceUnits.values) {
+    cases['edge/directions/voice_units-${_n(u)}'] =
+        () => _api.directions.request(coordinates: _two, voiceUnits: u);
+  }
+
+  // Every annotation, in every builder. Matrix drops SPEED and CONGESTION,
+  // optimization drops CONGESTION, but both keep the separator.
+  const allAnnotations = NavigationAnnotations.values;
+  cases['edge/directions/annotations-all'] = () =>
+      _api.directions.request(coordinates: _two, annotations: allAnnotations);
+  cases['edge/map_matching/annotations-all'] = () =>
+      _api.mapMatching!.request(coordinates: _two, annotations: allAnnotations);
+  cases['edge/matrix/annotations-all'] = () => _api.matrix!.request(
+      coordinates: _two, annotations: allAnnotations, destinations: []);
+  cases['edge/optimization/annotations-all'] = () => _api.optimization!
+      .request(coordinates: _two, annotations: allAnnotations);
+
+  // Every place type (EMPTY maps to an empty string), in every geocoder.
+  const allTypes = GeocoderPlaceType.values;
+  cases['edge/forward/types-all'] =
+      () => _api.forwardGeocoding.request(searchText: 'x', types: allTypes);
+  cases['edge/forward/batch-types-all'] =
+      () => _api.forwardGeocoding.batch(searchTexts: ['x'], types: allTypes);
+  cases['edge/reverse/types-all'] = () =>
+      _api.reverseGeocoding.request(coordinate: [1.0, 2.0], types: allTypes);
+  cases['edge/reverse/batch-types-all'] = () => _api.reverseGeocoding.batch(
+        coordinates: [
+          [1.0, 2.0],
+        ],
+        types: allTypes,
+      );
+  cases['edge/intersection/types-all'] = () =>
+      _api.intersection.request(street1: 'a', street2: 'b', types: allTypes);
+
+  // Empty lists.
+  cases['edge/forward/batch-empty'] = () => _api.forwardGeocoding.batch();
+  cases['edge/reverse/batch-empty'] = () => _api.reverseGeocoding.batch();
+  cases['edge/map_matching/no-coordinates'] = () => _api.mapMatching!.request();
+  cases['edge/directions/no-coordinates'] = () => _api.directions.request();
+
+  // Known 1.1.0 bug: the `;` after each distribution depends on the number
+  // of coordinates, not of distributions.
+  cases['edge/optimization/distributions-more-than-coordinates'] =
+      () => _api.optimization!.request(
+            coordinates: _two,
+            distributions: [
+              [0, 1],
+              [1, 0],
+              [0, 1],
+            ],
+          );
+  cases['edge/optimization/distributions-fewer-than-coordinates'] =
+      () => _api.optimization!.request(
+            coordinates: [
+              [1.0, 2.0],
+              [3.0, 4.0],
+              [5.0, 6.0],
+            ],
+            distributions: [
+              [0, 1],
+              [1, 2],
+            ],
+          );
+
+  // Directions approaches/bearings/radiuses with a single element (no
+  // separator) and doubles that print with an exponent.
+  cases['edge/directions/single-elements'] = () => _api.directions.request(
+        coordinates: [
+          [1e-7, 123456789012345678901.0],
+          [3.0, 4.0],
+        ],
+        approaches: [NavigationApproaches.UNRESTRICTED],
+        bearings: [NavigationBearings(1, 2)],
+        radiuses: [double.infinity],
+        waypointNames: ['only'],
+      );
+
+  return cases;
+}
