@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 
 import '../../mapbox_api.dart';
+import '../url_helpers.dart';
 
 /// Intersection search allows users to search for a point
 /// where two streets intersect, without a precise address.
@@ -24,65 +25,14 @@ class IntersectionApi {
     List<double> proximity = const <double>[],
     List<GeocoderPlaceType> types = const <GeocoderPlaceType>[],
   }) async {
-    var url = '${this.endpoint}/$version';
-
-    if (endpoint == GeocoderEndpoint.PLACES_PERMANENT) {
-      url += '/mapbox.places-permanent';
-    } else {
-      url += '/mapbox.places';
-    }
+    var url = '${this.endpoint}/$version${geocoderEndpointPath(endpoint)}';
 
     url += '/$street1 and $street2.json';
     url += '?access_token=${api.accessToken!}';
-
-    if (types.isNotEmpty) {
-      for (var i = 0; i < types.length; i++) {
-        if (i == 0) {
-          url += '&types=';
-        }
-
-        switch (types[i]) {
-          case GeocoderPlaceType.COUNTRY:
-            url += 'country';
-            break;
-          case GeocoderPlaceType.REGION:
-            url += 'region';
-            break;
-          case GeocoderPlaceType.POSTCODE:
-            url += 'postcode';
-            break;
-          case GeocoderPlaceType.DISTRICT:
-            url += 'district';
-            break;
-          case GeocoderPlaceType.PLACE:
-            url += 'place';
-            break;
-          case GeocoderPlaceType.LOCALITY:
-            url += 'locality';
-            break;
-          case GeocoderPlaceType.NEIGHBORHOOD:
-            url += 'neighborhood';
-            break;
-          case GeocoderPlaceType.ADDRESS:
-            url += 'address';
-            break;
-          case GeocoderPlaceType.POI:
-            url += 'poi';
-            break;
-          case GeocoderPlaceType.EMPTY:
-            url += '';
-            break;
-        }
-
-        if (i != types.length - 1) {
-          url += ',';
-        }
-      }
-    }
+    url += listParam('types', types.map((t) => t.value), ',');
 
     if (proximity.isNotEmpty) {
-      url += '&proximity=';
-      url += '${proximity[LONGITUDE]},${proximity[LATITUDE]}';
+      url += '&proximity=${lonLat(proximity)}';
     }
 
     try {

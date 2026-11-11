@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 
 import '../../mapbox_api.dart';
+import '../url_helpers.dart';
 
 /// An isochrone is a line that connects points of
 /// equal travel time around a given location.
@@ -29,68 +30,28 @@ class IsochroneApi {
     double denoise = 1.0,
     double? generalize,
   }) async {
-    var url = '$endpoint/$version';
+    var url = '$endpoint/$version${profilePath(profile)}';
 
-    if (profile != null) {
-      switch (profile) {
-        case NavigationProfile.DRIVING_TRAFFIC:
-          url += '/mapbox/driving-traffic';
-          break;
-        case NavigationProfile.DRIVING:
-          url += '/mapbox/driving';
-          break;
-        case NavigationProfile.CYCLING:
-          url += '/mapbox/cycling';
-          break;
-        case NavigationProfile.WALKING:
-          url += '/mapbox/walking';
-          break;
-      }
-    }
-
-    url += '/';
-    url += coordinates[LONGITUDE].toString();
-    url += ',';
-    url += coordinates[LATITUDE].toString();
-
+    url += '/${lonLat(coordinates)}';
     url += '?access_token=${api.accessToken!}';
 
-    for (var i = 0; i < contoursMinutes.length; i++) {
-      if (i == 0) {
-        url += '&contours_minutes=';
-      }
-
-      url += contoursMinutes[i].toString();
-
-      if (i != contoursMinutes.length - 1) {
-        url += ',';
-      }
-    }
-
-    for (var i = 0; i < contoursColors.length; i++) {
-      if (i == 0) {
-        url += '&contours_colors=';
-      }
-
-      url += contoursColors[i];
-
-      if (i != contoursColors.length - 1) {
-        url += ',';
-      }
-    }
+    url += listParam(
+      'contours_minutes',
+      contoursMinutes.map((minutes) => '$minutes'),
+      ',',
+    );
+    url += listParam('contours_colors', contoursColors, ',');
 
     if (polygons) {
       url += '&polygons=true';
     }
 
     if (denoise != 1.0) {
-      url += '&denoise=';
-      url += denoise.toString();
+      url += '&denoise=$denoise';
     }
 
     if (generalize != null) {
-      url += '&generalize=';
-      url += generalize.toString();
+      url += '&generalize=$generalize';
     }
 
     try {

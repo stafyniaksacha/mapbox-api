@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 
 import '../../mapbox_api.dart';
+import '../url_helpers.dart';
 
 /// The Mapbox Map Matching API snaps fuzzy,
 /// inaccurate traces from a GPS unit or a phone
@@ -33,39 +34,10 @@ class MapMatchingApi {
     List<String> waypointNames = const <String>[],
     List<List<double>> waypoints = const <List<double>>[],
   }) async {
-    var url = '$endpoint/$version';
+    var url = '$endpoint/$version${profilePath(profile)}';
 
-    if (profile != null) {
-      switch (profile) {
-        case NavigationProfile.DRIVING_TRAFFIC:
-          url += '/mapbox/driving-traffic';
-          break;
-        case NavigationProfile.DRIVING:
-          url += '/mapbox/driving';
-          break;
-        case NavigationProfile.CYCLING:
-          url += '/mapbox/cycling';
-          break;
-        case NavigationProfile.WALKING:
-          url += '/mapbox/walking';
-          break;
-      }
-    }
-
-    for (var i = 0; i < coordinates.length; i++) {
-      if (i == 0) {
-        url += '/';
-      }
-
-      url += coordinates[i][LONGITUDE].toString();
-      url += ',';
-      url += coordinates[i][LATITUDE].toString();
-
-      if (i != coordinates.length - 1) {
-        url += ';';
-      } else {
-        url += '.json';
-      }
+    if (coordinates.isNotEmpty) {
+      url += '/${coordinates.map(lonLat).join(';')}.json';
     }
 
     url += '?access_token=${api.accessToken!}';
@@ -80,102 +52,17 @@ class MapMatchingApi {
       url += '&tidy=true';
     }
 
-    switch (geometries) {
-      case NavigationGeometries.GEOJSON:
-        url += '&geometries=geojson';
-        break;
-      case NavigationGeometries.POLYLINE6:
-        url += '&geometries=polyline6';
-        break;
-      case NavigationGeometries.POLYLINE:
-        break;
+    url += geometries.query;
+    url += overview.query;
+
+    if (approaches == NavigationApproaches.CURB) {
+      url += '&approaches=curb';
     }
 
-    switch (overview) {
-      case NavigationOverview.FULL:
-        url += '&overview=full';
-        break;
-      case NavigationOverview.NONE:
-        url += '&overview=false';
-        break;
-      case NavigationOverview.SIMPLIFIED:
-        break;
-    }
-
-    switch (approaches) {
-      case NavigationApproaches.CURB:
-        url += '&approaches=curb';
-        break;
-      case NavigationApproaches.UNRESTRICTED:
-        break;
-    }
-
-    for (var i = 0; i < radiuses.length; i++) {
-      if (i == 0) {
-        url += '&radiuses=';
-      }
-
-      if (radiuses[i] == double.infinity) {
-        url += 'unlimited';
-      } else {
-        url += radiuses[i].toString();
-      }
-
-      if (i != radiuses.length - 1) {
-        url += ',';
-      }
-    }
-
-    for (var i = 0; i < waypointNames.length; i++) {
-      if (i == 0) {
-        url += '&waypoint_names=';
-      }
-
-      url += waypointNames[i];
-
-      if (i != waypointNames.length - 1) {
-        url += ',';
-      }
-    }
-
-    for (var i = 0; i < waypoints.length; i++) {
-      if (i == 0) {
-        url += '&waypoints=';
-      }
-
-      url += waypoints[i][LONGITUDE].toString();
-      url += ',';
-      url += waypoints[i][LATITUDE].toString();
-
-      if (i != waypoints.length - 1) {
-        url += ';';
-      }
-    }
-
-    for (var i = 0; i < annotations.length; i++) {
-      if (i == 0) {
-        url += '&annotations=';
-      }
-
-      switch (annotations[i]) {
-        case NavigationAnnotations.DURATION:
-          url += 'duration';
-          break;
-        case NavigationAnnotations.DISTANCE:
-          url += 'distance';
-          break;
-        case NavigationAnnotations.SPEED:
-          url += 'speed';
-          break;
-        case NavigationAnnotations.CONGESTION:
-          url += 'congestion';
-          break;
-      }
-
-      if (i != annotations.length - 1) {
-        url += ',';
-      }
-    }
+    url += listParam('radiuses', radiuses.map(radiusValue), ',');
+    url += listParam('waypoint_names', waypointNames, ',');
+    url += listParam('waypoints', waypoints.map(lonLat), ';');
+    url += listParam('annotations', annotations.map((a) => a.value), ',');
 
     try {
       final response = await get(Uri.parse(url));

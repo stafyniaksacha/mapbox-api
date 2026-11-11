@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 
 import '../../mapbox_api.dart';
+import '../url_helpers.dart';
 
 /// The forward geocoding query type allows you to look up
 /// a single location by name and returns its geographic coordinates.
@@ -30,13 +31,7 @@ class ForwardGeocodingApi {
     bool routing = false,
     List<GeocoderPlaceType> types = const <GeocoderPlaceType>[],
   }) async {
-    var url = '${this.endpoint}/$version';
-
-    if (endpoint == GeocoderEndpoint.PLACES_PERMANENT) {
-      url += '/mapbox.places-permanent';
-    } else {
-      url += '/mapbox.places';
-    }
+    var url = '${this.endpoint}/$version${geocoderEndpointPath(endpoint)}';
 
     url += '/$searchText.json';
 
@@ -92,19 +87,7 @@ class ForwardGeocodingApi {
     }
 
     if (searchTexts.isNotEmpty) {
-      for (var i = 0; i < searchTexts.length; i++) {
-        if (i == 0) {
-          url += '/';
-        }
-
-        url += searchTexts[i];
-
-        if (i != searchTexts.length - 1) {
-          url += ';';
-        } else {
-          url += '.json';
-        }
-      }
+      url += '/${searchTexts.join(';')}.json';
     }
 
     url += _urlQuery(
@@ -164,75 +147,14 @@ class ForwardGeocodingApi {
     }
 
     if (bbox != null) {
-      url += '&bbox=';
-      url += '${bbox.minX},';
-      url += '${bbox.minY},';
-      url += '${bbox.maxX},';
-      url += '${bbox.maxY}';
+      url += '&bbox=${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}';
     }
 
-    if (country != null && country.isNotEmpty) {
-      for (var i = 0; i < country.length; i++) {
-        if (i == 0) {
-          url += '&country=';
-        }
-
-        url += country[i];
-
-        if (i != country.length - 1) {
-          url += ',';
-        }
-      }
-    }
-
-    if (types != null && types.isNotEmpty) {
-      for (var i = 0; i < types.length; i++) {
-        if (i == 0) {
-          url += '&types=';
-        }
-
-        switch (types[i]) {
-          case GeocoderPlaceType.COUNTRY:
-            url += 'country';
-            break;
-          case GeocoderPlaceType.REGION:
-            url += 'region';
-            break;
-          case GeocoderPlaceType.POSTCODE:
-            url += 'postcode';
-            break;
-          case GeocoderPlaceType.DISTRICT:
-            url += 'district';
-            break;
-          case GeocoderPlaceType.PLACE:
-            url += 'place';
-            break;
-          case GeocoderPlaceType.LOCALITY:
-            url += 'locality';
-            break;
-          case GeocoderPlaceType.NEIGHBORHOOD:
-            url += 'neighborhood';
-            break;
-          case GeocoderPlaceType.ADDRESS:
-            url += 'address';
-            break;
-          case GeocoderPlaceType.POI:
-            url += 'poi';
-            break;
-          case GeocoderPlaceType.EMPTY:
-            url += '';
-            break;
-        }
-
-        if (i != types.length - 1) {
-          url += ',';
-        }
-      }
-    }
+    url += listParam('country', country ?? const [], ',');
+    url += listParam('types', (types ?? const []).map((t) => t.value), ',');
 
     if (proximity != null && proximity.isNotEmpty) {
-      url += '&proximity=';
-      url += '${proximity[LONGITUDE]},${proximity[LATITUDE]}';
+      url += '&proximity=${lonLat(proximity)}';
     }
 
     return url;

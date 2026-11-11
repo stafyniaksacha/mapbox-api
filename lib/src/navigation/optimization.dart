@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 
 import '../../mapbox_api.dart';
+import '../url_helpers.dart';
 
 /// The Mapbox Optimization API returns a duration-optimized route
 /// between the input coordinates.
@@ -33,37 +34,10 @@ class OptimizationApi {
     bool steps = false,
     bool roundtrip = true,
   }) async {
-    var url = '$endpoint/$version';
+    var url = '$endpoint/$version${profilePath(profile)}';
 
-    if (profile != null) {
-      switch (profile) {
-        case NavigationProfile.DRIVING_TRAFFIC:
-          url += '/mapbox/driving-traffic';
-          break;
-        case NavigationProfile.DRIVING:
-          url += '/mapbox/driving';
-          break;
-        case NavigationProfile.CYCLING:
-          url += '/mapbox/cycling';
-          break;
-        case NavigationProfile.WALKING:
-          url += '/mapbox/walking';
-          break;
-      }
-    }
-
-    for (var i = 0; i < coordinates.length; i++) {
-      if (i == 0) {
-        url += '/';
-      }
-
-      url += coordinates[i][LONGITUDE].toString();
-      url += ',';
-      url += coordinates[i][LATITUDE].toString();
-
-      if (i != coordinates.length - 1) {
-        url += ';';
-      }
+    if (coordinates.isNotEmpty) {
+      url += '/${coordinates.map(lonLat).join(';')}';
     }
 
     url += '?access_token=${api.accessToken!}';
@@ -84,115 +58,35 @@ class OptimizationApi {
       url += '&source=first';
     }
 
-    switch (geometries) {
-      case NavigationGeometries.GEOJSON:
-        url += '&geometries=geojson';
-        break;
-      case NavigationGeometries.POLYLINE6:
-        url += '&geometries=polyline6';
-        break;
-      case NavigationGeometries.POLYLINE:
-        break;
-    }
+    url += geometries.query;
+    // Known 1.1.0 bug: NONE sends `overview=false ` (trailing space).
+    url += overview == NavigationOverview.NONE
+        ? '&overview=false '
+        : overview.query;
 
-    switch (overview) {
-      case NavigationOverview.FULL:
-        url += '&overview=full';
-        break;
-      case NavigationOverview.NONE:
-        url += '&overview=false ';
-        break;
-      case NavigationOverview.SIMPLIFIED:
-        break;
-    }
-
+    // Known 1.1.0 bug: the separator depends on the number of coordinates,
+    // not of distributions. Kept as is until fixed deliberately.
     for (var i = 0; i < distributions.length; i++) {
       if (i == 0) {
         url += '&distributions=';
       }
-
-      url += distributions[i][0].toString();
-      url += ',';
-      url += distributions[i][1].toString();
-
+      url += '${distributions[i][0]},${distributions[i][1]}';
       if (i != coordinates.length - 1) {
         url += ';';
       }
     }
 
-    for (var i = 0; i < radiuses.length; i++) {
-      if (i == 0) {
-        url += '&radiuses=';
-      }
-
-      if (radiuses[i] == double.infinity) {
-        url += 'unlimited';
-      } else {
-        url += radiuses[i].toString();
-      }
-
-      if (i != radiuses.length - 1) {
-        url += ',';
-      }
-    }
-
-    for (var i = 0; i < annotations.length; i++) {
-      if (i == 0) {
-        url += '&annotations=';
-      }
-
-      switch (annotations[i]) {
-        case NavigationAnnotations.DURATION:
-          url += 'duration';
-          break;
-        case NavigationAnnotations.DISTANCE:
-          url += 'distance';
-          break;
-        case NavigationAnnotations.SPEED:
-          url += 'speed';
-          break;
-        case NavigationAnnotations.CONGESTION:
-          // not supported
-          break;
-      }
-
-      if (i != annotations.length - 1) {
-        url += ',';
-      }
-    }
-
-    for (var i = 0; i < bearings.length; i++) {
-      if (i == 0) {
-        url += '&bearings=';
-      }
-
-      url += bearings[i].angle.toString();
-      url += ',';
-      url += bearings[i].degree.toString();
-
-      if (i != bearings.length - 1) {
-        url += ';';
-      }
-    }
-
-    for (var i = 0; i < approaches.length; i++) {
-      if (i == 0) {
-        url += '&approaches=';
-      }
-
-      switch (approaches[i]) {
-        case NavigationApproaches.CURB:
-          url += 'curb';
-          break;
-        case NavigationApproaches.UNRESTRICTED:
-          url += 'unrestricted';
-          break;
-      }
-
-      if (i != approaches.length - 1) {
-        url += ';';
-      }
-    }
+    url += listParam('radiuses', radiuses.map(radiusValue), ',');
+    // Congestion is not supported; 1.1.0 sends an empty value for it.
+    url += listParam(
+      'annotations',
+      annotations.map(
+        (a) => a == NavigationAnnotations.CONGESTION ? '' : a.value,
+      ),
+      ',',
+    );
+    url += listParam('bearings', bearings.map(bearingValue), ';');
+    url += listParam('approaches', approaches.map((a) => a.value), ';');
 
     try {
       final response = await get(Uri.parse(url));
