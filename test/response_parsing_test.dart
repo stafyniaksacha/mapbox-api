@@ -172,7 +172,7 @@ void main() {
     expect(r.destinations!.last.name, 'Avenue des Champs-Élysées');
   });
 
-  test('isochrone (known 1.1.0 bug: features never parse)', () async {
+  test('isochrone', () async {
     final r = (await capture(
       () => api.isochrone!.request(
         profile: NavigationProfile.DRIVING,
@@ -182,11 +182,23 @@ void main() {
       responseBody: fixture('isochrone.json'),
     ))
         .result;
-    // Known 1.1.0 bug: NavigationFeatureGeometry.coordinates is typed
-    // List<double>, but isochrone geometries are always nested (LineString /
-    // Polygon), so parsing fails. Since 1.2.0 the failure is reported.
-    expect(r.features, isNull);
-    expect(r.error, isA<TypeError>());
+    expect(r.error, isNull);
+    final feature = r.features!.single;
+    expect(feature.type, 'Feature');
+    expect(feature.properties!.contour, 10);
+    expect(feature.properties!.fillOpacity, 0.33);
+    expect(feature.geometry!.type, 'Polygon');
+    // Nested geometry: only rawCoordinates is set (fixed in 1.2.0, was a
+    // parse failure for every isochrone response).
+    expect(feature.geometry!.coordinates, isNull);
+    expect(feature.geometry!.rawCoordinates, [
+      [
+        [2.35, 48.85],
+        [2.36, 48.86],
+        [2.34, 48.86],
+        [2.35, 48.85],
+      ],
+    ]);
   });
 
   test('optimization', () async {
@@ -362,39 +374,84 @@ void main() {
     });
   });
 
-  group('known 1.1.0 bugs', () {
-    test('integer values in matrix durations fail to parse', () async {
+  group('parsing (fixed in 1.2.0)', () {
+    test('integer values in matrix durations are parsed', () async {
       final r = (await capture(
         () => api.matrix!.request(coordinates: twoPoints, destinations: []),
         responseBody: fixture('matrix_integer_values.json'),
       ))
           .result;
-      expect(r.durations, isNull);
-      expect(r.error, isA<TypeError>());
+      expect(r.error, isNull);
+      expect(r.durations, [
+        [0.0, 573.0],
+        [579.0, 0.0],
+      ]);
     });
 
-    test('a null tracepoint (unmatched point) fails the whole response',
-        () async {
+    test('null matrix cells (no route) become double.infinity', () async {
+      final r = (await capture(
+        () => api.matrix!.request(coordinates: twoPoints, destinations: []),
+        responseBody: jsonEncode({
+          'code': 'Ok',
+          'durations': [
+            [0, null],
+            [12.5, 0],
+          ],
+        }),
+      ))
+          .result;
+      expect(r.error, isNull);
+      expect(r.durations![0][1], double.infinity);
+      expect(r.durations![1][0], 12.5);
+    });
+
+    test('integer coordinates are parsed', () async {
+      final r = await directions(jsonEncode({
+        'code': 'Ok',
+        'waypoints': [
+          {
+            'name': 'x',
+            'location': [2, 48],
+          },
+        ],
+      }));
+      expect(r.error, isNull);
+      expect(r.waypoints!.single.location, [2.0, 48.0]);
+    });
+
+    test('a null tracepoint (unmatched point) keeps its index', () async {
       final body = jsonDecode(fixture('map_matching.json')) as Map;
-      body['tracepoints'] = [...body['tracepoints'] as List, null];
+      body['tracepoints'] = [null, ...body['tracepoints'] as List];
       final r = (await capture(
         () => api.mapMatching!.request(coordinates: twoPoints),
         responseBody: jsonEncode(body),
       ))
           .result;
-      expect(r.tracepoints, isNull);
-      expect(r.error, isA<TypeError>());
+      expect(r.error, isNull);
+      expect(r.tracepoints, hasLength(2));
+      expect(r.tracepoints![0].location, isNull);
+      expect(r.tracepoints![0].name, isNull);
+      expect(r.tracepoints![1].name, 'Rue de Rivoli');
     });
 
-    test('route weight_name is read from the wrong key', () async {
+    test('route weight_name is read', () async {
       final r = await directions(fixture('directions.json'));
-      expect(r.routes!.single.weightName, isNull);
+      expect(r.routes!.single.weightName, 'auto');
     });
 
-    test('intersection "out" is read from the wrong key', () async {
+    test('map matching weight_name is read', () async {
+      final r = (await capture(
+        () => api.mapMatching!.request(coordinates: twoPoints),
+        responseBody: fixture('map_matching.json'),
+      ))
+          .result;
+      expect(r.matchings!.single.weightName, 'auto');
+    });
+
+    test('intersection "out" is read', () async {
       final r = await directions(fixture('directions.json'));
       final step = r.routes!.single.legs!.single.steps!.first;
-      expect(step.intersections!.single.outIndex, isNull);
+      expect(step.intersections!.single.outIndex, 1);
     });
   });
 }

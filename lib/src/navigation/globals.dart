@@ -1,3 +1,5 @@
+import '../json_helpers.dart';
+
 enum NavigationProfile {
   DRIVING_TRAFFIC,
   DRIVING,
@@ -239,19 +241,32 @@ class NavigationFeatureGeometry {
   NavigationFeatureGeometry({
     this.coordinates,
     this.type,
+    this.rawCoordinates,
   });
 
   NavigationFeatureGeometry.fromJson(Map<String, dynamic> json) {
     type = json['type'] as String?;
 
-    if (json.containsKey('coordinates') && json['coordinates'] != null) {
-      coordinates = List<double>.from(
-        json['coordinates'] as List<dynamic>,
-      );
+    final value = json['coordinates'];
+    if (value is List<dynamic>) {
+      rawCoordinates = deepDoubles(value) as List<dynamic>;
+      if (value.every((element) => element is num)) {
+        coordinates = doubleList(value);
+      }
     }
   }
 
+  /// Coordinates of a `Point` geometry (`[longitude, latitude]`).
+  ///
+  /// `null` for nested geometries such as the `LineString` and `Polygon`
+  /// returned by the Isochrone API: use [rawCoordinates] for those.
   List<double>? coordinates;
+
+  /// The GeoJSON `coordinates` of any geometry type, as nested lists of
+  /// doubles (e.g. `List<List<double>>` for a `LineString`,
+  /// `List<List<List<double>>>` for a `Polygon`).
+  List<dynamic>? rawCoordinates;
+
   String? type;
 }
 
@@ -267,9 +282,7 @@ class NavigationWaypoint {
     distance = (json['distance'] as num?)?.toDouble();
 
     if (json.containsKey('location') && json['location'] != null) {
-      location = List<double>.from(
-        json['location'] as List<dynamic>,
-      );
+      location = doubleList(json['location']);
     }
   }
 
@@ -292,9 +305,7 @@ class NavigationOptimizedWaypoint {
     waypointIndex = (json['waypoint_index'] as num?)?.toInt();
 
     if (json.containsKey('location') && json['location'] != null) {
-      location = List<double>.from(
-        json['location'] as List<dynamic>,
-      );
+      location = doubleList(json['location']);
     }
   }
 
@@ -329,9 +340,7 @@ class NavigationTracepoint extends NavigationWaypoint {
     alternativesCount = (json['alternatives_count'] as num?)?.toInt();
 
     if (json.containsKey('location') && json['location'] != null) {
-      location = List<double>.from(
-        json['location'] as List<dynamic>,
-      );
+      location = doubleList(json['location']);
     }
   }
 
@@ -354,7 +363,7 @@ class NavigationRoute {
   NavigationRoute.fromJson(Map<String, dynamic> json) {
     duration = (json['duration'] as num?)?.toDouble();
     distance = (json['distance'] as num?)?.toDouble();
-    weightName = json['weightName'] as String?;
+    weightName = (json['weight_name'] ?? json['weightName']) as String?;
     weight = (json['weight'] as num?)?.toDouble();
     geometry = json['geometry'] as dynamic;
     voiceLocale = json['voiceLocale'] as String?;
@@ -406,7 +415,7 @@ class NavigationMatchRoute extends NavigationRoute {
     confidence = (json['confidence'] as num?)?.toDouble();
     duration = (json['duration'] as num?)?.toDouble();
     distance = (json['distance'] as num?)?.toDouble();
-    weightName = json['weightName'] as String?;
+    weightName = (json['weight_name'] ?? json['weightName']) as String?;
     weight = (json['weight'] as num?)?.toDouble();
     geometry = json['geometry'] as dynamic;
     voiceLocale = json['voiceLocale'] as String?;
@@ -472,19 +481,13 @@ class NavigationAnnotation {
 
   NavigationAnnotation.fromJson(Map<String, dynamic> json) {
     if (json.containsKey('duration') && json['duration'] != null) {
-      duration = List<double>.from(
-        json['duration'] as List<dynamic>,
-      );
+      duration = doubleList(json['duration']);
     }
     if (json.containsKey('distance') && json['distance'] != null) {
-      distance = List<double>.from(
-        json['distance'] as List<dynamic>,
-      );
+      distance = doubleList(json['distance']);
     }
     if (json.containsKey('speed') && json['speed'] != null) {
-      speed = List<double>.from(
-        json['speed'] as List<dynamic>,
-      );
+      speed = doubleList(json['speed']);
     }
     if (json.containsKey('congestion') && json['congestion'] != null) {
       congestion = List<String>.from(
@@ -878,13 +881,11 @@ class NavigationIntersection {
   NavigationIntersection.fromJson(Map<String, dynamic> json) {
     geometryIndex = (json['geometry_index'] as num?)?.toInt();
     inIndex = (json['in'] as num?)?.toInt();
-    outIndex = (json['outIndex'] as num?)?.toInt();
+    outIndex = ((json['out'] ?? json['outIndex']) as num?)?.toInt();
     duration = (json['duration'] as num?)?.toDouble();
 
     if (json.containsKey('location') && json['location'] != null) {
-      location = List<double>.from(
-        json['location'] as List<dynamic>,
-      );
+      location = doubleList(json['location']);
     }
     if (json.containsKey('entry') && json['entry'] != null) {
       entry = List<bool>.from(
@@ -1000,9 +1001,7 @@ class NavigationManeuver {
     instruction = json['instruction'] as String?;
 
     if (json.containsKey('location') && json['location'] != null) {
-      location = List<double>.from(
-        json['location'] as List<dynamic>,
-      );
+      location = doubleList(json['location']);
     }
 
     if (json.containsKey('modifier') && json['modifier'] != null) {

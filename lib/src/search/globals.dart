@@ -1,3 +1,5 @@
+import '../json_helpers.dart';
+
 enum GeocoderEndpoint {
   PLACES,
   PLACES_PERMANENT,
@@ -65,9 +67,7 @@ class GeocoderGeometry {
     omitted = json['omitted'] as bool?;
 
     if (json.containsKey('coordinates') && json['coordinates'] != null) {
-      coordinates = List<double>.from(
-        json['coordinates'] as List<dynamic>,
-      );
+      coordinates = doubleList(json['coordinates']);
     }
   }
 
@@ -105,13 +105,7 @@ class GeocoderRoutablePoints {
 
   GeocoderRoutablePoints.fromJson(Map<String, dynamic> json) {
     if (json.containsKey('points') && json['points'] != null) {
-      points = List<List<double>>.from(
-        (json['points'] as List<dynamic>).map(
-          (point) => List<double>.from(
-            point as List<dynamic>,
-          ),
-        ),
-      );
+      points = (json['points'] as List<dynamic>).map(doubleList).toList();
     }
   }
 
@@ -227,9 +221,7 @@ class GeocoderFeature {
       );
     }
     if (json.containsKey('center') && json['center'] != null) {
-      center = List<double>.from(
-        json['center'] as List<dynamic>,
-      );
+      center = doubleList(json['center']);
     }
 
     if (json.containsKey('properties') && json['properties'] != null) {

@@ -1,5 +1,6 @@
 import '../../mapbox_api.dart';
 import '../http_helpers.dart';
+import '../json_helpers.dart';
 import '../url_helpers.dart';
 
 /// The Mapbox Matrix API returns travel times between many points.
@@ -84,7 +85,13 @@ class MatrixApi {
 class MatrixApiResponse {
   String? code;
   List<NavigationWaypoint>? destinations;
+
+  /// `distances[i][j]` is from source `i` to destination `j`.
+  /// [double.infinity] when there is no route between the two.
   List<List<double>>? distances;
+
+  /// `durations[i][j]` is from source `i` to destination `j`.
+  /// [double.infinity] when there is no route between the two.
   List<List<double>>? durations;
   Error? error;
   List<NavigationWaypoint>? sources;
@@ -114,23 +121,11 @@ class MatrixApiResponse {
     }
 
     if (json.containsKey('durations') && json['durations'] != null) {
-      durations = List<List<double>>.from(
-        (json['durations'] as List<dynamic>).map(
-          (durations) => List<double>.from(
-            durations as List<dynamic>,
-          ),
-        ),
-      );
+      durations = (json['durations'] as List<dynamic>).map(matrixRow).toList();
     }
 
     if (json.containsKey('distances') && json['distances'] != null) {
-      distances = List<List<double>>.from(
-        (json['distances'] as List<dynamic>).map(
-          (duration) => List<double>.from(
-            duration as List<dynamic>,
-          ),
-        ),
-      );
+      distances = (json['distances'] as List<dynamic>).map(matrixRow).toList();
     }
 
     if (json.containsKey('destinations') && json['destinations'] != null) {

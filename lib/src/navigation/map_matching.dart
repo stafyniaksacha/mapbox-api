@@ -129,13 +129,17 @@ class MapMatchingApiResponse {
     }
 
     if (json.containsKey('tracepoints') && json['tracepoints'] != null) {
-      tracepoints = List<NavigationTracepoint>.from(
-        (json['tracepoints'] as List<dynamic>).map(
-          (route) => NavigationTracepoint.fromJson(
-            route as Map<String, dynamic>,
-          ),
-        ),
-      );
+      // Unmatched input points are `null` in the response. They become an
+      // empty NavigationTracepoint (all fields null) so that indexes keep
+      // matching the input coordinates.
+      tracepoints = [
+        for (final tracepoint in json['tracepoints'] as List<dynamic>)
+          tracepoint == null
+              ? NavigationTracepoint()
+              : NavigationTracepoint.fromJson(
+                  tracepoint as Map<String, dynamic>,
+                ),
+      ];
     }
   }
 
