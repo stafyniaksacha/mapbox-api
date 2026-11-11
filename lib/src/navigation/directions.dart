@@ -115,7 +115,9 @@ class DirectionsApi {
       // the generic HTTP error.
       return DirectionsApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
-      return DirectionsApiResponse.withError(error);
+      // On a non-2xx response, keep the HTTP error: the body may not have
+      // the shape of a successful response.
+      return DirectionsApiResponse.withError(result.error ?? error);
     }
   }
 

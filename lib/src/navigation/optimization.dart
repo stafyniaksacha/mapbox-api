@@ -89,7 +89,9 @@ class OptimizationApi {
       // the generic HTTP error.
       return OptimizationApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
-      return OptimizationApiResponse.withError(error);
+      // On a non-2xx response, keep the HTTP error: the body may not have
+      // the shape of a successful response.
+      return OptimizationApiResponse.withError(result.error ?? error);
     }
   }
 

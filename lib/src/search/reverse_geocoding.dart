@@ -54,7 +54,9 @@ class ReverseGeocodingApi {
       // the generic HTTP error.
       return GeocodingApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
-      return GeocodingApiResponse.withError(error);
+      // On a non-2xx response, keep the HTTP error: the body may not have
+      // the shape of a successful response.
+      return GeocodingApiResponse.withError(result.error ?? error);
     }
   }
 
@@ -111,7 +113,9 @@ class ReverseGeocodingApi {
       // the generic HTTP error.
       return GeocodingApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
-      return GeocodingApiResponse.withError(error);
+      // On a non-2xx response, keep the HTTP error: the body may not have
+      // the shape of a successful response.
+      return GeocodingApiResponse.withError(result.error ?? error);
     }
   }
 

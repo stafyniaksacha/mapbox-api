@@ -249,7 +249,7 @@ class NavigationFeatureGeometry {
 
     final value = json['coordinates'];
     if (value is List<dynamic>) {
-      rawCoordinates = deepDoubles(value) as List<dynamic>;
+      rawCoordinates = coordinatesOfAnyDepth(value);
       if (value.every((element) => element is num)) {
         coordinates = doubleList(value);
       }

@@ -66,7 +66,9 @@ class IsochroneApi {
       // the generic HTTP error.
       return IsochroneApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
-      return IsochroneApiResponse.withError(error);
+      // On a non-2xx response, keep the HTTP error: the body may not have
+      // the shape of a successful response.
+      return IsochroneApiResponse.withError(result.error ?? error);
     }
   }
 

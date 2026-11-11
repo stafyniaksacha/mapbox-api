@@ -81,7 +81,9 @@ class MatrixApi {
       // the generic HTTP error.
       return MatrixApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
-      return MatrixApiResponse.withError(error);
+      // On a non-2xx response, keep the HTTP error: the body may not have
+      // the shape of a successful response.
+      return MatrixApiResponse.withError(result.error ?? error);
     }
   }
 }

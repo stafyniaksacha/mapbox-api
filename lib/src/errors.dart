@@ -12,9 +12,11 @@ class MapboxHttpError extends Error {
   /// The `message` field of the response body, when there is one.
   final String? message;
 
+  /// Includes [message] with anything that looks like an access token
+  /// redacted, since the message comes from the server.
   @override
   String toString() => 'MapboxHttpError{statusCode: $statusCode, '
-      'message: $message}';
+      'message: ${message == null ? null : _redactTokens(message!)}}';
 }
 
 /// The request failed in a way 1.1.0 silently ignored: an `Error` while
@@ -40,3 +42,12 @@ class MapboxRequestError extends Error {
   @override
   String toString() => 'MapboxRequestError{message: $message}';
 }
+
+final _accessTokenParameter = RegExp(r"""access_token=[^&\s"'#]*""");
+final _mapboxToken = RegExp(r'\b[ps]k\.[A-Za-z0-9._-]+');
+
+/// Replaces `access_token=…` values and Mapbox `pk.` / `sk.` tokens in
+/// [text] with `REDACTED`.
+String _redactTokens(String text) => text
+    .replaceAll(_accessTokenParameter, 'access_token=REDACTED')
+    .replaceAll(_mapboxToken, 'REDACTED');

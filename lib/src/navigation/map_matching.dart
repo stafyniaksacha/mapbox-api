@@ -77,7 +77,9 @@ class MapMatchingApi {
       // the generic HTTP error.
       return MapMatchingApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
-      return MapMatchingApiResponse.withError(error);
+      // On a non-2xx response, keep the HTTP error: the body may not have
+      // the shape of a successful response.
+      return MapMatchingApiResponse.withError(result.error ?? error);
     }
   }
 

@@ -11,7 +11,8 @@ behavior: read **Behavior changes** before upgrading.
   * HTTP errors with a JSON body and no endpoint-specific code (401 invalid
     token, 403, 422, 429 rate limit, …) → new `MapboxHttpError`
     (`statusCode`, `message`). Endpoint errors (`NavigationNoRouteError`,
-    `GeocoderError`, …) still take precedence.
+    `GeocoderError`, …) still take precedence. If an error body cannot be
+    parsed, the `MapboxHttpError` is kept.
   * Parse failures → the original `Error` (was `error == null`).
   * An endpoint without scheme or host, or a JSON body that is not an object
     → new `MapboxRequestError`.
@@ -54,6 +55,8 @@ behavior: read **Behavior changes** before upgrading.
   `NavigationFeatureGeometry.rawCoordinates` holds coordinates of any depth;
   `coordinates` is unchanged and only set for flat (Point) geometries.
 * Integer values in responses (`573`, `[2, 48]`) no longer fail parsing.
+* Geocoding `routable_points` are read from Mapbox's `{"coordinates": [...]}`
+  objects (failed to parse in 1.1.0).
 * `NavigationRoute.weightName` / `NavigationMatchRoute.weightName` read from
   `weight_name`, `NavigationIntersection.outIndex` from `out` (were always
   `null`).
@@ -73,7 +76,9 @@ behavior: read **Behavior changes** before upgrading.
 ### Additions
 
 * `MapboxHttpError`, `MapboxRequestError` (both extend `Error`; their
-  `toString()` never includes the request URL, which carries the token).
+  `toString()` never includes the request URL, which carries the token, and
+  `MapboxHttpError.toString()` redacts token-like values in the server
+  message).
   Note: a thrown `ClientException` does include the URL and token in its
   `toString()`, as in 1.1.0; avoid logging it as is.
 * `NavigationFeatureGeometry.rawCoordinates`.

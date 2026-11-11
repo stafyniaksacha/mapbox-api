@@ -15,12 +15,25 @@ List<double> matrixRow(Object? json) => [
         value == null ? double.infinity : (value as num).toDouble(),
     ];
 
-/// Nested lists with every number converted to a double (GeoJSON
-/// coordinates of any depth).
-Object? deepDoubles(Object? json) => switch (json) {
-      final List<dynamic> list => [
-          for (final value in list) deepDoubles(value)
-        ],
-      final num number => number.toDouble(),
-      _ => json,
-    };
+/// GeoJSON coordinates of any depth with every number as a double, typed by
+/// depth: `List<double>` (Point), `List<List<double>>` (LineString),
+/// `List<List<List<double>>>` (Polygon), `List<List<List<List<double>>>>`
+/// (MultiPolygon). Throws when an element is neither a number nor a list.
+List<dynamic> coordinatesOfAnyDepth(List<dynamic> json) {
+  if (json.every((value) => value is num)) {
+    return doubleList(json);
+  }
+  final children = [
+    for (final value in json) coordinatesOfAnyDepth(value as List<dynamic>),
+  ];
+  if (children.every((child) => child is List<double>)) {
+    return children.cast<List<double>>().toList();
+  }
+  if (children.every((child) => child is List<List<double>>)) {
+    return children.cast<List<List<double>>>().toList();
+  }
+  if (children.every((child) => child is List<List<List<double>>>)) {
+    return children.cast<List<List<List<double>>>>().toList();
+  }
+  return children;
+}

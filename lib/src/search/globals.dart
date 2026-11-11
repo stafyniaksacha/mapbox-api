@@ -105,7 +105,12 @@ class GeocoderRoutablePoints {
 
   GeocoderRoutablePoints.fromJson(Map<String, dynamic> json) {
     if (json.containsKey('points') && json['points'] != null) {
-      points = (json['points'] as List<dynamic>).map(doubleList).toList();
+      // Mapbox returns `{"coordinates": [lon, lat]}` objects; bare
+      // coordinate lists are still accepted.
+      points = [
+        for (final point in json['points'] as List<dynamic>)
+          doubleList(point is Map ? point['coordinates'] : point),
+      ];
     }
   }
 
