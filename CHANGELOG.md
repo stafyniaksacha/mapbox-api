@@ -80,8 +80,8 @@ behavior: read **Behavior changes** before upgrading.
   Defaults keep the 1.1.0 behavior.
 * `MapboxHttpError`, `MapboxRequestError` (both extend `Error`; their
   `toString()` never includes the request URL, which carries the token, and
-  `MapboxHttpError.toString()` redacts token-like values in the server
-  message).
+  `MapboxHttpError.toString()` replaces URLs and redacts token-like values in
+  the server message; the raw `message` is unchanged).
   Note: a thrown `ClientException` does include the URL and token in its
   `toString()`, as in 1.1.0; avoid logging it as is.
 * `NavigationFeatureGeometry.rawCoordinates`.

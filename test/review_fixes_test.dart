@@ -15,8 +15,8 @@ const twoPoints = [
 ];
 
 void main() {
-  group('MapboxHttpError.toString redacts tokens', () {
-    test('access_token query parameters and pk./sk. tokens', () {
+  group('MapboxHttpError.toString redacts URLs and tokens', () {
+    test('URLs, access_token parameters and pk./sk. tokens', () {
       final error = MapboxHttpError(
         statusCode: 401,
         message: 'Bad https://api.mapbox.com/x?access_token=sk.eyJabc.def-1&a=1'
@@ -25,10 +25,19 @@ void main() {
       final text = error.toString();
       expect(text, isNot(contains('sk.eyJabc')));
       expect(text, isNot(contains('pk.eyJ1Ijoi')));
-      expect(text, contains('access_token=REDACTED'));
+      expect(text, isNot(contains('api.mapbox.com')));
+      expect(text, contains('Bad <url> and REDACTED'));
       expect(text, contains('401'));
       // The raw message stays available to callers.
       expect(error.message, contains('sk.eyJabc.def-1'));
+    });
+
+    test('a bare access_token parameter outside a URL', () {
+      expect(
+        MapboxHttpError(statusCode: 401, message: 'got access_token=abc123')
+            .toString(),
+        contains('got access_token=REDACTED'),
+      );
     });
 
     test('ordinary messages are unchanged', () {
