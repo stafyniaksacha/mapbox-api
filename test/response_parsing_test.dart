@@ -281,7 +281,9 @@ void main() {
     });
   });
 
-  group('error reporting (fixed in 1.2.0)', () {
+  // 1.2.0 rule: what threw in 1.1.0 still throws (same types); what 1.1.0
+  // silently swallowed is now reported in `error`.
+  group('error reporting (1.2.0)', () {
     test('parse failures are stored in error (was dropped)', () async {
       final r = (await capture(
         () => api.matrix!.request(coordinates: twoPoints, destinations: []),
@@ -328,38 +330,30 @@ void main() {
       expect(r.error, isA<NavigationNoRouteError>());
     });
 
-    test('a non-JSON error body is a MapboxHttpError (was thrown)', () async {
-      final r = await directions('<html>502 Bad Gateway</html>', status: 502);
-      expect(
-        r.error,
-        isA<MapboxHttpError>()
-            .having((e) => e.statusCode, 'statusCode', 502)
-            .having((e) => e.message, 'message', isNull),
+    test('a non-JSON body still throws FormatException, as in 1.1.0', () async {
+      await expectLater(
+        directions('<html>502 Bad Gateway</html>', status: 502),
+        throwsA(isA<FormatException>()),
+      );
+      await expectLater(
+        directions('not json'),
+        throwsA(isA<FormatException>()),
       );
     });
 
-    test('a non-JSON 200 body is a MapboxRequestError', () async {
-      final r = await directions('not json');
-      expect(r.error, isA<MapboxRequestError>());
-    });
-
-    test('a network failure is a MapboxRequestError (was thrown)', () async {
-      final r = (await capture(
-        () => api.directions.request(coordinates: twoPoints),
-        throwOnSend: ClientException(
-          'Connection refused',
-          Uri.parse('https://api.mapbox.com/x?access_token=$testToken'),
+    test('a network failure still throws the original exception, as in 1.1.0',
+        () async {
+      final failure = ClientException(
+        'Connection refused',
+        Uri.parse('https://api.mapbox.com/x'),
+      );
+      await expectLater(
+        capture(
+          () => api.directions.request(coordinates: twoPoints),
+          throwOnSend: failure,
         ),
-      ))
-          .result;
-      expect(
-        r.error,
-        isA<MapboxRequestError>()
-            .having((e) => e.message, 'message', 'Connection refused')
-            .having((e) => e.cause, 'cause', isA<ClientException>()),
+        throwsA(same(failure)),
       );
-      // The request URL carries the token: errors must be safe to log.
-      expect(r.error.toString(), isNot(contains(testToken)));
     });
 
     test('an invalid endpoint is a MapboxRequestError, not thrown', () async {
@@ -380,23 +374,24 @@ void main() {
       expect(r.error.toString(), isNot(contains(testToken)));
     });
 
-    test('a missing access token returns an error (was thrown)', () async {
+    test('a missing access token still throws, before any request', () async {
       final noToken = MapboxApi();
-      final responses = [
-        (await capture(() => noToken.directions.request())).result.error,
-        (await capture(() => noToken.forwardGeocoding.request(searchText: 'x')))
-            .result
-            .error,
-        (await capture(() => noToken.reverseGeocoding.batch())).result.error,
+      final calls = <Future<Object?> Function()>[
+        () => noToken.directions.request(),
+        () => noToken.matrix!.request(destinations: []),
+        () => noToken.forwardGeocoding.request(searchText: 'x'),
+        () => noToken.reverseGeocoding.batch(),
       ];
-      for (final error in responses) {
-        expect(error, isA<ArgumentError>());
+      for (final call in calls) {
+        await expectLater(capture(call), throwsA(isA<ArgumentError>()));
       }
-    });
-
-    test('no request is sent without an access token', () async {
-      final captured =
-          await capture(() => MapboxApi().matrix!.request(destinations: []));
+      final captured = await capture(() async {
+        try {
+          await noToken.directions.request();
+        } on ArgumentError {
+          // expected
+        }
+      });
       expect(captured.requests, isEmpty);
     });
   });

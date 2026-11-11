@@ -32,7 +32,7 @@ class OptimizationApi {
     bool roundtrip = true,
   }) async {
     if (api.accessToken == null) {
-      return OptimizationApiResponse.withError(missingAccessToken());
+      throw missingAccessToken();
     }
 
     var url = '$endpoint/$version${profilePath(profile)}';

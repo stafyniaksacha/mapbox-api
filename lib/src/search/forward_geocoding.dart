@@ -29,7 +29,7 @@ class ForwardGeocodingApi {
     List<GeocoderPlaceType> types = const <GeocoderPlaceType>[],
   }) async {
     if (api.accessToken == null) {
-      return GeocodingApiResponse.withError(missingAccessToken());
+      throw missingAccessToken();
     }
 
     var url = '${this.endpoint}/$version${geocoderEndpointPath(endpoint)}';
@@ -79,7 +79,7 @@ class ForwardGeocodingApi {
     List<GeocoderPlaceType> types = const <GeocoderPlaceType>[],
   }) async {
     if (api.accessToken == null) {
-      return GeocodingApiResponse.withError(missingAccessToken());
+      throw missingAccessToken();
     }
 
     var url = '${this.endpoint}/$version';

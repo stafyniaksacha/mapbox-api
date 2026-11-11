@@ -201,7 +201,8 @@ Without tests, "non-breaking" is unenforceable.
 
 ### Phase 4 — Behavior-changing bug fixes (non-breaking in API, but **your call** — decision D2)
 
-> **Status:** done for 1.2.0 (D2 = yes, D3 = wrap into `.error`). Fixed: B1–B6, B8–B13, plus B15
+> **Status:** done for 1.2.0 (D2 = yes; D3 = **keep throwing**: what threw in 1.1.0 still throws
+> with the same types, only what 1.1.0 swallowed is reported in `.error`). Fixed: B1–B6, B8–B13, plus B15
 > (`;` separators for radiuses / waypoint_names / matrix sources+destinations, found against the
 > docs). Choices: matrix `null` cells → `double.infinity`; unmatched tracepoints → empty
 > `NavigationTracepoint`; isochrone geometry via additive `rawCoordinates`; `continueStraight` sends
@@ -259,5 +260,5 @@ class modifiers, Geocoding v6 as default, removal of deprecated members.
   still old) vs `^3.7/3.8` (tall formatter, newest language features; excludes Flutter < 3.29).
   Recommendation: **`^3.4.0`**.
 - **D2 – Ship the behavior fixes (Phase 4) in 1.x?** Recommendation: **yes**, they fix silent failures.
-- **D3 – Network/parse exceptions:** wrap into `.error` (consistent) vs keep throwing (status quo).
-  Recommendation: **wrap**, as `Error` subclasses so the field type stays `Error?`.
+- **D3 – Network/parse exceptions:** decided: **keep throwing** (status quo), to keep upgrades
+  painless; only failures 1.1.0 swallowed go to `.error`.

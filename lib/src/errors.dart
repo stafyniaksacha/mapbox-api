@@ -17,8 +17,12 @@ class MapboxHttpError extends Error {
       'message: $message}';
 }
 
-/// The request could not be completed or its response could not be read:
-/// network failure, timeout, or a body that is not a JSON object.
+/// The request failed in a way 1.1.0 silently ignored: an `Error` while
+/// sending (e.g. an endpoint without scheme or host), or a JSON body that is
+/// not an object (e.g. a multi-query batch geocoding array).
+///
+/// Network failures (`ClientException`, `SocketException`) and non-JSON
+/// bodies (`FormatException`) are still thrown, as in 1.1.0.
 ///
 /// [toString] never includes the request URL, which contains the access
 /// token, so this error is safe to log.
@@ -28,10 +32,9 @@ class MapboxRequestError extends Error {
   /// Human-readable description, without the request URL.
   final String message;
 
-  /// What was thrown (e.g. `ClientException`, `FormatException`,
-  /// `ArgumentError` for an invalid endpoint).
-  /// Its own `toString()` may include the request URL and access token:
-  /// avoid logging it as is.
+  /// What was thrown, if anything (e.g. the `ArgumentError` for an invalid
+  /// endpoint). Its own `toString()` may include the request URL and access
+  /// token: avoid logging it as is.
   final Object? cause;
 
   @override

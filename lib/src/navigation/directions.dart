@@ -41,7 +41,7 @@ class DirectionsApi {
     double alleyBias = 0,
   }) async {
     if (api.accessToken == null) {
-      return DirectionsApiResponse.withError(missingAccessToken());
+      throw missingAccessToken();
     }
 
     var url = '$endpoint/$version${profilePath(profile)}';

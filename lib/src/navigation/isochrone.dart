@@ -28,7 +28,7 @@ class IsochroneApi {
     double? generalize,
   }) async {
     if (api.accessToken == null) {
-      return IsochroneApiResponse.withError(missingAccessToken());
+      throw missingAccessToken();
     }
 
     var url = '$endpoint/$version${profilePath(profile)}';

@@ -5,23 +5,25 @@ behavior: read **Behavior changes** before upgrading.
 
 ### Behavior changes
 
-* **Errors are now reported in `response.error`.** In 1.1.0 they were dropped
-  (`withError` assigned the error to itself) or thrown:
-  * HTTP errors without an endpoint-specific code (401 invalid token, 403,
-    422, 429 rate limit, 5xx) → new `MapboxHttpError` (`statusCode`,
-    `message`). Endpoint errors (`NavigationNoRouteError`, `GeocoderError`, …)
-    still take precedence.
-  * Network failures, invalid endpoints and non-JSON bodies → new
-    `MapboxRequestError` (were thrown as `ClientException`,
-    `FormatException` or `ArgumentError`).
+* **Failures that 1.1.0 silently ignored are now reported in
+  `response.error`** (`withError` assigned the error to itself, so it was
+  always dropped):
+  * HTTP errors with a JSON body and no endpoint-specific code (401 invalid
+    token, 403, 422, 429 rate limit, …) → new `MapboxHttpError`
+    (`statusCode`, `message`). Endpoint errors (`NavigationNoRouteError`,
+    `GeocoderError`, …) still take precedence.
   * Parse failures → the original `Error` (was `error == null`).
-  * Missing `accessToken` → `ArgumentError`, no request sent (was a thrown
-    null-check error).
+  * An endpoint without scheme or host, or a JSON body that is not an object
+    → new `MapboxRequestError`.
 
   If you only checked `routes != null` / `features != null`, nothing changes.
   If you checked `error == null`, failures that looked like empty successes
-  are now visible. Code wrapping calls in `try/catch` for network errors
-  should also check `response.error`.
+  are now visible.
+* **What threw in 1.1.0 still throws**, with the same types: network failures
+  (`ClientException`, `SocketException`) and non-JSON bodies such as an HTML
+  502 page (`FormatException`). Existing `try/catch` blocks keep working. A
+  missing `accessToken` still throws before any request is sent, now as an
+  `ArgumentError` (was a null-check `TypeError`).
 * **Parameters that were silently ignored are now sent:** Directions
   `excludes` and `continueStraight` (only `true` is sent, since Mapbox's
   default differs per profile), Map Matching `timestamps`.
@@ -64,13 +66,16 @@ behavior: read **Behavior changes** before upgrading.
 
 * Batch geocoding with two or more queries: Mapbox returns a JSON array of
   feature collections, which `GeocodingApiResponse` cannot hold. 1.1.0
-  silently returned an empty response; 1.2.0 reports a `MapboxRequestError`.
+  silently returned an empty response; 1.2.0 reports a `MapboxRequestError`
+  in `error`.
   Single-query batch works.
 
 ### Additions
 
 * `MapboxHttpError`, `MapboxRequestError` (both extend `Error`; their
   `toString()` never includes the request URL, which carries the token).
+  Note: a thrown `ClientException` does include the URL and token in its
+  `toString()`, as in 1.1.0; avoid logging it as is.
 * `NavigationFeatureGeometry.rawCoordinates`.
 * `NavigationManeuverType.UPDOWN/UTURN/CLOSE/FLAG` and
   `NavigationInstructionType.CONTINUE/END_OF_ROAD/NEW_NAME/NOTIFICATION/ON_RAMP/ROTARY/UPDOWN/UTURN/CLOSE/FLAG`.

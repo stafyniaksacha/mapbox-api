@@ -32,7 +32,7 @@ class MapMatchingApi {
     List<List<double>> waypoints = const <List<double>>[],
   }) async {
     if (api.accessToken == null) {
-      return MapMatchingApiResponse.withError(missingAccessToken());
+      throw missingAccessToken();
     }
 
     var url = '$endpoint/$version${profilePath(profile)}';

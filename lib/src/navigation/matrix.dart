@@ -34,7 +34,7 @@ class MatrixApi {
     List<int> sources = const <int>[],
   }) async {
     if (api.accessToken == null) {
-      return MatrixApiResponse.withError(missingAccessToken());
+      throw missingAccessToken();
     }
 
     var url = '$endpoint/$version${profilePath(profile)}';
