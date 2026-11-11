@@ -182,6 +182,11 @@ Without tests, "non-breaking" is unenforceable.
 
 ### Phase 3 — Internal refactor, behavior-preserving (safe, guarded by goldens)
 
+> **Status:** request side done: helpers in `lib/src/url_helpers.dart` (internal extensions, so the
+> enums get no new public member), and goldens for every enum value in every endpoint. Not done on
+> purpose: `Uri` builders (they change encoding, so that belongs with B5 in Phase 4), and the
+> response-parsing `switch`es (less test coverage; revisit with Phase 4 fixtures).
+
 1. Give enums an internal wire value (Dart 3 enhanced enums: `NavigationProfile.DRIVING('driving')`)
    — adding a field/constructor to an enum is non-breaking — and replace the big `switch`es.
    Keep member names and order.

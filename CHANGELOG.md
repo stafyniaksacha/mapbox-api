@@ -21,6 +21,8 @@
   `isochrone.dart`. Only affects code importing `src/` files directly,
   which is not supported; import `package:mapbox_api/mapbox_api.dart`.
 * Internal: line endings normalized to LF (`.gitattributes`)
+* Internal: request URLs are built with shared helpers instead of duplicated
+  `switch` blocks. Request URLs are byte-for-byte unchanged (pinned by tests).
 
 ## 1.1.0 2024-10-14
 
