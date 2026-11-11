@@ -55,7 +55,7 @@ class IsochroneApi {
       url += '&generalize=$generalize';
     }
 
-    final result = await fetchJson(url);
+    final result = await fetchJson(api, url);
     final json = result.json;
     if (json == null) {
       return IsochroneApiResponse.withError(result.error!);
@@ -77,6 +77,7 @@ class IsochroneApi {
   MapboxApi api;
 }
 
+/// Response of [IsochroneApi.request]. Check [error] first.
 class IsochroneApiResponse {
   IsochroneApiResponse({
     this.code,

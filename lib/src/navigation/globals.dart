@@ -1,5 +1,6 @@
 import '../json_helpers.dart';
 
+/// Routing profile: mode of travel and data used.
 enum NavigationProfile {
   DRIVING_TRAFFIC,
   DRIVING,
@@ -7,41 +8,78 @@ enum NavigationProfile {
   CYCLING,
 }
 
+/// Metadata to return for each route segment (`annotations`).
 enum NavigationAnnotations {
   DURATION,
   DISTANCE,
   SPEED,
   CONGESTION,
+
+  /// Posted speed limit per segment (beta at Mapbox). Driving profiles.
+  MAXSPEED,
+
+  /// Congestion as a number from 0 to 100. `driving-traffic` only.
+  CONGESTION_NUMERIC,
+
+  /// Live-traffic closures, returned in [NavigationLeg.closures].
+  /// `driving-traffic` only.
+  CLOSURE,
+
+  /// Battery state of charge in percent (beta at Mapbox). EV routing only.
+  STATE_OF_CHARGE,
 }
 
+/// Road types to avoid (`exclude`), best effort.
 enum NavigationExclude {
   TOLL,
   MOTORWAY,
   FERRY,
+  UNPAVED,
+  CASH_ONLY_TOLLS,
+  COUNTRY_BORDER,
+  STATE_BORDER,
+  TUNNEL,
 }
 
+/// Restricted lanes the route may use (`include`). Driving profiles.
+enum NavigationInclude {
+  /// High-occupancy vehicle lanes requiring at least 2 occupants.
+  HOV2,
+
+  /// High-occupancy vehicle lanes requiring at least 3 occupants.
+  HOV3,
+
+  /// High-occupancy toll lanes.
+  HOT,
+}
+
+/// Format of returned geometries.
 enum NavigationGeometries {
   GEOJSON,
   POLYLINE,
   POLYLINE6,
 }
 
+/// Detail level of the route overview geometry.
 enum NavigationOverview {
   FULL,
   SIMPLIFIED,
   NONE,
 }
 
+/// Side of the road from which to approach a waypoint.
 enum NavigationApproaches {
   UNRESTRICTED,
   CURB,
 }
 
+/// Unit system of voice instructions.
 enum NavigationVoiceUnits {
   IMPERIAL,
   METRIC,
 }
 
+/// Mode of transportation of a step.
 enum NavigationStepMode {
   DRIVING,
   FERRY,
@@ -51,6 +89,7 @@ enum NavigationStepMode {
   TRAIN,
 }
 
+/// Maneuver type of a banner instruction.
 enum NavigationInstructionType {
   TURN,
   MERGE,
@@ -71,6 +110,7 @@ enum NavigationInstructionType {
   FLAG,
 }
 
+/// Direction modifier of a banner instruction.
 enum NavigationInstructionModifier {
   UTURN,
   SHARP_RIGHT,
@@ -82,11 +122,13 @@ enum NavigationInstructionModifier {
   SHARP_LEFT,
 }
 
+/// Side of the road on which traffic drives.
 enum NavigationDrivingSide {
   LEFT,
   RIGHT,
 }
 
+/// Type of a banner instruction component.
 enum NavigationPropertyComponentType {
   TEXT,
   ICON,
@@ -96,12 +138,14 @@ enum NavigationPropertyComponentType {
   LANE,
 }
 
+/// Driving direction of a lane indication.
 enum NavigationDirection {
   LEFT,
   RIGHT,
   STRAIGHT,
 }
 
+/// Road classes at an intersection.
 enum NavigationIntersectionClass {
   UNKNOWN,
   TOLL,
@@ -111,6 +155,7 @@ enum NavigationIntersectionClass {
   TUNNEL,
 }
 
+/// Arrow shown for a lane.
 enum NavigationIndicationType {
   NONE,
   UTURN,
@@ -123,6 +168,7 @@ enum NavigationIndicationType {
   SHARP_LEFT,
 }
 
+/// Direction modifier of a maneuver.
 enum NavigationManeuverModifier {
   UTURN,
   SHARP_RIGHT,
@@ -134,6 +180,7 @@ enum NavigationManeuverModifier {
   SHARP_LEFT,
 }
 
+/// Type of a maneuver, as documented by the Directions API.
 enum NavigationManeuverType {
   TURN,
   NEW_NAME,
@@ -157,16 +204,19 @@ enum NavigationManeuverType {
   FLAG,
 }
 
+/// Whether an optimized trip must end at the last coordinate.
 enum NavigationDestination {
   ANY,
   LAST,
 }
 
+/// Whether an optimized trip must start at the first coordinate.
 enum NavigationSource {
   ANY,
   FIRST,
 }
 
+/// Bearing constraint for a coordinate: `angle` and allowed deviation `degree`, in degrees.
 class NavigationBearings {
   NavigationBearings(
     this.angle,
@@ -182,6 +232,7 @@ class NavigationBearings {
   double? degree;
 }
 
+/// A GeoJSON feature returned by the Isochrone API (one contour).
 class NavigationFeature {
   NavigationFeature({
     this.type,
@@ -210,6 +261,7 @@ class NavigationFeature {
   NavigationFeatureGeometry? geometry;
 }
 
+/// Properties of an isochrone contour: minutes and display colors.
 class NavigationFeatureProperty {
   NavigationFeatureProperty({
     this.contour,
@@ -237,6 +289,7 @@ class NavigationFeatureProperty {
   double? fillOpacity;
 }
 
+/// GeoJSON geometry of a [NavigationFeature].
 class NavigationFeatureGeometry {
   NavigationFeatureGeometry({
     this.coordinates,
@@ -270,11 +323,13 @@ class NavigationFeatureGeometry {
   String? type;
 }
 
+/// A requested coordinate snapped to the road network.
 class NavigationWaypoint {
   NavigationWaypoint({
     this.name,
     this.location = const <double>[],
     this.distance,
+    this.metadata,
   });
 
   NavigationWaypoint.fromJson(Map<String, dynamic> json) {
@@ -284,13 +339,90 @@ class NavigationWaypoint {
     if (json.containsKey('location') && json['location'] != null) {
       location = doubleList(json['location']);
     }
+    if (json['metadata'] != null) {
+      metadata = NavigationWaypointMetadata.fromJson(
+        json['metadata'] as Map<String, dynamic>,
+      );
+    }
   }
 
   String? name;
   List<double>? location;
   double? distance;
+
+  /// Charging stop details, for waypoints added by EV routing
+  /// (`type == 'charging-station'`).
+  NavigationWaypointMetadata? metadata;
 }
 
+/// Details of a waypoint added by EV routing: a charging stop.
+///
+/// Station data comes from a third party: validate it before acting on it.
+class NavigationWaypointMetadata {
+  NavigationWaypointMetadata({
+    this.type,
+    this.name,
+    this.chargeTime,
+    this.chargeTo,
+    this.chargeAtArrival,
+    this.plugType,
+    this.currentType,
+    this.powerKw,
+    this.stationId,
+    this.providerNames,
+    this.minimalStopTime,
+  });
+
+  NavigationWaypointMetadata.fromJson(Map<String, dynamic> json)
+      : type = json['type'] as String?,
+        name = json['name'] as String?,
+        chargeTime = (json['charge_time'] as num?)?.toDouble(),
+        chargeTo = (json['charge_to'] as num?)?.toDouble(),
+        chargeAtArrival = (json['charge_at_arrival'] as num?)?.toDouble(),
+        plugType = json['plug_type'] as String?,
+        currentType = json['current_type'] as String?,
+        powerKw = (json['power_kw'] as num?)?.toDouble(),
+        stationId = json['station_id'] as String?,
+        providerNames = json['provider_names'] == null
+            ? null
+            : List<String>.from(json['provider_names'] as List<dynamic>),
+        minimalStopTime = (json['minimal_stop_time'] as num?)?.toDouble();
+
+  /// `charging-station` for charging stops.
+  String? type;
+
+  /// Station name.
+  String? name;
+
+  /// Charging time at the station, in seconds.
+  double? chargeTime;
+
+  /// Battery charge to reach at the station, in Wh.
+  double? chargeTo;
+
+  /// Battery charge on arrival, in Wh.
+  double? chargeAtArrival;
+
+  /// Connector used, e.g. `ccs_combo_type2`, `chademo`, `mennekes_type2`.
+  String? plugType;
+
+  /// `dc`, `single_phase_ac` or `three_phase_ac`.
+  String? currentType;
+
+  /// Maximum power of the connector, in kW.
+  double? powerKw;
+
+  /// Station identifier.
+  String? stationId;
+
+  /// Charge point provider names (not guaranteed stable).
+  List<String>? providerNames;
+
+  /// Requested minimal stop time, in seconds (user-provided stations).
+  double? minimalStopTime;
+}
+
+/// A waypoint of an optimized trip, with its position in the trip.
 class NavigationOptimizedWaypoint {
   NavigationOptimizedWaypoint({
     this.name,
@@ -315,6 +447,9 @@ class NavigationOptimizedWaypoint {
   int? waypointIndex;
 }
 
+/// An input point of a Map Matching request, snapped to the road.
+///
+/// Unmatched points have every field `null`.
 class NavigationTracepoint extends NavigationWaypoint {
   // Not using super parameters on purpose: they would inherit the parent's
   // default (`const []`) instead of passing null, which changes behavior.
@@ -349,6 +484,7 @@ class NavigationTracepoint extends NavigationWaypoint {
   int? alternativesCount;
 }
 
+/// A route between waypoints (also an Optimization API trip).
 class NavigationRoute {
   NavigationRoute({
     this.duration,
@@ -358,6 +494,7 @@ class NavigationRoute {
     this.geometry,
     this.legs = const <NavigationLeg>[],
     this.voiceLocale,
+    this.waypoints,
   });
 
   NavigationRoute.fromJson(Map<String, dynamic> json) {
@@ -377,6 +514,12 @@ class NavigationRoute {
         ),
       );
     }
+    if (json['waypoints'] != null) {
+      waypoints = [
+        for (final value in json['waypoints'] as List<dynamic>)
+          NavigationWaypoint.fromJson(value as Map<String, dynamic>),
+      ];
+    }
   }
 
   double? duration;
@@ -386,8 +529,13 @@ class NavigationRoute {
   dynamic geometry;
   List<NavigationLeg>? legs;
   String? voiceLocale;
+
+  /// Waypoints of this route, including EV charging stops, when requested
+  /// with `waypointsPerRoute: true`.
+  List<NavigationWaypoint>? waypoints;
 }
 
+/// A route matched to a GPS trace by the Map Matching API.
 class NavigationMatchRoute extends NavigationRoute {
   // Not using super parameters on purpose: they would inherit the parent's
   // default (`const []`) instead of passing null, which changes behavior.
@@ -434,6 +582,7 @@ class NavigationMatchRoute extends NavigationRoute {
   double? confidence;
 }
 
+/// The part of a route between two waypoints.
 class NavigationLeg {
   NavigationLeg({
     this.duration,
@@ -441,6 +590,8 @@ class NavigationLeg {
     this.steps = const <NavigationStep>[],
     this.summary,
     this.annotation,
+    this.closures,
+    this.notifications,
   });
 
   NavigationLeg.fromJson(Map<String, dynamic> json) {
@@ -462,6 +613,18 @@ class NavigationLeg {
         json['annotation'] as Map<String, dynamic>,
       );
     }
+    if (json['closures'] != null) {
+      closures = [
+        for (final value in json['closures'] as List<dynamic>)
+          NavigationClosure.fromJson(value as Map<String, dynamic>),
+      ];
+    }
+    if (json['notifications'] != null) {
+      notifications = [
+        for (final value in json['notifications'] as List<dynamic>)
+          NavigationNotification.fromJson(value as Map<String, dynamic>),
+      ];
+    }
   }
 
   double? duration;
@@ -469,14 +632,117 @@ class NavigationLeg {
   List<NavigationStep>? steps;
   String? summary;
   NavigationAnnotation? annotation;
+
+  /// Live-traffic closures on this leg (requested with
+  /// [NavigationAnnotations.CLOSURE]).
+  List<NavigationClosure>? closures;
+
+  /// Issues on this leg, e.g. a road whose height limit is below the
+  /// requested `maxHeight` (Mapbox still returns the route, with
+  /// `code: Ok`). Check this when using vehicle limits.
+  List<NavigationNotification>? notifications;
 }
 
+/// An issue reported on a route leg (Directions `notifications`).
+///
+/// [type] and [subtype] are kept as the strings Mapbox sends, since new
+/// subtypes are added over time.
+class NavigationNotification {
+  NavigationNotification({
+    this.type,
+    this.subtype,
+    this.refreshType,
+    this.geometryIndex,
+    this.geometryIndexStart,
+    this.geometryIndexEnd,
+    this.stationId,
+    this.reason,
+    this.details,
+  });
+
+  NavigationNotification.fromJson(Map<String, dynamic> json)
+      : type = json['type'] as String?,
+        subtype = json['subtype'] as String?,
+        refreshType = json['refresh_type'] as String?,
+        geometryIndex = (json['geometry_index'] as num?)?.toInt(),
+        geometryIndexStart = (json['geometry_index_start'] as num?)?.toInt(),
+        geometryIndexEnd = (json['geometry_index_end'] as num?)?.toInt(),
+        stationId = json['station_id'] as String?,
+        reason = json['reason'] as String?,
+        details = json['details'] == null
+            ? null
+            : NavigationNotificationDetails.fromJson(
+                json['details'] as Map<String, dynamic>,
+              );
+
+  /// `violation` (a request constraint could not be met) or `alert`.
+  String? type;
+
+  /// What the notification is about, e.g. `maxHeight`, `maxWidth`,
+  /// `maxWeight`, `evInsufficientCharge`, `stationUnavailable`.
+  String? subtype;
+
+  /// `static` or `dynamic`.
+  String? refreshType;
+
+  /// Position in the leg geometry, for point notifications.
+  int? geometryIndex;
+
+  /// Start of the affected part of the leg geometry.
+  int? geometryIndexStart;
+
+  /// End of the affected part of the leg geometry.
+  int? geometryIndexEnd;
+
+  /// Charging station concerned (EV routing).
+  String? stationId;
+
+  /// Why, e.g. `outOfOrder` or `occupied` for `stationUnavailable`.
+  String? reason;
+
+  /// Requested vs actual values, when the notification has them.
+  NavigationNotificationDetails? details;
+}
+
+/// Details of a [NavigationNotification]: what was requested and what the
+/// road or station allows.
+class NavigationNotificationDetails {
+  NavigationNotificationDetails({
+    this.requestedValue,
+    this.actualValue,
+    this.unit,
+    this.message,
+  });
+
+  NavigationNotificationDetails.fromJson(Map<String, dynamic> json)
+      : requestedValue = json['requested_value'],
+        actualValue = json['actual_value'],
+        unit = json['unit'] as String?,
+        message = json['message'] as String?;
+
+  /// The requested value (a number for vehicle limits, as sent by Mapbox).
+  Object? requestedValue;
+
+  /// The value found on the route.
+  Object? actualValue;
+
+  /// Unit of the values, e.g. `meters` or `metric tons`.
+  String? unit;
+
+  /// Human-readable description.
+  String? message;
+}
+
+/// Per-segment metadata of a route leg, requested with `annotations`.
 class NavigationAnnotation {
   NavigationAnnotation({
     this.duration,
     this.distance,
     this.speed,
     this.congestion,
+    this.maxspeed,
+    this.congestionNumeric,
+    this.stateOfCharge,
   });
 
   NavigationAnnotation.fromJson(Map<String, dynamic> json) {
@@ -494,14 +760,86 @@ class NavigationAnnotation {
         json['congestion'] as List<dynamic>,
       );
     }
+    if (json['maxspeed'] != null) {
+      maxspeed = [
+        for (final value in json['maxspeed'] as List<dynamic>)
+          NavigationMaxSpeed.fromJson(value as Map<String, dynamic>),
+      ];
+    }
+    if (json['congestion_numeric'] != null) {
+      congestionNumeric = [
+        for (final value in json['congestion_numeric'] as List<dynamic>)
+          (value as num?)?.toInt(),
+      ];
+    }
+    if (json['state_of_charge'] != null) {
+      stateOfCharge = [
+        for (final value in json['state_of_charge'] as List<dynamic>)
+          (value as num?)?.toDouble(),
+      ];
+    }
   }
 
   List<double>? duration;
   List<double>? distance;
   List<double>? speed;
   List<String>? congestion;
+
+  /// Posted speed limit per segment ([NavigationAnnotations.MAXSPEED]).
+  List<NavigationMaxSpeed>? maxspeed;
+
+  /// Congestion from 0 (none) to 100 (maximum) per segment; `null` when
+  /// unknown ([NavigationAnnotations.CONGESTION_NUMERIC]).
+  List<int?>? congestionNumeric;
+
+  /// Battery state of charge in percent per segment; negative when the
+  /// battery would run out ([NavigationAnnotations.STATE_OF_CHARGE]).
+  List<double?>? stateOfCharge;
 }
 
+/// Posted speed limit of a segment: either [speed] and [unit], or
+/// [unknown], or [none] (no limit, e.g. a German Autobahn).
+class NavigationMaxSpeed {
+  NavigationMaxSpeed({
+    this.speed,
+    this.unit,
+    this.unknown = false,
+    this.none = false,
+  });
+
+  NavigationMaxSpeed.fromJson(Map<String, dynamic> json)
+      : speed = (json['speed'] as num?)?.toDouble(),
+        unit = json['unit'] as String?,
+        unknown = json['unknown'] == true,
+        none = json['none'] == true;
+
+  /// The limit, in [unit].
+  double? speed;
+
+  /// `km/h` or `mph`.
+  String? unit;
+
+  /// The limit is not known.
+  bool unknown;
+
+  /// There is no limit.
+  bool none;
+}
+
+/// A live-traffic closure on a leg, as geometry indexes relative to the start
+/// of the leg ([NavigationAnnotations.CLOSURE], `driving-traffic`).
+class NavigationClosure {
+  NavigationClosure({this.geometryIndexStart, this.geometryIndexEnd});
+
+  NavigationClosure.fromJson(Map<String, dynamic> json)
+      : geometryIndexStart = (json['geometry_index_start'] as num?)?.toInt(),
+        geometryIndexEnd = (json['geometry_index_end'] as num?)?.toInt();
+
+  int? geometryIndexStart;
+  int? geometryIndexEnd;
+}
+
+/// A single maneuver and the road travelled until the next one.
 class NavigationStep {
   NavigationStep({
     this.maneuver,
@@ -618,6 +956,7 @@ class NavigationStep {
   List<NavigationBannerInstruction>? bannerInstructions;
 }
 
+/// Spoken instruction along a step (`voice_instructions=true`).
 class NavigationVoiceInstruction {
   NavigationVoiceInstruction({
     this.distanceAlongGeometry,
@@ -636,6 +975,7 @@ class NavigationVoiceInstruction {
   String? ssmlAnnouncement;
 }
 
+/// Visual instruction shown along a step (`banner_instructions=true`).
 class NavigationBannerInstruction {
   NavigationBannerInstruction({
     this.distanceAlongGeometry,
@@ -670,6 +1010,7 @@ class NavigationBannerInstruction {
   NavigationInstructionProperty? sub;
 }
 
+/// Primary, secondary or sub text of a [NavigationBannerInstruction].
 class NavigationInstructionProperty {
   NavigationInstructionProperty({
     this.text,
@@ -799,6 +1140,7 @@ class NavigationInstructionProperty {
   List<NavigationInstructionPropertyComponent>? components;
 }
 
+/// A piece of a banner instruction text (text, icon, lane, exit, …).
 class NavigationInstructionPropertyComponent {
   NavigationInstructionPropertyComponent({
     this.type,
@@ -865,6 +1207,7 @@ class NavigationInstructionPropertyComponent {
   bool? active;
 }
 
+/// An intersection passed along a step.
 class NavigationIntersection {
   NavigationIntersection({
     this.location,
@@ -943,6 +1286,7 @@ class NavigationIntersection {
   double? duration;
 }
 
+/// A lane at an intersection, with its valid directions.
 class NavigationIntersectionLane {
   NavigationIntersectionLane({
     this.valid,
@@ -986,6 +1330,7 @@ class NavigationIntersectionLane {
   List<NavigationIndicationType>? indications;
 }
 
+/// The maneuver that starts a step.
 class NavigationManeuver {
   NavigationManeuver({
     this.bearingBefore,
@@ -1107,6 +1452,7 @@ class NavigationManeuver {
   NavigationManeuverType? type;
 }
 
+/// Base class of the errors returned by the navigation APIs.
 class NavigationError extends Error {
   NavigationError({
     this.message,
@@ -1115,48 +1461,56 @@ class NavigationError extends Error {
   String? message;
 }
 
+/// The input could not be matched to the road network (`code: NoMatch`).
 class NavigationNoMatchError extends NavigationError {
   NavigationNoMatchError({
     super.message,
   });
 }
 
+/// No trip could be found by the Optimization API (`code: NoTrips`).
 class NavigationNoTripsError extends NavigationError {
   NavigationNoTripsError({
     super.message,
   });
 }
 
+/// The request is not supported by the API (`code: NotImplemented`).
 class NavigationNotImplementedError extends NavigationError {
   NavigationNotImplementedError({
     super.message,
   });
 }
 
+/// The request has too many coordinates (`code: TooManyCoordinates`).
 class NavigationTooManyCoordinatesError extends NavigationError {
   NavigationTooManyCoordinatesError({
     super.message,
   });
 }
 
+/// No route was found between the coordinates (`code: NoRoute`).
 class NavigationNoRouteError extends NavigationError {
   NavigationNoRouteError({
     super.message,
   });
 }
 
+/// A coordinate could not be snapped to the road network (`code: NoSegment`).
 class NavigationNoSegmentError extends NavigationError {
   NavigationNoSegmentError({
     super.message,
   });
 }
 
+/// The routing profile does not exist (`code: ProfileNotFound`).
 class NavigationProfileNotFoundError extends NavigationError {
   NavigationProfileNotFoundError({
     super.message,
   });
 }
 
+/// The request was invalid (`code: InvalidInput`).
 class NavigationInvalidInputError extends NavigationError {
   NavigationInvalidInputError({
     super.message,

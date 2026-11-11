@@ -15,6 +15,25 @@ class DirectionsApi {
   /// Retrieve directions between waypoints.
   /// Directions requests must specify at least two waypoints
   /// as starting and ending points.
+  ///
+  /// Driving-profile options (sent as given; the API reports unsupported
+  /// combinations in `error`):
+  /// - [maxHeight] / [maxWidth] (meters, 0–10) and [maxWeight] (metric tons,
+  ///   0–100) avoid roads the vehicle cannot use.
+  ///   When no compliant route exists, Mapbox still returns one and reports
+  ///   the violation in [NavigationLeg.notifications].
+  /// - [departAt] (`driving`, `driving-traffic`) or [arriveBy] (`driving`)
+  ///   plan for a time; sent in UTC.
+  /// - [include] allows HOV/HOT lanes; [avoidManeuverRadius] (meters,
+  ///   1–1000) avoids maneuvers right after the start, e.g. while moving.
+  ///   It cannot be combined with [departAt] or [arriveBy].
+  /// - [ev] enables electric vehicle routing (Mapbox private preview); see
+  ///   [DirectionsEvOptions]. Options Mapbox would reject (empty required
+  ///   lists, stations not aligned with [coordinates], …) throw an
+  ///   [ArgumentError] before any request is sent. Charging stops come back as waypoints with
+  ///   [NavigationWaypoint.metadata].
+  /// - [waypointsPerRoute] returns the waypoints of each route in
+  ///   [NavigationRoute.waypoints] (needed for EV routes with alternatives).
   Future<DirectionsApiResponse> request({
     NavigationProfile? profile,
     List<List<double>> coordinates = const <List<double>>[],
@@ -39,9 +58,21 @@ class DirectionsApi {
     double walkingSpeed = 1.42,
     double walkwayBias = 0,
     double alleyBias = 0,
+    List<NavigationInclude> include = const <NavigationInclude>[],
+    double? maxHeight,
+    double? maxWidth,
+    double? maxWeight,
+    DateTime? departAt,
+    DateTime? arriveBy,
+    double? avoidManeuverRadius,
+    bool waypointsPerRoute = false,
+    DirectionsEvOptions? ev,
   }) async {
     if (api.accessToken == null) {
       throw missingAccessToken();
+    }
+    if (ev != null) {
+      checkEvOptions(ev, coordinates.length);
     }
 
     var url = '$endpoint/$version${profilePath(profile)}';
@@ -103,8 +134,34 @@ class DirectionsApi {
     url += listParam('waypoints', waypoints.map(lonLat), ';');
     url += listParam('annotations', annotations.map((a) => a.value), ',');
     url += listParam('exclude', excludes.map((e) => e.value), ',');
+    url += listParam('include', include.map((i) => i.value), ',');
 
-    final result = await fetchJson(url);
+    if (maxHeight != null) {
+      url += '&max_height=$maxHeight';
+    }
+    if (maxWidth != null) {
+      url += '&max_width=$maxWidth';
+    }
+    if (maxWeight != null) {
+      url += '&max_weight=$maxWeight';
+    }
+    if (departAt != null) {
+      url += '&depart_at=${mapboxDateTime(departAt)}';
+    }
+    if (arriveBy != null) {
+      url += '&arrive_by=${mapboxDateTime(arriveBy)}';
+    }
+    if (avoidManeuverRadius != null) {
+      url += '&avoid_maneuver_radius=$avoidManeuverRadius';
+    }
+    if (waypointsPerRoute) {
+      url += '&waypoints_per_route=true';
+    }
+    if (ev != null) {
+      url += evQuery(ev);
+    }
+
+    final result = await fetchJson(api, url);
     final json = result.json;
     if (json == null) {
       return DirectionsApiResponse.withError(result.error!);
@@ -126,6 +183,7 @@ class DirectionsApi {
   MapboxApi api;
 }
 
+/// Response of [DirectionsApi.request]. Check [error] first.
 class DirectionsApiResponse {
   DirectionsApiResponse({
     this.code,

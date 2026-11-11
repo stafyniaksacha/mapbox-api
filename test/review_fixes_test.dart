@@ -15,8 +15,8 @@ const twoPoints = [
 ];
 
 void main() {
-  group('MapboxHttpError.toString redacts tokens', () {
-    test('access_token query parameters and pk./sk. tokens', () {
+  group('MapboxHttpError.toString redacts URLs and tokens', () {
+    test('URLs, access_token parameters and pk./sk. tokens', () {
       final error = MapboxHttpError(
         statusCode: 401,
         message: 'Bad https://api.mapbox.com/x?access_token=sk.eyJabc.def-1&a=1'
@@ -25,10 +25,19 @@ void main() {
       final text = error.toString();
       expect(text, isNot(contains('sk.eyJabc')));
       expect(text, isNot(contains('pk.eyJ1Ijoi')));
-      expect(text, contains('access_token=REDACTED'));
+      expect(text, isNot(contains('api.mapbox.com')));
+      expect(text, contains('Bad <url> and REDACTED'));
       expect(text, contains('401'));
       // The raw message stays available to callers.
       expect(error.message, contains('sk.eyJabc.def-1'));
+    });
+
+    test('a bare access_token parameter outside a URL', () {
+      expect(
+        MapboxHttpError(statusCode: 401, message: 'got access_token=abc123')
+            .toString(),
+        contains('got access_token=REDACTED'),
+      );
     });
 
     test('ordinary messages are unchanged', () {
@@ -52,6 +61,19 @@ void main() {
           .having((e) => e.statusCode, 'statusCode', 429)
           .having((e) => e.message, 'message', 'Rate limited'),
     );
+  });
+
+  test('isochrone error bodies with a message stay NavigationError (1.1.0)',
+      () async {
+    final r = (await capture(
+      () => api.isochrone!.request(coordinates: [1.0, 2.0]),
+      responseBody: jsonEncode({'message': 'Not Authorized - Invalid Token'}),
+      statusCode: 401,
+    ))
+        .result;
+    expect(r.error, isA<NavigationError>());
+    expect(r.error, isNot(isA<MapboxHttpError>()));
+    expect((r.error! as NavigationError).message, contains('Invalid Token'));
   });
 
   test('a 2xx body that fails to parse still reports the parse error',

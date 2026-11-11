@@ -4,6 +4,11 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # lints 6 needs Dart >= 3.8; the package supports Dart >= 3.4 and CI
+      # tests from 3.5. Remove when the SDK floor reaches 3.8.
+      - dependency-name: lints
+        versions: ['>=6.0.0']
   - package-ecosystem: github-actions
     directory: /
     schedule:

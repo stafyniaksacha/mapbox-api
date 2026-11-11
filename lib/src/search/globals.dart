@@ -1,10 +1,12 @@
 import '../json_helpers.dart';
 
+/// Geocoding dataset: temporary (`mapbox.places`) or permanent storage.
 enum GeocoderEndpoint {
   PLACES,
   PLACES_PERMANENT,
 }
 
+/// Feature types to filter results on.
 enum GeocoderPlaceType {
   COUNTRY,
   REGION,
@@ -18,6 +20,7 @@ enum GeocoderPlaceType {
   EMPTY,
 }
 
+/// Accuracy of an address result.
 enum GeocoderFeaturePropertyAccuracy {
   ROOFTOP,
   PARCEL,
@@ -28,11 +31,13 @@ enum GeocoderFeaturePropertyAccuracy {
   STREET,
 }
 
+/// Sorting of reverse geocoding results.
 enum GeocoderReverseMode {
   DISTANCE,
   SCORE,
 }
 
+/// Bounding box: `minX,minY,maxX,maxY` (longitude, latitude).
 class GeocoderBbox {
   GeocoderBbox({
     this.minX,
@@ -53,6 +58,7 @@ class GeocoderBbox {
   double? maxY;
 }
 
+/// Point geometry of a geocoding result.
 class GeocoderGeometry {
   GeocoderGeometry({
     this.type,
@@ -77,6 +83,7 @@ class GeocoderGeometry {
   bool? omitted;
 }
 
+/// A parent feature of a geocoding result (postcode, place, country, …).
 class GeocoderContext {
   GeocoderContext({
     this.id,
@@ -98,6 +105,7 @@ class GeocoderContext {
   String? wikidata;
 }
 
+/// Points suitable for routing to a result (`routing=true`).
 class GeocoderRoutablePoints {
   GeocoderRoutablePoints({
     this.points = const <List<double>>[],
@@ -117,6 +125,7 @@ class GeocoderRoutablePoints {
   List<List<double>>? points;
 }
 
+/// Properties of a geocoding result (category, landmark, …).
 class GeocoderFeatureProperty {
   GeocoderFeatureProperty({
     this.accuracy = GeocoderFeaturePropertyAccuracy.POINT,
@@ -175,6 +184,7 @@ class GeocoderFeatureProperty {
   String? tel;
 }
 
+/// A geocoding result.
 class GeocoderFeature {
   GeocoderFeature({
     this.id,
@@ -320,6 +330,7 @@ class GeocoderFeature {
   GeocoderRoutablePoints? routablePoints;
 }
 
+/// Error returned by the geocoding APIs (the response `message`).
 class GeocoderError extends Error {
   GeocoderError({
     this.message,
@@ -335,6 +346,7 @@ class GeocoderError extends Error {
   String? message;
 }
 
+/// Response of the geocoding APIs. Check [error] first.
 class GeocodingApiResponse {
   GeocodingApiResponse({
     this.type,

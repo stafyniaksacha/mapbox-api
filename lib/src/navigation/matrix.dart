@@ -70,7 +70,7 @@ class MatrixApi {
       url += '&fallback_speed=$fallbackSpeed';
     }
 
-    final result = await fetchJson(url);
+    final result = await fetchJson(api, url);
     final json = result.json;
     if (json == null) {
       return MatrixApiResponse.withError(result.error!);
@@ -88,6 +88,7 @@ class MatrixApi {
   }
 }
 
+/// Response of [MatrixApi.request]. Check [error] first.
 class MatrixApiResponse {
   String? code;
   List<NavigationWaypoint>? destinations;

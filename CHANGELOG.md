@@ -75,10 +75,36 @@ behavior: read **Behavior changes** before upgrading.
 
 ### Additions
 
+* Directions **EV routing** (Mapbox private preview): `ev: DirectionsEvOptions`
+  (`engine=electric` and the `ev_*` parameters, typed consumption/charging
+  curves, `EvConnectorType`, `EvAmenity`, `EvExclude`, user-provided stations
+  via `EvWaypointChargingStation`), `waypointsPerRoute`, charging-stop details
+  in `NavigationWaypoint.metadata` (`NavigationWaypointMetadata`),
+  `NavigationRoute.waypoints`, and the `STATE_OF_CHARGE` annotation
+  (`NavigationAnnotation.stateOfCharge`). EV options Mapbox would reject
+  (empty required lists, misaligned stations or provider weights, …) throw an
+  `ArgumentError` before any request is sent.
+* Directions: `maxHeight`, `maxWidth`, `maxWeight`, `departAt`, `arriveBy`
+  (`DateTime`, sent as UTC `YYYY-MM-DDThh:mm:ssZ`), `include`
+  (`NavigationInclude.HOV2/HOV3/HOT`) and `avoidManeuverRadius`.
+* Directions annotations `MAXSPEED` (beta at Mapbox), `CONGESTION_NUMERIC` and
+  `CLOSURE`, parsed into `NavigationAnnotation.maxspeed`
+  (`NavigationMaxSpeed`), `NavigationAnnotation.congestionNumeric` and
+  `NavigationLeg.closures` (`NavigationClosure`).
+* `NavigationLeg.notifications` (`NavigationNotification`): violations such as
+  a road below the requested `maxHeight`, which Mapbox reports while still
+  returning the route with `code: Ok`. Matrix, Optimization and Map
+  Matching keep sending only the annotations they supported before.
+* `NavigationExclude.UNPAVED/CASH_ONLY_TOLLS/COUNTRY_BORDER/STATE_BORDER/TUNNEL`.
+  As with the other new enum members, exhaustive `switch` statements on
+  `NavigationAnnotations` / `NavigationExclude` need a new case or a default.
+* `MapboxApi(client: ..., timeout: ...)`: optional `http.Client` reused for
+  every request, and a per-request timeout (throws `TimeoutException`).
+  Defaults keep the 1.1.0 behavior.
 * `MapboxHttpError`, `MapboxRequestError` (both extend `Error`; their
   `toString()` never includes the request URL, which carries the token, and
-  `MapboxHttpError.toString()` redacts token-like values in the server
-  message).
+  `MapboxHttpError.toString()` replaces URLs and redacts token-like values in
+  the server message; the raw `message` is unchanged).
   Note: a thrown `ClientException` does include the URL and token in its
   `toString()`, as in 1.1.0; avoid logging it as is.
 * `NavigationFeatureGeometry.rawCoordinates`.
@@ -92,6 +118,9 @@ behavior: read **Behavior changes** before upgrading.
 * Minimum Dart SDK is now 3.4. The previous `>=2.12.0` constraint was not
   resolvable below Dart 3.2 anyway, because `http ^1.2.0` requires it.
 * Pub metadata: `repository`, `issue_tracker`, `topics`.
+* Documentation: README rewritten (error handling, token security, client and
+  timeout, Flutter guidance); dartdoc on every public type. The
+  commented-out `mapbox_gl` example was removed.
 * Test suite (URL goldens for every endpoint and enum value, response
   fixtures, enum compatibility), GitHub Actions CI (including a Dart 3.4
   consumer check and a public API check against 1.1.0), Dependabot.

@@ -63,10 +63,23 @@ class MapMatchingApi {
     url += listParam('radiuses', radiuses.map(radiusValue), ';');
     url += listParam('waypoint_names', waypointNames.map(encode), ';');
     url += listParam('waypoints', waypoints.map(lonLat), ';');
-    url += listParam('annotations', annotations.map((a) => a.value), ',');
+    // Annotations added for Directions in 1.2.0 are not sent to Map Matching.
+    url += listParam(
+      'annotations',
+      annotations
+          .where(
+            (a) =>
+                a == NavigationAnnotations.DURATION ||
+                a == NavigationAnnotations.DISTANCE ||
+                a == NavigationAnnotations.SPEED ||
+                a == NavigationAnnotations.CONGESTION,
+          )
+          .map((a) => a.value),
+      ',',
+    );
     url += listParam('timestamps', timestamps.map((t) => '$t'), ';');
 
-    final result = await fetchJson(url);
+    final result = await fetchJson(api, url);
     final json = result.json;
     if (json == null) {
       return MapMatchingApiResponse.withError(result.error!);
@@ -88,6 +101,7 @@ class MapMatchingApi {
   MapboxApi api;
 }
 
+/// Response of [MapMatchingApi.request]. Check [error] first.
 class MapMatchingApiResponse {
   MapMatchingApiResponse({
     this.code,

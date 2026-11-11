@@ -89,6 +89,105 @@ final Map<String, Future<Object?> Function()> _baseCases = {
         walkwayBias: 0.5,
       ),
 
+  // Parameters added in 1.2.0 (phase 5b).
+  'directions/vehicle-time-include': () => _api.directions.request(
+        profile: NavigationProfile.DRIVING,
+        coordinates: [
+          [48.8, 2.3],
+          [48.9, 2.4],
+        ],
+        excludes: NavigationExclude.values,
+        include: NavigationInclude.values,
+        maxHeight: 4.2,
+        maxWidth: 2.55,
+        maxWeight: 19,
+        // Not UTC on purpose: must be converted, without milliseconds.
+        departAt: DateTime.utc(2026, 3, 4, 5, 6, 7, 890).toLocal(),
+        arriveBy: DateTime.utc(2026, 12, 31, 23, 59),
+        avoidManeuverRadius: 300,
+      ),
+
+  // EV routing (1.2.0, Mapbox private preview).
+  'directions/ev-minimal': () => _api.directions.request(
+        profile: NavigationProfile.DRIVING_TRAFFIC,
+        coordinates: [
+          [48.8566, 2.3522],
+          [45.764, 4.8357],
+        ],
+        ev: const DirectionsEvOptions(
+          maxCharge: 80000,
+          connectorTypes: [EvConnectorType.CCS_COMBO_TYPE2],
+          energyConsumptionCurve: [
+            (speedKph: 0, whPerKm: 300),
+            (speedKph: 20, whPerKm: 160),
+            (speedKph: 120, whPerKm: 212.5),
+          ],
+          chargingCurve: [
+            (chargeWh: 0, powerW: 100000),
+            (chargeWh: 40000, powerW: 70000),
+          ],
+        ),
+      ),
+  'directions/ev-all-options': () => _api.directions.request(
+        profile: NavigationProfile.DRIVING,
+        coordinates: [
+          [48.8566, 2.3522],
+          [47.0, 3.0],
+          [45.764, 4.8357],
+        ],
+        waypointsPerRoute: true,
+        alternatives: true,
+        annotations: [NavigationAnnotations.STATE_OF_CHARGE],
+        overview: NavigationOverview.FULL,
+        ev: const DirectionsEvOptions(
+          maxCharge: 80000,
+          connectorTypes: [
+            EvConnectorType.CCS_COMBO_TYPE2,
+            EvConnectorType.CHADEMO,
+          ],
+          energyConsumptionCurve: [
+            (speedKph: 0, whPerKm: 300),
+            (speedKph: 120, whPerKm: 200),
+          ],
+          chargingCurve: [
+            (chargeWh: 0, powerW: 100000),
+            (chargeWh: 80000, powerW: 10000),
+          ],
+          initialCharge: 60000,
+          unconditionedChargingCurve: [
+            (chargeWh: 0, powerW: 50000),
+          ],
+          preConditioningTime: 30,
+          maxAcChargingPower: 11000,
+          minChargeAtDestination: 12000,
+          minChargeAtChargingStation: 8000,
+          ascent: 3.5,
+          descent: 2,
+          regenerationEfficiency: 0.7,
+          auxiliaryConsumption: 300,
+          addChargingStops: false,
+          preferAmenities: [EvAmenity.RESTROOM, EvAmenity.RESTAURANT],
+          excludeStationIds: ['st-1', 'st 2'],
+          excludeChargePointProviderIds: ['prov-a'],
+          preferChargePointProviderIds: ['prov-b', 'prov-c'],
+          preferChargePointProviderWeights: [1, 0.5],
+          exclude: [EvExclude.TESLA_EXCLUSIVE],
+          maxChargingVoltage: 400,
+          maxChargingPowerAtLowerVoltage: 50000,
+          minEnergyIncrementAtChargingStation: 5000,
+          waypointChargingStations: [
+            null,
+            EvWaypointChargingStation(
+              power: 150000,
+              currentType: EvCurrentType.DC,
+              stationId: 'FR*ABC*E123',
+              minimalStopTime: 600,
+            ),
+            null,
+          ],
+        ),
+      ),
+
   // ------------------------------------------------------------- map matching
   'map_matching/minimal': () => _api.mapMatching!.request(
         profile: NavigationProfile.DRIVING,

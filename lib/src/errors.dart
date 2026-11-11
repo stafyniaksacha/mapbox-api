@@ -12,8 +12,9 @@ class MapboxHttpError extends Error {
   /// The `message` field of the response body, when there is one.
   final String? message;
 
-  /// Includes [message] with anything that looks like an access token
-  /// redacted, since the message comes from the server.
+  /// Includes [message] with URLs replaced by `<url>` and anything that looks
+  /// like an access token redacted, since the message comes from the server.
+  /// Read [message] for the raw text.
   @override
   String toString() => 'MapboxHttpError{statusCode: $statusCode, '
       'message: ${message == null ? null : _redactTokens(message!)}}';
@@ -43,11 +44,13 @@ class MapboxRequestError extends Error {
   String toString() => 'MapboxRequestError{message: $message}';
 }
 
+final _url = RegExp(r'[a-zA-Z][a-zA-Z0-9+.-]*://\S+');
 final _accessTokenParameter = RegExp(r"""access_token=[^&\s"'#]*""");
 final _mapboxToken = RegExp(r'\b[ps]k\.[A-Za-z0-9._-]+');
 
-/// Replaces `access_token=…` values and Mapbox `pk.` / `sk.` tokens in
-/// [text] with `REDACTED`.
+/// Replaces URLs in [text] with `<url>`, then `access_token=…` values and
+/// Mapbox `pk.` / `sk.` tokens outside URLs with `REDACTED`.
 String _redactTokens(String text) => text
+    .replaceAll(_url, '<url>')
     .replaceAll(_accessTokenParameter, 'access_token=REDACTED')
     .replaceAll(_mapboxToken, 'REDACTED');

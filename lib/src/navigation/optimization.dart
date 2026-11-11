@@ -67,18 +67,23 @@ class OptimizationApi {
       ';',
     );
     url += listParam('radiuses', radiuses.map(radiusValue), ';');
-    // The Optimization API does not support congestion annotations.
+    // The Optimization API only supports duration, distance and speed.
     url += listParam(
       'annotations',
       annotations
-          .where((a) => a != NavigationAnnotations.CONGESTION)
+          .where(
+            (a) =>
+                a == NavigationAnnotations.DURATION ||
+                a == NavigationAnnotations.DISTANCE ||
+                a == NavigationAnnotations.SPEED,
+          )
           .map((a) => a.value),
       ',',
     );
     url += listParam('bearings', bearings.map(bearingValue), ';');
     url += listParam('approaches', approaches.map((a) => a.value), ';');
 
-    final result = await fetchJson(url);
+    final result = await fetchJson(api, url);
     final json = result.json;
     if (json == null) {
       return OptimizationApiResponse.withError(result.error!);
@@ -100,6 +105,7 @@ class OptimizationApi {
   MapboxApi api;
 }
 
+/// Response of [OptimizationApi.request]. Check [error] first.
 class OptimizationApiResponse {
   OptimizationApiResponse({
     this.code,

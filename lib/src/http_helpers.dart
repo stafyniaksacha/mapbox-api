@@ -8,7 +8,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart';
 
-import 'errors.dart';
+import '../mapbox_api.dart';
 
 /// Decoded JSON object (when the body is one) and the error to report, if any.
 typedef JsonResult = ({Map<String, dynamic>? json, Error? error});
@@ -18,6 +18,9 @@ typedef JsonResult = ({Map<String, dynamic>? json, Error? error});
 Error missingAccessToken() => ArgumentError.notNull('accessToken');
 
 /// GETs [url] and decodes the JSON object it returns.
+///
+/// Uses [MapboxApi.client] when set, and [MapboxApi.timeout] (throws
+/// `TimeoutException`).
 ///
 /// Throws, as 1.1.0 did:
 /// - exceptions from the HTTP client (`ClientException`, `SocketException`, …)
@@ -31,10 +34,14 @@ Error missingAccessToken() => ArgumentError.notNull('accessToken');
 ///   endpoint without scheme or host → [MapboxRequestError];
 /// - 2xx JSON that is not an object (e.g. a batch geocoding array) →
 ///   [MapboxRequestError].
-Future<JsonResult> fetchJson(String url) async {
+Future<JsonResult> fetchJson(MapboxApi api, String url) async {
   final Response response;
   try {
-    response = await get(Uri.parse(url));
+    final uri = Uri.parse(url);
+    final client = api.client;
+    final request = client == null ? get(uri) : client.get(uri);
+    final timeout = api.timeout;
+    response = await (timeout == null ? request : request.timeout(timeout));
   } on Exception {
     rethrow;
   } on Error catch (failure) {
