@@ -1,5 +1,5 @@
 import './src/navigation/directions.dart';
-import './src/navigation/isochrome.dart';
+import './src/navigation/isochrone.dart';
 import './src/navigation/map_matching.dart';
 import './src/navigation/matrix.dart';
 import './src/navigation/optimization.dart';
@@ -10,7 +10,7 @@ import './src/search/intersection.dart';
 
 export './src/navigation/globals.dart';
 export './src/navigation/directions.dart';
-export './src/navigation/isochrome.dart';
+export './src/navigation/isochrone.dart';
 export './src/navigation/map_matching.dart';
 export './src/navigation/matrix.dart';
 export './src/navigation/optimization.dart';
