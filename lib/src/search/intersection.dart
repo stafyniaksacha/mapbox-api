@@ -1,8 +1,5 @@
-import 'dart:convert';
-
-import 'package:http/http.dart';
-
 import '../../mapbox_api.dart';
+import '../http_helpers.dart';
 import '../url_helpers.dart';
 
 /// Intersection search allows users to search for a point
@@ -25,6 +22,10 @@ class IntersectionApi {
     List<double> proximity = const <double>[],
     List<GeocoderPlaceType> types = const <GeocoderPlaceType>[],
   }) async {
+    if (api.accessToken == null) {
+      return GeocodingApiResponse.withError(missingAccessToken());
+    }
+
     var url = '${this.endpoint}/$version${geocoderEndpointPath(endpoint)}';
 
     url += '/$street1 and $street2.json';
@@ -35,12 +36,16 @@ class IntersectionApi {
       url += '&proximity=${lonLat(proximity)}';
     }
 
+    final result = await fetchJson(url);
+    final json = result.json;
+    if (json == null) {
+      return GeocodingApiResponse.withError(result.error!);
+    }
+
     try {
-      final response = await get(Uri.parse(url));
-      final json = jsonDecode(
-        response.body,
-      ) as Map<String, dynamic>;
-      return GeocodingApiResponse.fromJson(json);
+      // Endpoint-specific errors (e.g. `code: NoRoute`) take precedence over
+      // the generic HTTP error.
+      return GeocodingApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
       return GeocodingApiResponse.withError(error);
     }

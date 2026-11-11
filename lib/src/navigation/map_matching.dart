@@ -1,8 +1,5 @@
-import 'dart:convert';
-
-import 'package:http/http.dart';
-
 import '../../mapbox_api.dart';
+import '../http_helpers.dart';
 import '../url_helpers.dart';
 
 /// The Mapbox Map Matching API snaps fuzzy,
@@ -34,6 +31,10 @@ class MapMatchingApi {
     List<String> waypointNames = const <String>[],
     List<List<double>> waypoints = const <List<double>>[],
   }) async {
+    if (api.accessToken == null) {
+      return MapMatchingApiResponse.withError(missingAccessToken());
+    }
+
     var url = '$endpoint/$version${profilePath(profile)}';
 
     if (coordinates.isNotEmpty) {
@@ -64,12 +65,16 @@ class MapMatchingApi {
     url += listParam('waypoints', waypoints.map(lonLat), ';');
     url += listParam('annotations', annotations.map((a) => a.value), ',');
 
+    final result = await fetchJson(url);
+    final json = result.json;
+    if (json == null) {
+      return MapMatchingApiResponse.withError(result.error!);
+    }
+
     try {
-      final response = await get(Uri.parse(url));
-      final json = jsonDecode(
-        response.body,
-      ) as Map<String, dynamic>;
-      return MapMatchingApiResponse.fromJson(json);
+      // Endpoint-specific errors (e.g. `code: NoRoute`) take precedence over
+      // the generic HTTP error.
+      return MapMatchingApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
       return MapMatchingApiResponse.withError(error);
     }
@@ -89,9 +94,7 @@ class MapMatchingApiResponse {
     this.error,
   });
 
-  MapMatchingApiResponse.withError(Error error) {
-    error = error;
-  }
+  MapMatchingApiResponse.withError(Error this.error);
 
   MapMatchingApiResponse.fromJson(Map<String, dynamic> json) {
     code = json['code'] as String?;

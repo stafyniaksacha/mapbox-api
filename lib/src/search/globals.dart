@@ -347,9 +347,7 @@ class GeocodingApiResponse {
     this.error,
   });
 
-  GeocodingApiResponse.withError(Error error) {
-    error = error;
-  }
+  GeocodingApiResponse.withError(Error this.error);
 
   GeocodingApiResponse.fromJson(Map<String, dynamic> json) {
     final message = json['message'] as String?;

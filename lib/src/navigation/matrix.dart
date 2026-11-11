@@ -1,8 +1,5 @@
-import 'dart:convert';
-
-import 'package:http/http.dart';
-
 import '../../mapbox_api.dart';
+import '../http_helpers.dart';
 import '../url_helpers.dart';
 
 /// The Mapbox Matrix API returns travel times between many points.
@@ -35,6 +32,10 @@ class MatrixApi {
     int fallbackSpeed = 0,
     List<int> sources = const <int>[],
   }) async {
+    if (api.accessToken == null) {
+      return MatrixApiResponse.withError(missingAccessToken());
+    }
+
     var url = '$endpoint/$version${profilePath(profile)}';
 
     if (coordinates.isNotEmpty) {
@@ -64,12 +65,16 @@ class MatrixApi {
       url += '&fallback_speed=$fallbackSpeed';
     }
 
+    final result = await fetchJson(url);
+    final json = result.json;
+    if (json == null) {
+      return MatrixApiResponse.withError(result.error!);
+    }
+
     try {
-      final response = await get(Uri.parse(url));
-      final json = jsonDecode(
-        response.body,
-      ) as Map<String, dynamic>;
-      return MatrixApiResponse.fromJson(json);
+      // Endpoint-specific errors (e.g. `code: NoRoute`) take precedence over
+      // the generic HTTP error.
+      return MatrixApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
       return MatrixApiResponse.withError(error);
     }
@@ -149,7 +154,5 @@ class MatrixApiResponse {
     }
   }
 
-  MatrixApiResponse.withError(Error error) {
-    error = error;
-  }
+  MatrixApiResponse.withError(Error this.error);
 }

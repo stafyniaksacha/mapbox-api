@@ -1,8 +1,5 @@
-import 'dart:convert';
-
-import 'package:http/http.dart';
-
 import '../../mapbox_api.dart';
+import '../http_helpers.dart';
 import '../url_helpers.dart';
 
 /// The Mapbox Optimization API returns a duration-optimized route
@@ -34,6 +31,10 @@ class OptimizationApi {
     bool steps = false,
     bool roundtrip = true,
   }) async {
+    if (api.accessToken == null) {
+      return OptimizationApiResponse.withError(missingAccessToken());
+    }
+
     var url = '$endpoint/$version${profilePath(profile)}';
 
     if (coordinates.isNotEmpty) {
@@ -88,12 +89,16 @@ class OptimizationApi {
     url += listParam('bearings', bearings.map(bearingValue), ';');
     url += listParam('approaches', approaches.map((a) => a.value), ';');
 
+    final result = await fetchJson(url);
+    final json = result.json;
+    if (json == null) {
+      return OptimizationApiResponse.withError(result.error!);
+    }
+
     try {
-      final response = await get(Uri.parse(url));
-      final json = jsonDecode(
-        response.body,
-      ) as Map<String, dynamic>;
-      return OptimizationApiResponse.fromJson(json);
+      // Endpoint-specific errors (e.g. `code: NoRoute`) take precedence over
+      // the generic HTTP error.
+      return OptimizationApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
       return OptimizationApiResponse.withError(error);
     }
@@ -113,9 +118,7 @@ class OptimizationApiResponse {
     this.error,
   });
 
-  OptimizationApiResponse.withError(Error error) {
-    error = error;
-  }
+  OptimizationApiResponse.withError(Error this.error);
 
   OptimizationApiResponse.fromJson(Map<String, dynamic> json) {
     code = json['code'] as String?;

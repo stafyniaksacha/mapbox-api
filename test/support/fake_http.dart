@@ -20,17 +20,22 @@ class Captured<T> {
 }
 
 /// Runs [body] with every top-level `http` call routed to a [MockClient]
-/// that records the request and answers with [responseBody] / [statusCode].
+/// that records the request and answers with [responseBody] / [statusCode],
+/// or throws [throwOnSend] (to simulate a network failure).
 ///
 /// Uses `runWithClient`, so the library code is exercised unchanged.
 Future<Captured<T>> capture<T>(
   Future<T> Function() body, {
   String responseBody = '{}',
   int statusCode = 200,
+  Object? throwOnSend,
 }) async {
   final requests = <http.Request>[];
   final client = MockClient((request) async {
     requests.add(request);
+    if (throwOnSend != null) {
+      throw throwOnSend;
+    }
     return http.Response(
       responseBody,
       statusCode,

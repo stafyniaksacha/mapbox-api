@@ -1,8 +1,5 @@
-import 'dart:convert';
-
-import 'package:http/http.dart';
-
 import '../../mapbox_api.dart';
+import '../http_helpers.dart';
 import '../url_helpers.dart';
 
 /// An isochrone is a line that connects points of
@@ -30,6 +27,10 @@ class IsochroneApi {
     double denoise = 1.0,
     double? generalize,
   }) async {
+    if (api.accessToken == null) {
+      return IsochroneApiResponse.withError(missingAccessToken());
+    }
+
     var url = '$endpoint/$version${profilePath(profile)}';
 
     url += '/${lonLat(coordinates)}';
@@ -54,12 +55,16 @@ class IsochroneApi {
       url += '&generalize=$generalize';
     }
 
+    final result = await fetchJson(url);
+    final json = result.json;
+    if (json == null) {
+      return IsochroneApiResponse.withError(result.error!);
+    }
+
     try {
-      final response = await get(Uri.parse(url));
-      final json = jsonDecode(
-        response.body,
-      ) as Map<String, dynamic>;
-      return IsochroneApiResponse.fromJson(json);
+      // Endpoint-specific errors (e.g. `code: NoRoute`) take precedence over
+      // the generic HTTP error.
+      return IsochroneApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
       return IsochroneApiResponse.withError(error);
     }
@@ -78,9 +83,7 @@ class IsochroneApiResponse {
     this.error,
   });
 
-  IsochroneApiResponse.withError(Error error) {
-    error = error;
-  }
+  IsochroneApiResponse.withError(Error this.error);
 
   IsochroneApiResponse.fromJson(Map<String, dynamic> json) {
     final message = json['message'] as String?;

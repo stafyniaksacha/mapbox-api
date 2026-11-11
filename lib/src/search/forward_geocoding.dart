@@ -1,8 +1,5 @@
-import 'dart:convert';
-
-import 'package:http/http.dart';
-
 import '../../mapbox_api.dart';
+import '../http_helpers.dart';
 import '../url_helpers.dart';
 
 /// The forward geocoding query type allows you to look up
@@ -31,6 +28,10 @@ class ForwardGeocodingApi {
     bool routing = false,
     List<GeocoderPlaceType> types = const <GeocoderPlaceType>[],
   }) async {
+    if (api.accessToken == null) {
+      return GeocodingApiResponse.withError(missingAccessToken());
+    }
+
     var url = '${this.endpoint}/$version${geocoderEndpointPath(endpoint)}';
 
     url += '/$searchText.json';
@@ -47,12 +48,16 @@ class ForwardGeocodingApi {
       types: types,
     );
 
+    final result = await fetchJson(url);
+    final json = result.json;
+    if (json == null) {
+      return GeocodingApiResponse.withError(result.error!);
+    }
+
     try {
-      final response = await get(Uri.parse(url));
-      final json = jsonDecode(
-        response.body,
-      ) as Map<String, dynamic>;
-      return GeocodingApiResponse.fromJson(json);
+      // Endpoint-specific errors (e.g. `code: NoRoute`) take precedence over
+      // the generic HTTP error.
+      return GeocodingApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
       return GeocodingApiResponse.withError(error);
     }
@@ -73,6 +78,10 @@ class ForwardGeocodingApi {
     bool routing = false,
     List<GeocoderPlaceType> types = const <GeocoderPlaceType>[],
   }) async {
+    if (api.accessToken == null) {
+      return GeocodingApiResponse.withError(missingAccessToken());
+    }
+
     var url = '${this.endpoint}/$version';
 
     if (endpoint == GeocoderEndpoint.PLACES_PERMANENT) {
@@ -102,12 +111,16 @@ class ForwardGeocodingApi {
       types: types,
     );
 
+    final result = await fetchJson(url);
+    final json = result.json;
+    if (json == null) {
+      return GeocodingApiResponse.withError(result.error!);
+    }
+
     try {
-      final response = await get(Uri.parse(url));
-      final json = jsonDecode(
-        response.body,
-      ) as Map<String, dynamic>;
-      return GeocodingApiResponse.fromJson(json);
+      // Endpoint-specific errors (e.g. `code: NoRoute`) take precedence over
+      // the generic HTTP error.
+      return GeocodingApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
       return GeocodingApiResponse.withError(error);
     }

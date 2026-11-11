@@ -220,13 +220,5 @@ void main() {
       expect(uri.queryParameters, isEmpty);
       expect(uri.fragment, contains('access_token'));
     });
-
-    test('a null access token throws instead of returning an error', () async {
-      final api = MapboxApi();
-      await expectLater(
-        capture(() => api.forwardGeocoding.request(searchText: 'x')),
-        throwsA(isA<TypeError>()),
-      );
-    });
   });
 }

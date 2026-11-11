@@ -7,6 +7,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:http/http.dart' show ClientException;
 import 'package:mapbox_api/mapbox_api.dart';
 import 'package:test/test.dart';
 
@@ -183,11 +184,9 @@ void main() {
         .result;
     // Known 1.1.0 bug: NavigationFeatureGeometry.coordinates is typed
     // List<double>, but isochrone geometries are always nested (LineString /
-    // Polygon). Parsing throws, withError drops it: every real response ends
-    // up with features == null and error == null. Fixing needs a public type
-    // change (2.0).
+    // Polygon), so parsing fails. Since 1.2.0 the failure is reported.
     expect(r.features, isNull);
-    expect(r.error, isNull);
+    expect(r.error, isA<TypeError>());
   });
 
   test('optimization', () async {
@@ -270,30 +269,111 @@ void main() {
     });
   });
 
-  group('known 1.1.0 bugs', () {
-    test('withError never stores the error (self-assignment)', () async {
-      // `durations` is a string: the cast throws a TypeError, which is caught
-      // and handed to withError, which then drops it.
+  group('error reporting (fixed in 1.2.0)', () {
+    test('parse failures are stored in error (was dropped)', () async {
       final r = (await capture(
         () => api.matrix!.request(coordinates: twoPoints, destinations: []),
         responseBody: jsonEncode({'code': 'Ok', 'durations': 'oops'}),
       ))
           .result;
-      expect(r.error, isNull);
+      expect(r.error, isA<TypeError>());
       expect(r.durations, isNull);
     });
 
-    test('integer values in matrix durations are silently dropped', () async {
+    test('HTTP 401 without an endpoint error code is a MapboxHttpError',
+        () async {
+      final r = await directions(fixture('unauthorized.json'), status: 401);
+      expect(r.routes, isNull);
+      expect(
+        r.error,
+        isA<MapboxHttpError>()
+            .having((e) => e.statusCode, 'statusCode', 401)
+            .having((e) => e.message, 'message', contains('Invalid Token')),
+      );
+    });
+
+    test('endpoint-specific errors take precedence over the HTTP status',
+        () async {
+      final r =
+          await directions(fixture('directions_no_route.json'), status: 422);
+      expect(r.error, isA<NavigationNoRouteError>());
+
+      final g = (await capture(
+        () => api.forwardGeocoding.request(searchText: 'x'),
+        responseBody: fixture('unauthorized.json'),
+        statusCode: 401,
+      ))
+          .result;
+      expect(g.error, isA<GeocoderError>());
+    });
+
+    test('a non-JSON error body is a MapboxHttpError (was thrown)', () async {
+      final r = await directions('<html>502 Bad Gateway</html>', status: 502);
+      expect(
+        r.error,
+        isA<MapboxHttpError>()
+            .having((e) => e.statusCode, 'statusCode', 502)
+            .having((e) => e.message, 'message', isNull),
+      );
+    });
+
+    test('a non-JSON 200 body is a MapboxRequestError', () async {
+      final r = await directions('not json');
+      expect(r.error, isA<MapboxRequestError>());
+    });
+
+    test('a network failure is a MapboxRequestError (was thrown)', () async {
+      final r = (await capture(
+        () => api.directions.request(coordinates: twoPoints),
+        throwOnSend: ClientException(
+          'Connection refused',
+          Uri.parse('https://api.mapbox.com/x?access_token=$testToken'),
+        ),
+      ))
+          .result;
+      expect(
+        r.error,
+        isA<MapboxRequestError>()
+            .having((e) => e.message, 'message', 'Connection refused')
+            .having((e) => e.cause, 'cause', isA<ClientException>()),
+      );
+      // The request URL carries the token: errors must be safe to log.
+      expect(r.error.toString(), isNot(contains(testToken)));
+    });
+
+    test('a missing access token returns an error (was thrown)', () async {
+      final noToken = MapboxApi();
+      final responses = [
+        (await capture(() => noToken.directions.request())).result.error,
+        (await capture(() => noToken.forwardGeocoding.request(searchText: 'x')))
+            .result
+            .error,
+        (await capture(() => noToken.reverseGeocoding.batch())).result.error,
+      ];
+      for (final error in responses) {
+        expect(error, isA<ArgumentError>());
+      }
+    });
+
+    test('no request is sent without an access token', () async {
+      final captured =
+          await capture(() => MapboxApi().matrix!.request(destinations: []));
+      expect(captured.requests, isEmpty);
+    });
+  });
+
+  group('known 1.1.0 bugs', () {
+    test('integer values in matrix durations fail to parse', () async {
       final r = (await capture(
         () => api.matrix!.request(coordinates: twoPoints, destinations: []),
         responseBody: fixture('matrix_integer_values.json'),
       ))
           .result;
       expect(r.durations, isNull);
-      expect(r.error, isNull);
+      expect(r.error, isA<TypeError>());
     });
 
-    test('a null tracepoint (unmatched point) drops the whole response',
+    test('a null tracepoint (unmatched point) fails the whole response',
         () async {
       final body = jsonDecode(fixture('map_matching.json')) as Map;
       body['tracepoints'] = [...body['tracepoints'] as List, null];
@@ -303,7 +383,7 @@ void main() {
       ))
           .result;
       expect(r.tracepoints, isNull);
-      expect(r.error, isNull);
+      expect(r.error, isA<TypeError>());
     });
 
     test('route weight_name is read from the wrong key', () async {
@@ -315,19 +395,6 @@ void main() {
       final r = await directions(fixture('directions.json'));
       final step = r.routes!.single.legs!.single.steps!.first;
       expect(step.intersections!.single.outIndex, isNull);
-    });
-
-    test('HTTP 401 on directions is reported as success', () async {
-      final r = await directions(fixture('unauthorized.json'), status: 401);
-      expect(r.error, isNull);
-      expect(r.routes, isNull);
-    });
-
-    test('a non-JSON body throws FormatException out of request()', () async {
-      await expectLater(
-        directions('<html>502 Bad Gateway</html>', status: 502),
-        throwsA(isA<FormatException>()),
-      );
     });
   });
 }
