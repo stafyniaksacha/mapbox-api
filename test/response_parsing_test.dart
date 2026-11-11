@@ -413,6 +413,43 @@ void main() {
     });
   });
 
+  test('maxspeed, congestion_numeric and closures (1.2.0)', () async {
+    final r = await directions(jsonEncode({
+      'code': 'Ok',
+      'routes': [
+        {
+          'legs': [
+            {
+              'annotation': {
+                'maxspeed': [
+                  {'speed': 50, 'unit': 'km/h'},
+                  {'unknown': true},
+                  {'none': true},
+                ],
+                'congestion_numeric': [0, null, 100],
+              },
+              'closures': [
+                {'geometry_index_start': 3, 'geometry_index_end': 7},
+              ],
+            },
+          ],
+        },
+      ],
+    }));
+    expect(r.error, isNull);
+    final leg = r.routes!.single.legs!.single;
+    final maxspeed = leg.annotation!.maxspeed!;
+    expect(maxspeed[0].speed, 50.0);
+    expect(maxspeed[0].unit, 'km/h');
+    expect(maxspeed[0].unknown, isFalse);
+    expect(maxspeed[1].unknown, isTrue);
+    expect(maxspeed[1].speed, isNull);
+    expect(maxspeed[2].none, isTrue);
+    expect(leg.annotation!.congestionNumeric, [0, null, 100]);
+    expect(leg.closures!.single.geometryIndexStart, 3);
+    expect(leg.closures!.single.geometryIndexEnd, 7);
+  });
+
   group('parsing (fixed in 1.2.0)', () {
     test('integer values in matrix durations are parsed', () async {
       final r = (await capture(

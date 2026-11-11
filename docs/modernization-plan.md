@@ -238,7 +238,11 @@ clear CHANGELOG entries.
 
 > **Status:** split into three PRs.
 > - **5a (done):** `client` + `timeout`, README, dartdoc on every public type.
-> - **5b:** newer Directions params incl. EV routing.
+> - **5b (done):** vehicle limits, `depart_at`/`arrive_by`, `include`, `avoid_maneuver_radius`, newer
+>   `exclude` values, `maxspeed`/`congestion_numeric`/`closure` annotations.
+> - **5b-EV (open, needs decision):** EV routing (`engine=electric`, ~25 `ev_*` params, charging-stop
+>   waypoint metadata, `state_of_charge`) is a Mapbox *private preview*; needs an API shape
+>   (e.g. a `DirectionsEvOptions` object) and preview access to test.
 > - **5c:** Geocoding v6 as a new API, which also resolves B16.
 >
 > Dropped from 1.x: `CYCLING` alias, because parsing can't switch values without a behavior break → 2.0.

@@ -67,11 +67,16 @@ class OptimizationApi {
       ';',
     );
     url += listParam('radiuses', radiuses.map(radiusValue), ';');
-    // The Optimization API does not support congestion annotations.
+    // The Optimization API only supports duration, distance and speed.
     url += listParam(
       'annotations',
       annotations
-          .where((a) => a != NavigationAnnotations.CONGESTION)
+          .where(
+            (a) =>
+                a == NavigationAnnotations.DURATION ||
+                a == NavigationAnnotations.DISTANCE ||
+                a == NavigationAnnotations.SPEED,
+          )
           .map((a) => a.value),
       ',',
     );

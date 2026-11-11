@@ -14,6 +14,16 @@ enum NavigationAnnotations {
   DISTANCE,
   SPEED,
   CONGESTION,
+
+  /// Posted speed limit per segment (beta at Mapbox). Driving profiles.
+  MAXSPEED,
+
+  /// Congestion as a number from 0 to 100. `driving-traffic` only.
+  CONGESTION_NUMERIC,
+
+  /// Live-traffic closures, returned in [NavigationLeg.closures].
+  /// `driving-traffic` only.
+  CLOSURE,
 }
 
 /// Road types to avoid (`exclude`), best effort.
@@ -21,6 +31,23 @@ enum NavigationExclude {
   TOLL,
   MOTORWAY,
   FERRY,
+  UNPAVED,
+  CASH_ONLY_TOLLS,
+  COUNTRY_BORDER,
+  STATE_BORDER,
+  TUNNEL,
+}
+
+/// Restricted lanes the route may use (`include`). Driving profiles.
+enum NavigationInclude {
+  /// High-occupancy vehicle lanes requiring at least 2 occupants.
+  HOV2,
+
+  /// High-occupancy vehicle lanes requiring at least 3 occupants.
+  HOV3,
+
+  /// High-occupancy toll lanes.
+  HOT,
 }
 
 /// Format of returned geometries.
@@ -472,6 +499,7 @@ class NavigationLeg {
     this.steps = const <NavigationStep>[],
     this.summary,
     this.annotation,
+    this.closures,
   });
 
   NavigationLeg.fromJson(Map<String, dynamic> json) {
@@ -493,6 +521,12 @@ class NavigationLeg {
         json['annotation'] as Map<String, dynamic>,
       );
     }
+    if (json['closures'] != null) {
+      closures = [
+        for (final value in json['closures'] as List<dynamic>)
+          NavigationClosure.fromJson(value as Map<String, dynamic>),
+      ];
+    }
   }
 
   double? duration;
@@ -500,6 +534,10 @@ class NavigationLeg {
   List<NavigationStep>? steps;
   String? summary;
   NavigationAnnotation? annotation;
+
+  /// Live-traffic closures on this leg (requested with
+  /// [NavigationAnnotations.CLOSURE]).
+  List<NavigationClosure>? closures;
 }
 
 /// Per-segment metadata of a route leg, requested with `annotations`.
@@ -509,6 +547,8 @@ class NavigationAnnotation {
     this.distance,
     this.speed,
     this.congestion,
+    this.maxspeed,
+    this.congestionNumeric,
   });
 
   NavigationAnnotation.fromJson(Map<String, dynamic> json) {
@@ -526,12 +566,73 @@ class NavigationAnnotation {
         json['congestion'] as List<dynamic>,
       );
     }
+    if (json['maxspeed'] != null) {
+      maxspeed = [
+        for (final value in json['maxspeed'] as List<dynamic>)
+          NavigationMaxSpeed.fromJson(value as Map<String, dynamic>),
+      ];
+    }
+    if (json['congestion_numeric'] != null) {
+      congestionNumeric = [
+        for (final value in json['congestion_numeric'] as List<dynamic>)
+          (value as num?)?.toInt(),
+      ];
+    }
   }
 
   List<double>? duration;
   List<double>? distance;
   List<double>? speed;
   List<String>? congestion;
+
+  /// Posted speed limit per segment ([NavigationAnnotations.MAXSPEED]).
+  List<NavigationMaxSpeed>? maxspeed;
+
+  /// Congestion from 0 (none) to 100 (maximum) per segment; `null` when
+  /// unknown ([NavigationAnnotations.CONGESTION_NUMERIC]).
+  List<int?>? congestionNumeric;
+}
+
+/// Posted speed limit of a segment: either [speed] and [unit], or
+/// [unknown], or [none] (no limit, e.g. a German Autobahn).
+class NavigationMaxSpeed {
+  NavigationMaxSpeed({
+    this.speed,
+    this.unit,
+    this.unknown = false,
+    this.none = false,
+  });
+
+  NavigationMaxSpeed.fromJson(Map<String, dynamic> json)
+      : speed = (json['speed'] as num?)?.toDouble(),
+        unit = json['unit'] as String?,
+        unknown = json['unknown'] == true,
+        none = json['none'] == true;
+
+  /// The limit, in [unit].
+  double? speed;
+
+  /// `km/h` or `mph`.
+  String? unit;
+
+  /// The limit is not known.
+  bool unknown;
+
+  /// There is no limit.
+  bool none;
+}
+
+/// A live-traffic closure on a leg, as geometry indexes relative to the start
+/// of the leg ([NavigationAnnotations.CLOSURE], `driving-traffic`).
+class NavigationClosure {
+  NavigationClosure({this.geometryIndexStart, this.geometryIndexEnd});
+
+  NavigationClosure.fromJson(Map<String, dynamic> json)
+      : geometryIndexStart = (json['geometry_index_start'] as num?)?.toInt(),
+        geometryIndexEnd = (json['geometry_index_end'] as num?)?.toInt();
+
+  int? geometryIndexStart;
+  int? geometryIndexEnd;
 }
 
 /// A single maneuver and the road travelled until the next one.

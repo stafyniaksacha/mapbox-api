@@ -15,6 +15,16 @@ class DirectionsApi {
   /// Retrieve directions between waypoints.
   /// Directions requests must specify at least two waypoints
   /// as starting and ending points.
+  ///
+  /// Driving-profile options (sent as given; the API reports unsupported
+  /// combinations in `error`):
+  /// - [maxHeight] / [maxWidth] (meters, 0–10) and [maxWeight] (metric tons,
+  ///   0–100) avoid roads the vehicle cannot use.
+  /// - [departAt] (`driving`, `driving-traffic`) or [arriveBy] (`driving`)
+  ///   plan for a time; sent in UTC.
+  /// - [include] allows HOV/HOT lanes; [avoidManeuverRadius] (meters,
+  ///   1–1000) avoids maneuvers right after the start, e.g. while moving.
+  ///   It cannot be combined with [departAt] or [arriveBy].
   Future<DirectionsApiResponse> request({
     NavigationProfile? profile,
     List<List<double>> coordinates = const <List<double>>[],
@@ -39,6 +49,13 @@ class DirectionsApi {
     double walkingSpeed = 1.42,
     double walkwayBias = 0,
     double alleyBias = 0,
+    List<NavigationInclude> include = const <NavigationInclude>[],
+    double? maxHeight,
+    double? maxWidth,
+    double? maxWeight,
+    DateTime? departAt,
+    DateTime? arriveBy,
+    double? avoidManeuverRadius,
   }) async {
     if (api.accessToken == null) {
       throw missingAccessToken();
@@ -103,6 +120,26 @@ class DirectionsApi {
     url += listParam('waypoints', waypoints.map(lonLat), ';');
     url += listParam('annotations', annotations.map((a) => a.value), ',');
     url += listParam('exclude', excludes.map((e) => e.value), ',');
+    url += listParam('include', include.map((i) => i.value), ',');
+
+    if (maxHeight != null) {
+      url += '&max_height=$maxHeight';
+    }
+    if (maxWidth != null) {
+      url += '&max_width=$maxWidth';
+    }
+    if (maxWeight != null) {
+      url += '&max_weight=$maxWeight';
+    }
+    if (departAt != null) {
+      url += '&depart_at=${mapboxDateTime(departAt)}';
+    }
+    if (arriveBy != null) {
+      url += '&arrive_by=${mapboxDateTime(arriveBy)}';
+    }
+    if (avoidManeuverRadius != null) {
+      url += '&avoid_maneuver_radius=$avoidManeuverRadius';
+    }
 
     final result = await fetchJson(api, url);
     final json = result.json;

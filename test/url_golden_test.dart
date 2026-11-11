@@ -25,11 +25,13 @@ const goldens = <String, String>{
   'directions/no-profile':
       'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token',
   'directions/all-options':
-      'https://api.mapbox.com/directions/v5/mapbox/driving-traffic/2.3,48.8;2.4,48.9;2.5,49.0?access_token=pk.test-token&language=fr&steps=true&alternatives=true&banner_instructions=true&roundabout_exits=true&voice_instructions=true&continue_straight=true&geometries=geojson&overview=full&approaches=curb;unrestricted&bearings=45.0,90.0;0.0,180.0&voice_units=metric&radiuses=10.0;unlimited;25.5&waypoint_names=Home;Work&waypoint_targets=2.31,48.81;2.51,49.01&waypoints=2.3,48.8;2.5,49.0&annotations=duration,distance,speed,congestion&exclude=toll,ferry',
+      'https://api.mapbox.com/directions/v5/mapbox/driving-traffic/2.3,48.8;2.4,48.9;2.5,49.0?access_token=pk.test-token&language=fr&steps=true&alternatives=true&banner_instructions=true&roundabout_exits=true&voice_instructions=true&continue_straight=true&geometries=geojson&overview=full&approaches=curb;unrestricted&bearings=45.0,90.0;0.0,180.0&voice_units=metric&radiuses=10.0;unlimited;25.5&waypoint_names=Home;Work&waypoint_targets=2.31,48.81;2.51,49.01&waypoints=2.3,48.8;2.5,49.0&annotations=duration,distance,speed,congestion,maxspeed,congestion_numeric,closure&exclude=toll,ferry',
   'directions/walking':
       'https://api.mapbox.com/directions/v5/mapbox/walking/2.0,1.0;4.0,3.0?access_token=pk.test-token&walking_speed=2.0&walkway_bias=0.5&alley_bias=-1.0&geometries=polyline6&overview=false',
   'directions/walking-params-ignored-when-not-walking':
       'https://api.mapbox.com/directions/v5/mapbox/cycling/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'directions/vehicle-time-include':
+      'https://api.mapbox.com/directions/v5/mapbox/driving/2.3,48.8;2.4,48.9?access_token=pk.test-token&exclude=toll,motorway,ferry,unpaved,cash_only_tolls,country_border,state_border,tunnel&include=hov2,hov3,hot&max_height=4.2&max_width=2.55&max_weight=19.0&depart_at=2026-03-04T05:06:07Z&arrive_by=2026-12-31T23:59:00Z&avoid_maneuver_radius=300.0',
   'map_matching/minimal':
       'https://api.mapbox.com/matching/v5/mapbox/driving/2.0,1.0;4.0,3.0.json?access_token=pk.test-token',
   'map_matching/all-options':
@@ -149,7 +151,7 @@ const goldens = <String, String>{
   'edge/directions/voice_units-metric':
       'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token&voice_units=metric',
   'edge/directions/annotations-all':
-      'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token&annotations=duration,distance,speed,congestion',
+      'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token&annotations=duration,distance,speed,congestion,maxspeed,congestion_numeric,closure',
   'edge/map_matching/annotations-all':
       'https://api.mapbox.com/matching/v5/2.0,1.0;4.0,3.0.json?access_token=pk.test-token&annotations=duration,distance,speed,congestion',
   'edge/matrix/annotations-all':

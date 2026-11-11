@@ -66,6 +66,9 @@ extension NavigationAnnotationsValue on NavigationAnnotations {
         NavigationAnnotations.DISTANCE => 'distance',
         NavigationAnnotations.SPEED => 'speed',
         NavigationAnnotations.CONGESTION => 'congestion',
+        NavigationAnnotations.MAXSPEED => 'maxspeed',
+        NavigationAnnotations.CONGESTION_NUMERIC => 'congestion_numeric',
+        NavigationAnnotations.CLOSURE => 'closure',
       };
 }
 
@@ -89,7 +92,30 @@ extension NavigationExcludeValue on NavigationExclude {
         NavigationExclude.TOLL => 'toll',
         NavigationExclude.MOTORWAY => 'motorway',
         NavigationExclude.FERRY => 'ferry',
+        NavigationExclude.UNPAVED => 'unpaved',
+        NavigationExclude.CASH_ONLY_TOLLS => 'cash_only_tolls',
+        NavigationExclude.COUNTRY_BORDER => 'country_border',
+        NavigationExclude.STATE_BORDER => 'state_border',
+        NavigationExclude.TUNNEL => 'tunnel',
       };
+}
+
+extension NavigationIncludeValue on NavigationInclude {
+  String get value => switch (this) {
+        NavigationInclude.HOV2 => 'hov2',
+        NavigationInclude.HOV3 => 'hov3',
+        NavigationInclude.HOT => 'hot',
+      };
+}
+
+/// A date-time in the `YYYY-MM-DDThh:mm:ssZ` form the Directions API
+/// accepts (UTC, no fractional seconds).
+String mapboxDateTime(DateTime dateTime) {
+  final utc = dateTime.toUtc();
+  String two(int value) => value.toString().padLeft(2, '0');
+  return '${utc.year.toString().padLeft(4, '0')}-${two(utc.month)}-'
+      '${two(utc.day)}T${two(utc.hour)}:${two(utc.minute)}:'
+      '${two(utc.second)}Z';
 }
 
 /// Percent-encodes user-provided text for a URL path segment or query value,

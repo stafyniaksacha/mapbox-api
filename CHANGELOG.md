@@ -75,6 +75,17 @@ behavior: read **Behavior changes** before upgrading.
 
 ### Additions
 
+* Directions: `maxHeight`, `maxWidth`, `maxWeight`, `departAt`, `arriveBy`
+  (`DateTime`, sent as UTC `YYYY-MM-DDThh:mm:ssZ`), `include`
+  (`NavigationInclude.HOV2/HOV3/HOT`) and `avoidManeuverRadius`.
+* Directions annotations `MAXSPEED` (beta at Mapbox), `CONGESTION_NUMERIC` and
+  `CLOSURE`, parsed into `NavigationAnnotation.maxspeed`
+  (`NavigationMaxSpeed`), `NavigationAnnotation.congestionNumeric` and
+  `NavigationLeg.closures` (`NavigationClosure`). Matrix, Optimization and Map
+  Matching keep sending only the annotations they supported before.
+* `NavigationExclude.UNPAVED/CASH_ONLY_TOLLS/COUNTRY_BORDER/STATE_BORDER/TUNNEL`.
+  As with the other new enum members, exhaustive `switch` statements on
+  `NavigationAnnotations` / `NavigationExclude` need a new case or a default.
 * `MapboxApi(client: ..., timeout: ...)`: optional `http.Client` reused for
   every request, and a per-request timeout (throws `TimeoutException`).
   Defaults keep the 1.1.0 behavior.

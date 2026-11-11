@@ -89,6 +89,24 @@ final Map<String, Future<Object?> Function()> _baseCases = {
         walkwayBias: 0.5,
       ),
 
+  // Parameters added in 1.2.0 (phase 5b).
+  'directions/vehicle-time-include': () => _api.directions.request(
+        profile: NavigationProfile.DRIVING,
+        coordinates: [
+          [48.8, 2.3],
+          [48.9, 2.4],
+        ],
+        excludes: NavigationExclude.values,
+        include: NavigationInclude.values,
+        maxHeight: 4.2,
+        maxWidth: 2.55,
+        maxWeight: 19,
+        // Not UTC on purpose: must be converted, without milliseconds.
+        departAt: DateTime.utc(2026, 3, 4, 5, 6, 7, 890).toLocal(),
+        arriveBy: DateTime.utc(2026, 12, 31, 23, 59),
+        avoidManeuverRadius: 300,
+      ),
+
   // ------------------------------------------------------------- map matching
   'map_matching/minimal': () => _api.mapMatching!.request(
         profile: NavigationProfile.DRIVING,
