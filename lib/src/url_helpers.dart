@@ -172,6 +172,48 @@ String _chargingCurve(List<EvChargingPoint> curve) => curve
     .map((point) => '${numValue(point.chargeWh)},${numValue(point.powerW)}')
     .join(';');
 
+/// Throws [ArgumentError] for EV options Mapbox would reject, so no request
+/// is sent. [coordinateCount] is the number of request coordinates.
+void checkEvOptions(DirectionsEvOptions ev, int coordinateCount) {
+  void require(bool condition, String message) {
+    if (!condition) {
+      throw ArgumentError(message, 'ev');
+    }
+  }
+
+  require(ev.connectorTypes.isNotEmpty, 'connectorTypes must not be empty');
+  require(
+    ev.energyConsumptionCurve.isNotEmpty,
+    'energyConsumptionCurve must not be empty',
+  );
+  require(ev.chargingCurve.isNotEmpty, 'chargingCurve must not be empty');
+  require(
+    ev.preConditioningTime == null ||
+        (ev.unconditionedChargingCurve?.isNotEmpty ?? false),
+    'preConditioningTime requires a non-empty unconditionedChargingCurve',
+  );
+  require(
+    ev.preferChargePointProviderWeights.isEmpty ||
+        ev.preferChargePointProviderWeights.length ==
+            ev.preferChargePointProviderIds.length,
+    'preferChargePointProviderWeights needs one weight per '
+    'preferChargePointProviderIds entry',
+  );
+
+  final stations = ev.waypointChargingStations;
+  if (stations.isNotEmpty) {
+    require(
+      stations.length == coordinateCount,
+      'waypointChargingStations needs one entry per coordinate '
+      '(${stations.length} for $coordinateCount coordinates)',
+    );
+    require(
+      stations.first == null,
+      'waypointChargingStations: the origin (first entry) must be null',
+    );
+  }
+}
+
 /// The EV routing query parameters (`engine=electric&ev_…`).
 String evQuery(DirectionsEvOptions ev) {
   var url = '&engine=electric&ev_max_charge=${ev.maxCharge}';

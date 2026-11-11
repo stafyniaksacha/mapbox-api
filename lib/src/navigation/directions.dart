@@ -28,7 +28,9 @@ class DirectionsApi {
   ///   1–1000) avoids maneuvers right after the start, e.g. while moving.
   ///   It cannot be combined with [departAt] or [arriveBy].
   /// - [ev] enables electric vehicle routing (Mapbox private preview); see
-  ///   [DirectionsEvOptions]. Charging stops come back as waypoints with
+  ///   [DirectionsEvOptions]. Options Mapbox would reject (empty required
+  ///   lists, stations not aligned with [coordinates], …) throw an
+  ///   [ArgumentError] before any request is sent. Charging stops come back as waypoints with
   ///   [NavigationWaypoint.metadata].
   /// - [waypointsPerRoute] returns the waypoints of each route in
   ///   [NavigationRoute.waypoints] (needed for EV routes with alternatives).
@@ -68,6 +70,9 @@ class DirectionsApi {
   }) async {
     if (api.accessToken == null) {
       throw missingAccessToken();
+    }
+    if (ev != null) {
+      checkEvOptions(ev, coordinates.length);
     }
 
     var url = '$endpoint/$version${profilePath(profile)}';

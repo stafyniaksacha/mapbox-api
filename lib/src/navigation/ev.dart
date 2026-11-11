@@ -72,6 +72,14 @@ class EvWaypointChargingStation {
 /// API default), 25 otherwise. Request `waypointsPerRoute: true` to get the
 /// charging stops of each alternative route.
 ///
+/// `DirectionsApi.request` throws an [ArgumentError], before sending
+/// anything, when [connectorTypes], [energyConsumptionCurve] or
+/// [chargingCurve] is empty, when [preConditioningTime] comes without a
+/// non-empty [unconditionedChargingCurve], when
+/// [preferChargePointProviderWeights] does not match
+/// [preferChargePointProviderIds], or when [waypointChargingStations] is not
+/// empty and does not have one entry per coordinate with a `null` origin.
+///
 /// Mapbox private preview: see the library comment of this file.
 class DirectionsEvOptions {
   const DirectionsEvOptions({

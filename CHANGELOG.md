@@ -81,7 +81,9 @@ behavior: read **Behavior changes** before upgrading.
   via `EvWaypointChargingStation`), `waypointsPerRoute`, charging-stop details
   in `NavigationWaypoint.metadata` (`NavigationWaypointMetadata`),
   `NavigationRoute.waypoints`, and the `STATE_OF_CHARGE` annotation
-  (`NavigationAnnotation.stateOfCharge`).
+  (`NavigationAnnotation.stateOfCharge`). EV options Mapbox would reject
+  (empty required lists, misaligned stations or provider weights, …) throw an
+  `ArgumentError` before any request is sent.
 * Directions: `maxHeight`, `maxWidth`, `maxWeight`, `departAt`, `arriveBy`
   (`DateTime`, sent as UTC `YYYY-MM-DDThh:mm:ssZ`), `include`
   (`NavigationInclude.HOV2/HOV3/HOT`) and `avoidManeuverRadius`.

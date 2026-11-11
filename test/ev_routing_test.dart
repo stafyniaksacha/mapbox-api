@@ -198,4 +198,157 @@ void main() {
       );
     });
   });
+
+  group('invalid EV options throw ArgumentError before any request', () {
+    const curve = [(speedKph: 0, whPerKm: 300)];
+    const charging = [(chargeWh: 0, powerW: 100000)];
+    const station = EvWaypointChargingStation(
+      power: 50000,
+      currentType: EvCurrentType.DC,
+      stationId: 's',
+    );
+    const twoCoordinates = [
+      [1.0, 2.0],
+      [3.0, 4.0],
+    ];
+
+    Future<void> expectRejected(
+      DirectionsEvOptions ev,
+      String reason, {
+      List<List<double>> coordinates = twoCoordinates,
+    }) async {
+      await expectLater(
+        capture(
+          () => api.directions.request(
+            profile: NavigationProfile.DRIVING,
+            coordinates: coordinates,
+            ev: ev,
+          ),
+        ),
+        throwsA(
+          isA<ArgumentError>().having(
+            (e) => e.message.toString(),
+            'message',
+            contains(reason),
+          ),
+        ),
+      );
+    }
+
+    test('stations not aligned with coordinates', () async {
+      await expectRejected(
+        const DirectionsEvOptions(
+          maxCharge: 1,
+          connectorTypes: [EvConnectorType.CHADEMO],
+          energyConsumptionCurve: curve,
+          chargingCurve: charging,
+          waypointChargingStations: [null],
+        ),
+        'one entry per coordinate',
+      );
+    });
+
+    test('a station on the origin', () async {
+      await expectRejected(
+        const DirectionsEvOptions(
+          maxCharge: 1,
+          connectorTypes: [EvConnectorType.CHADEMO],
+          energyConsumptionCurve: curve,
+          chargingCurve: charging,
+          waypointChargingStations: [station, null],
+        ),
+        'origin',
+      );
+    });
+
+    test('provider weights not aligned with provider ids', () async {
+      await expectRejected(
+        const DirectionsEvOptions(
+          maxCharge: 1,
+          connectorTypes: [EvConnectorType.CHADEMO],
+          energyConsumptionCurve: curve,
+          chargingCurve: charging,
+          preferChargePointProviderIds: ['a', 'b'],
+          preferChargePointProviderWeights: [1],
+        ),
+        'preferChargePointProviderWeights',
+      );
+    });
+
+    test('weights without provider ids', () async {
+      await expectRejected(
+        const DirectionsEvOptions(
+          maxCharge: 1,
+          connectorTypes: [EvConnectorType.CHADEMO],
+          energyConsumptionCurve: curve,
+          chargingCurve: charging,
+          preferChargePointProviderWeights: [1],
+        ),
+        'preferChargePointProviderWeights',
+      );
+    });
+
+    test('empty required lists', () async {
+      await expectRejected(
+        const DirectionsEvOptions(
+          maxCharge: 1,
+          connectorTypes: [],
+          energyConsumptionCurve: curve,
+          chargingCurve: charging,
+        ),
+        'connectorTypes',
+      );
+      await expectRejected(
+        const DirectionsEvOptions(
+          maxCharge: 1,
+          connectorTypes: [EvConnectorType.CHADEMO],
+          energyConsumptionCurve: [],
+          chargingCurve: charging,
+        ),
+        'energyConsumptionCurve',
+      );
+      await expectRejected(
+        const DirectionsEvOptions(
+          maxCharge: 1,
+          connectorTypes: [EvConnectorType.CHADEMO],
+          energyConsumptionCurve: curve,
+          chargingCurve: [],
+        ),
+        'chargingCurve',
+      );
+    });
+
+    test('pre-conditioning time with an empty curve', () async {
+      await expectRejected(
+        const DirectionsEvOptions(
+          maxCharge: 1,
+          connectorTypes: [EvConnectorType.CHADEMO],
+          energyConsumptionCurve: curve,
+          chargingCurve: charging,
+          unconditionedChargingCurve: [],
+          preConditioningTime: 10,
+        ),
+        'unconditionedChargingCurve',
+      );
+    });
+
+    test('nothing is sent when options are rejected', () async {
+      final captured = await capture(() async {
+        try {
+          await api.directions.request(
+            coordinates: twoCoordinates,
+            ev: const DirectionsEvOptions(
+              maxCharge: 1,
+              connectorTypes: [],
+              energyConsumptionCurve: curve,
+              chargingCurve: charging,
+            ),
+          );
+        } on ArgumentError {
+          // expected
+        }
+      });
+      expect(captured.requests, isEmpty);
+    });
+  });
 }
