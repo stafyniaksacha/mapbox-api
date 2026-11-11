@@ -362,6 +362,24 @@ void main() {
       expect(r.error.toString(), isNot(contains(testToken)));
     });
 
+    test('an invalid endpoint is a MapboxRequestError, not thrown', () async {
+      final custom = MapboxApi(accessToken: testToken);
+      custom.directions.endpoint = 'api.mapbox.com/directions'; // no scheme
+      final r = (await capture(
+        () => custom.directions.request(coordinates: twoPoints),
+        throwOnSend: ArgumentError(
+          'No host specified in URI api.mapbox.com/x?access_token=$testToken',
+        ),
+      ))
+          .result;
+      expect(
+        r.error,
+        isA<MapboxRequestError>()
+            .having((e) => e.message, 'message', 'Invalid request URL'),
+      );
+      expect(r.error.toString(), isNot(contains(testToken)));
+    });
+
     test('a missing access token returns an error (was thrown)', () async {
       final noToken = MapboxApi();
       final responses = [
@@ -380,6 +398,23 @@ void main() {
       final captured =
           await capture(() => MapboxApi().matrix!.request(destinations: []));
       expect(captured.requests, isEmpty);
+    });
+  });
+
+  group('known bugs (still open)', () {
+    // Multi-query v5 batch geocoding returns a JSON array of feature
+    // collections, which GeocodingApiResponse cannot hold. 1.1.0 silently
+    // returned an empty response; 1.2.0 reports it. Proper support needs a
+    // new API (see docs/modernization-plan.md).
+    test('multi-query batch geocoding is reported as an error', () async {
+      final collection = jsonDecode(fixture('geocoding_forward.json'));
+      final r = (await capture(
+        () => api.forwardGeocoding.batch(searchTexts: ['a', 'b']),
+        responseBody: jsonEncode([collection, collection]),
+      ))
+          .result;
+      expect(r.features, isNull);
+      expect(r.error, isA<MapboxRequestError>());
     });
   });
 

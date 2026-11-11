@@ -11,8 +11,9 @@ behavior: read **Behavior changes** before upgrading.
     422, 429 rate limit, 5xx) → new `MapboxHttpError` (`statusCode`,
     `message`). Endpoint errors (`NavigationNoRouteError`, `GeocoderError`, …)
     still take precedence.
-  * Network failures and non-JSON bodies → new `MapboxRequestError`
-    (were thrown as `ClientException` / `FormatException`).
+  * Network failures, invalid endpoints and non-JSON bodies → new
+    `MapboxRequestError` (were thrown as `ClientException`,
+    `FormatException` or `ArgumentError`).
   * Parse failures → the original `Error` (was `error == null`).
   * Missing `accessToken` → `ArgumentError`, no request sent (was a thrown
     null-check error).
@@ -29,11 +30,13 @@ behavior: read **Behavior changes** before upgrading.
   `sources`/`destinations`. Multi-value requests sent with `,` were rejected
   or misread.
 * **User text is percent-encoded** (search text, street names, waypoint names,
-  language, country). Plain text gives the same URL; text with `&`, `#`, `;`,
+  language, country). Plain text gives an equivalent request (`,` and spaces
+  are now encoded); text with `&`, `#`, `;`,
   `/` or `?` no longer changes the request (`#` used to drop the whole query
   string, including the access token).
 * **Matrix:** `null` cells (no route between a pair) parse as
-  `double.infinity` instead of failing the whole response; omitting
+  `double.infinity` instead of failing the whole response (note:
+  `jsonEncode` rejects infinity, so convert before serializing); omitting
   `destinations` no longer throws; `NoRoute` maps to `NavigationNoRouteError`;
   unsupported `speed`/`congestion` annotations are dropped instead of sent
   empty.
@@ -56,6 +59,13 @@ behavior: read **Behavior changes** before upgrading.
   or misspelled (`slight right`, `sharp left`, `continue`, `end of road`,
   `new name`, `on ramp`, `rotary`, …) _([emmett-deen](https://github.com/stafyniaksacha/mapbox-api/pull/9))_
 * The library no longer prints unknown values to stdout.
+
+### Known issues
+
+* Batch geocoding with two or more queries: Mapbox returns a JSON array of
+  feature collections, which `GeocodingApiResponse` cannot hold. 1.1.0
+  silently returned an empty response; 1.2.0 reports a `MapboxRequestError`.
+  Single-query batch works.
 
 ### Additions
 

@@ -28,7 +28,8 @@ class MapboxRequestError extends Error {
   /// Human-readable description, without the request URL.
   final String message;
 
-  /// The original exception (e.g. `ClientException`, `FormatException`).
+  /// What was thrown (e.g. `ClientException`, `FormatException`,
+  /// `ArgumentError` for an invalid endpoint).
   /// Its own `toString()` may include the request URL and access token:
   /// avoid logging it as is.
   final Object? cause;

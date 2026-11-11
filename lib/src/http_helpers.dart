@@ -15,7 +15,8 @@ Error missingAccessToken() => ArgumentError.notNull('accessToken');
 
 /// GETs [url] and decodes the JSON object it returns.
 ///
-/// - Network failures and invalid URLs → `json == null`, [MapboxRequestError].
+/// - Network failures and invalid URLs (anything thrown while sending) →
+///   `json == null`, [MapboxRequestError].
 /// - Non-2xx status → [MapboxHttpError], with `json` set when the body is a
 ///   JSON object so endpoint-specific errors can still be read from it.
 /// - 2xx with a body that is not a JSON object → [MapboxRequestError].
@@ -23,16 +24,17 @@ Future<JsonResult> fetchJson(String url) async {
   final Response response;
   try {
     response = await get(Uri.parse(url));
-  } on Exception catch (exception) {
-    // Do not use exception.toString(): ClientException includes the URL.
-    final message = exception is ClientException
-        ? exception.message
-        : exception is FormatException
-            ? 'Invalid request URL'
-            : exception.runtimeType.toString();
+  } catch (failure) {
+    // Never use failure.toString(): ClientException and the ArgumentError
+    // thrown for an invalid endpoint both include the URL, and so the token.
+    final message = switch (failure) {
+      ClientException(:final message) => message,
+      FormatException() || ArgumentError() => 'Invalid request URL',
+      _ => failure.runtimeType.toString(),
+    };
     return (
       json: null,
-      error: MapboxRequestError(message: message, cause: exception),
+      error: MapboxRequestError(message: message, cause: failure),
     );
   }
 
