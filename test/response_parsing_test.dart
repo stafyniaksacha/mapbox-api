@@ -450,6 +450,52 @@ void main() {
     expect(leg.closures!.single.geometryIndexEnd, 7);
   });
 
+  test('leg notifications expose vehicle-limit violations (1.2.0)', () async {
+    // A maxHeight: 4.7 request routed under a 4.6 m bridge: Mapbox returns
+    // the route with code Ok and a violation notification on the leg.
+    final r = await directions(jsonEncode({
+      'code': 'Ok',
+      'routes': [
+        {
+          'legs': [
+            {
+              'notifications': [
+                {
+                  'type': 'violation',
+                  'subtype': 'maxHeight',
+                  'refresh_type': 'static',
+                  'geometry_index_start': 12,
+                  'geometry_index_end': 14,
+                  'details': {
+                    'requested_value': 4.7,
+                    'actual_value': 4.6,
+                    'unit': 'meters',
+                    'message': 'Route violates height restriction',
+                  },
+                },
+                {'type': 'alert', 'subtype': 'someFutureSubtype'},
+              ],
+            },
+          ],
+        },
+      ],
+    }));
+    expect(r.error, isNull);
+    final notifications = r.routes!.single.legs!.single.notifications!;
+    final violation = notifications.first;
+    expect(violation.type, 'violation');
+    expect(violation.subtype, 'maxHeight');
+    expect(violation.refreshType, 'static');
+    expect(violation.geometryIndexStart, 12);
+    expect(violation.geometryIndexEnd, 14);
+    expect(violation.details!.requestedValue, 4.7);
+    expect(violation.details!.actualValue, 4.6);
+    expect(violation.details!.unit, 'meters');
+    expect(violation.details!.message, contains('height'));
+    // Unknown subtypes are kept, not dropped.
+    expect(notifications.last.subtype, 'someFutureSubtype');
+  });
+
   group('parsing (fixed in 1.2.0)', () {
     test('integer values in matrix durations are parsed', () async {
       final r = (await capture(

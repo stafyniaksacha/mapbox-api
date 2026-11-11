@@ -500,6 +500,7 @@ class NavigationLeg {
     this.summary,
     this.annotation,
     this.closures,
+    this.notifications,
   });
 
   NavigationLeg.fromJson(Map<String, dynamic> json) {
@@ -527,6 +528,12 @@ class NavigationLeg {
           NavigationClosure.fromJson(value as Map<String, dynamic>),
       ];
     }
+    if (json['notifications'] != null) {
+      notifications = [
+        for (final value in json['notifications'] as List<dynamic>)
+          NavigationNotification.fromJson(value as Map<String, dynamic>),
+      ];
+    }
   }
 
   double? duration;
@@ -538,6 +545,101 @@ class NavigationLeg {
   /// Live-traffic closures on this leg (requested with
   /// [NavigationAnnotations.CLOSURE]).
   List<NavigationClosure>? closures;
+
+  /// Issues on this leg, e.g. a road whose height limit is below the
+  /// requested `maxHeight` (Mapbox still returns the route, with
+  /// `code: Ok`). Check this when using vehicle limits.
+  List<NavigationNotification>? notifications;
+}
+
+/// An issue reported on a route leg (Directions `notifications`).
+///
+/// [type] and [subtype] are kept as the strings Mapbox sends, since new
+/// subtypes are added over time.
+class NavigationNotification {
+  NavigationNotification({
+    this.type,
+    this.subtype,
+    this.refreshType,
+    this.geometryIndex,
+    this.geometryIndexStart,
+    this.geometryIndexEnd,
+    this.stationId,
+    this.reason,
+    this.details,
+  });
+
+  NavigationNotification.fromJson(Map<String, dynamic> json)
+      : type = json['type'] as String?,
+        subtype = json['subtype'] as String?,
+        refreshType = json['refresh_type'] as String?,
+        geometryIndex = (json['geometry_index'] as num?)?.toInt(),
+        geometryIndexStart = (json['geometry_index_start'] as num?)?.toInt(),
+        geometryIndexEnd = (json['geometry_index_end'] as num?)?.toInt(),
+        stationId = json['station_id'] as String?,
+        reason = json['reason'] as String?,
+        details = json['details'] == null
+            ? null
+            : NavigationNotificationDetails.fromJson(
+                json['details'] as Map<String, dynamic>,
+              );
+
+  /// `violation` (a request constraint could not be met) or `alert`.
+  String? type;
+
+  /// What the notification is about, e.g. `maxHeight`, `maxWidth`,
+  /// `maxWeight`, `evInsufficientCharge`, `stationUnavailable`.
+  String? subtype;
+
+  /// `static` or `dynamic`.
+  String? refreshType;
+
+  /// Position in the leg geometry, for point notifications.
+  int? geometryIndex;
+
+  /// Start of the affected part of the leg geometry.
+  int? geometryIndexStart;
+
+  /// End of the affected part of the leg geometry.
+  int? geometryIndexEnd;
+
+  /// Charging station concerned (EV routing).
+  String? stationId;
+
+  /// Why, e.g. `outOfOrder` or `occupied` for `stationUnavailable`.
+  String? reason;
+
+  /// Requested vs actual values, when the notification has them.
+  NavigationNotificationDetails? details;
+}
+
+/// Details of a [NavigationNotification]: what was requested and what the
+/// road or station allows.
+class NavigationNotificationDetails {
+  NavigationNotificationDetails({
+    this.requestedValue,
+    this.actualValue,
+    this.unit,
+    this.message,
+  });
+
+  NavigationNotificationDetails.fromJson(Map<String, dynamic> json)
+      : requestedValue = json['requested_value'],
+        actualValue = json['actual_value'],
+        unit = json['unit'] as String?,
+        message = json['message'] as String?;
+
+  /// The requested value (a number for vehicle limits, as sent by Mapbox).
+  Object? requestedValue;
+
+  /// The value found on the route.
+  Object? actualValue;
+
+  /// Unit of the values, e.g. `meters` or `metric tons`.
+  String? unit;
+
+  /// Human-readable description.
+  String? message;
 }
 
 /// Per-segment metadata of a route leg, requested with `annotations`.

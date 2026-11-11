@@ -20,6 +20,8 @@ class DirectionsApi {
   /// combinations in `error`):
   /// - [maxHeight] / [maxWidth] (meters, 0–10) and [maxWeight] (metric tons,
   ///   0–100) avoid roads the vehicle cannot use.
+  ///   When no compliant route exists, Mapbox still returns one and reports
+  ///   the violation in [NavigationLeg.notifications].
   /// - [departAt] (`driving`, `driving-traffic`) or [arriveBy] (`driving`)
   ///   plan for a time; sent in UTC.
   /// - [include] allows HOV/HOT lanes; [avoidManeuverRadius] (meters,
