@@ -1,8 +1,6 @@
-import 'dart:convert';
-
-import 'package:http/http.dart';
-
 import '../../mapbox_api.dart';
+import '../http_helpers.dart';
+import '../json_helpers.dart';
 import '../url_helpers.dart';
 
 /// The Mapbox Matrix API returns travel times between many points.
@@ -35,6 +33,10 @@ class MatrixApi {
     int fallbackSpeed = 0,
     List<int> sources = const <int>[],
   }) async {
+    if (api.accessToken == null) {
+      throw missingAccessToken();
+    }
+
     var url = '$endpoint/$version${profilePath(profile)}';
 
     if (coordinates.isNotEmpty) {
@@ -43,35 +45,45 @@ class MatrixApi {
 
     url += '?access_token=${api.accessToken!}';
 
-    // The Matrix API does not support speed and congestion annotations.
-    // 1.1.0 sends an empty value for them (separator kept).
+    // The Matrix API only supports duration and distance annotations.
     url += listParam(
       'annotations',
-      annotations.map(
-        (a) => switch (a) {
-          NavigationAnnotations.SPEED || NavigationAnnotations.CONGESTION => '',
-          _ => a.value,
-        },
-      ),
+      annotations
+          .where(
+            (a) =>
+                a == NavigationAnnotations.DURATION ||
+                a == NavigationAnnotations.DISTANCE,
+          )
+          .map((a) => a.value),
       ',',
     );
     url += listParam('approaches', approaches.map((a) => a.value), ';');
-    // Known 1.1.0 bug: throws when `destinations` is omitted (null).
-    url += listParam('destinations', destinations!.map((d) => '$d'), ',');
-    url += listParam('sources', sources.map((s) => '$s'), ',');
+    // Omitted (null) or empty means "all coordinates" (API default).
+    url += listParam(
+      'destinations',
+      (destinations ?? const <int>[]).map((d) => '$d'),
+      ';',
+    );
+    url += listParam('sources', sources.map((s) => '$s'), ';');
 
     if (fallbackSpeed != 0) {
       url += '&fallback_speed=$fallbackSpeed';
     }
 
+    final result = await fetchJson(url);
+    final json = result.json;
+    if (json == null) {
+      return MatrixApiResponse.withError(result.error!);
+    }
+
     try {
-      final response = await get(Uri.parse(url));
-      final json = jsonDecode(
-        response.body,
-      ) as Map<String, dynamic>;
-      return MatrixApiResponse.fromJson(json);
+      // Endpoint-specific errors (e.g. `code: NoRoute`) take precedence over
+      // the generic HTTP error.
+      return MatrixApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
-      return MatrixApiResponse.withError(error);
+      // On a non-2xx response, keep the HTTP error: the body may not have
+      // the shape of a successful response.
+      return MatrixApiResponse.withError(result.error ?? error);
     }
   }
 }
@@ -79,7 +91,13 @@ class MatrixApi {
 class MatrixApiResponse {
   String? code;
   List<NavigationWaypoint>? destinations;
+
+  /// `distances[i][j]` is from source `i` to destination `j`.
+  /// [double.infinity] when there is no route between the two.
   List<List<double>>? distances;
+
+  /// `durations[i][j]` is from source `i` to destination `j`.
+  /// [double.infinity] when there is no route between the two.
   List<List<double>>? durations;
   Error? error;
   List<NavigationWaypoint>? sources;
@@ -100,6 +118,9 @@ class MatrixApiResponse {
     uuid = json['uuid'] as String?;
 
     switch (code) {
+      case 'NoRoute':
+        error = NavigationNoRouteError();
+        break;
       case 'ProfileNotFound':
         error = NavigationProfileNotFoundError();
         break;
@@ -109,23 +130,11 @@ class MatrixApiResponse {
     }
 
     if (json.containsKey('durations') && json['durations'] != null) {
-      durations = List<List<double>>.from(
-        (json['durations'] as List<dynamic>).map(
-          (durations) => List<double>.from(
-            durations as List<dynamic>,
-          ),
-        ),
-      );
+      durations = (json['durations'] as List<dynamic>).map(matrixRow).toList();
     }
 
     if (json.containsKey('distances') && json['distances'] != null) {
-      distances = List<List<double>>.from(
-        (json['distances'] as List<dynamic>).map(
-          (duration) => List<double>.from(
-            duration as List<dynamic>,
-          ),
-        ),
-      );
+      distances = (json['distances'] as List<dynamic>).map(matrixRow).toList();
     }
 
     if (json.containsKey('destinations') && json['destinations'] != null) {
@@ -149,7 +158,5 @@ class MatrixApiResponse {
     }
   }
 
-  MatrixApiResponse.withError(Error error) {
-    error = error;
-  }
+  MatrixApiResponse.withError(Error this.error);
 }

@@ -7,6 +7,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:http/http.dart' show ClientException;
 import 'package:mapbox_api/mapbox_api.dart';
 import 'package:test/test.dart';
 
@@ -171,7 +172,7 @@ void main() {
     expect(r.destinations!.last.name, 'Avenue des Champs-Élysées');
   });
 
-  test('isochrone (known 1.1.0 bug: features never parse)', () async {
+  test('isochrone', () async {
     final r = (await capture(
       () => api.isochrone!.request(
         profile: NavigationProfile.DRIVING,
@@ -181,13 +182,23 @@ void main() {
       responseBody: fixture('isochrone.json'),
     ))
         .result;
-    // Known 1.1.0 bug: NavigationFeatureGeometry.coordinates is typed
-    // List<double>, but isochrone geometries are always nested (LineString /
-    // Polygon). Parsing throws, withError drops it: every real response ends
-    // up with features == null and error == null. Fixing needs a public type
-    // change (2.0).
-    expect(r.features, isNull);
     expect(r.error, isNull);
+    final feature = r.features!.single;
+    expect(feature.type, 'Feature');
+    expect(feature.properties!.contour, 10);
+    expect(feature.properties!.fillOpacity, 0.33);
+    expect(feature.geometry!.type, 'Polygon');
+    // Nested geometry: only rawCoordinates is set (fixed in 1.2.0, was a
+    // parse failure for every isochrone response).
+    expect(feature.geometry!.coordinates, isNull);
+    expect(feature.geometry!.rawCoordinates, [
+      [
+        [2.35, 48.85],
+        [2.36, 48.86],
+        [2.34, 48.86],
+        [2.35, 48.85],
+      ],
+    ]);
   });
 
   test('optimization', () async {
@@ -270,64 +281,216 @@ void main() {
     });
   });
 
-  group('known 1.1.0 bugs', () {
-    test('withError never stores the error (self-assignment)', () async {
-      // `durations` is a string: the cast throws a TypeError, which is caught
-      // and handed to withError, which then drops it.
+  // 1.2.0 rule: what threw in 1.1.0 still throws (same types); what 1.1.0
+  // silently swallowed is now reported in `error`.
+  group('error reporting (1.2.0)', () {
+    test('parse failures are stored in error (was dropped)', () async {
       final r = (await capture(
         () => api.matrix!.request(coordinates: twoPoints, destinations: []),
         responseBody: jsonEncode({'code': 'Ok', 'durations': 'oops'}),
       ))
           .result;
-      expect(r.error, isNull);
+      expect(r.error, isA<TypeError>());
       expect(r.durations, isNull);
     });
 
-    test('integer values in matrix durations are silently dropped', () async {
+    test('HTTP 401 without an endpoint error code is a MapboxHttpError',
+        () async {
+      final r = await directions(fixture('unauthorized.json'), status: 401);
+      expect(r.routes, isNull);
+      expect(
+        r.error,
+        isA<MapboxHttpError>()
+            .having((e) => e.statusCode, 'statusCode', 401)
+            .having((e) => e.message, 'message', contains('Invalid Token')),
+      );
+    });
+
+    test('endpoint-specific errors take precedence over the HTTP status',
+        () async {
+      final r =
+          await directions(fixture('directions_no_route.json'), status: 422);
+      expect(r.error, isA<NavigationNoRouteError>());
+
+      final g = (await capture(
+        () => api.forwardGeocoding.request(searchText: 'x'),
+        responseBody: fixture('unauthorized.json'),
+        statusCode: 401,
+      ))
+          .result;
+      expect(g.error, isA<GeocoderError>());
+    });
+
+    test('matrix NoRoute code maps to NavigationNoRouteError', () async {
+      final r = (await capture(
+        () => api.matrix!.request(coordinates: twoPoints),
+        responseBody: jsonEncode({'code': 'NoRoute'}),
+      ))
+          .result;
+      expect(r.error, isA<NavigationNoRouteError>());
+    });
+
+    test('a non-JSON body still throws FormatException, as in 1.1.0', () async {
+      await expectLater(
+        directions('<html>502 Bad Gateway</html>', status: 502),
+        throwsA(isA<FormatException>()),
+      );
+      await expectLater(
+        directions('not json'),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('a network failure still throws the original exception, as in 1.1.0',
+        () async {
+      final failure = ClientException(
+        'Connection refused',
+        Uri.parse('https://api.mapbox.com/x'),
+      );
+      await expectLater(
+        capture(
+          () => api.directions.request(coordinates: twoPoints),
+          throwOnSend: failure,
+        ),
+        throwsA(same(failure)),
+      );
+    });
+
+    test('an invalid endpoint is a MapboxRequestError, not thrown', () async {
+      final custom = MapboxApi(accessToken: testToken);
+      custom.directions.endpoint = 'api.mapbox.com/directions'; // no scheme
+      final r = (await capture(
+        () => custom.directions.request(coordinates: twoPoints),
+        throwOnSend: ArgumentError(
+          'No host specified in URI api.mapbox.com/x?access_token=$testToken',
+        ),
+      ))
+          .result;
+      expect(
+        r.error,
+        isA<MapboxRequestError>()
+            .having((e) => e.message, 'message', 'Invalid request URL'),
+      );
+      expect(r.error.toString(), isNot(contains(testToken)));
+    });
+
+    test('a missing access token still throws, before any request', () async {
+      final noToken = MapboxApi();
+      final calls = <Future<Object?> Function()>[
+        () => noToken.directions.request(),
+        () => noToken.matrix!.request(destinations: []),
+        () => noToken.forwardGeocoding.request(searchText: 'x'),
+        () => noToken.reverseGeocoding.batch(),
+      ];
+      for (final call in calls) {
+        await expectLater(capture(call), throwsA(isA<ArgumentError>()));
+      }
+      final captured = await capture(() async {
+        try {
+          await noToken.directions.request();
+        } on ArgumentError {
+          // expected
+        }
+      });
+      expect(captured.requests, isEmpty);
+    });
+  });
+
+  group('known bugs (still open)', () {
+    // Multi-query v5 batch geocoding returns a JSON array of feature
+    // collections, which GeocodingApiResponse cannot hold. 1.1.0 silently
+    // returned an empty response; 1.2.0 reports it. Proper support needs a
+    // new API (see docs/modernization-plan.md).
+    test('multi-query batch geocoding is reported as an error', () async {
+      final collection = jsonDecode(fixture('geocoding_forward.json'));
+      final r = (await capture(
+        () => api.forwardGeocoding.batch(searchTexts: ['a', 'b']),
+        responseBody: jsonEncode([collection, collection]),
+      ))
+          .result;
+      expect(r.features, isNull);
+      expect(r.error, isA<MapboxRequestError>());
+    });
+  });
+
+  group('parsing (fixed in 1.2.0)', () {
+    test('integer values in matrix durations are parsed', () async {
       final r = (await capture(
         () => api.matrix!.request(coordinates: twoPoints, destinations: []),
         responseBody: fixture('matrix_integer_values.json'),
       ))
           .result;
-      expect(r.durations, isNull);
       expect(r.error, isNull);
+      expect(r.durations, [
+        [0.0, 573.0],
+        [579.0, 0.0],
+      ]);
     });
 
-    test('a null tracepoint (unmatched point) drops the whole response',
-        () async {
+    test('null matrix cells (no route) become double.infinity', () async {
+      final r = (await capture(
+        () => api.matrix!.request(coordinates: twoPoints, destinations: []),
+        responseBody: jsonEncode({
+          'code': 'Ok',
+          'durations': [
+            [0, null],
+            [12.5, 0],
+          ],
+        }),
+      ))
+          .result;
+      expect(r.error, isNull);
+      expect(r.durations![0][1], double.infinity);
+      expect(r.durations![1][0], 12.5);
+    });
+
+    test('integer coordinates are parsed', () async {
+      final r = await directions(jsonEncode({
+        'code': 'Ok',
+        'waypoints': [
+          {
+            'name': 'x',
+            'location': [2, 48],
+          },
+        ],
+      }));
+      expect(r.error, isNull);
+      expect(r.waypoints!.single.location, [2.0, 48.0]);
+    });
+
+    test('a null tracepoint (unmatched point) keeps its index', () async {
       final body = jsonDecode(fixture('map_matching.json')) as Map;
-      body['tracepoints'] = [...body['tracepoints'] as List, null];
+      body['tracepoints'] = [null, ...body['tracepoints'] as List];
       final r = (await capture(
         () => api.mapMatching!.request(coordinates: twoPoints),
         responseBody: jsonEncode(body),
       ))
           .result;
-      expect(r.tracepoints, isNull);
       expect(r.error, isNull);
+      expect(r.tracepoints, hasLength(2));
+      expect(r.tracepoints![0].location, isNull);
+      expect(r.tracepoints![0].name, isNull);
+      expect(r.tracepoints![1].name, 'Rue de Rivoli');
     });
 
-    test('route weight_name is read from the wrong key', () async {
+    test('route weight_name is read', () async {
       final r = await directions(fixture('directions.json'));
-      expect(r.routes!.single.weightName, isNull);
+      expect(r.routes!.single.weightName, 'auto');
     });
 
-    test('intersection "out" is read from the wrong key', () async {
+    test('map matching weight_name is read', () async {
+      final r = (await capture(
+        () => api.mapMatching!.request(coordinates: twoPoints),
+        responseBody: fixture('map_matching.json'),
+      ))
+          .result;
+      expect(r.matchings!.single.weightName, 'auto');
+    });
+
+    test('intersection "out" is read', () async {
       final r = await directions(fixture('directions.json'));
       final step = r.routes!.single.legs!.single.steps!.first;
-      expect(step.intersections!.single.outIndex, isNull);
-    });
-
-    test('HTTP 401 on directions is reported as success', () async {
-      final r = await directions(fixture('unauthorized.json'), status: 401);
-      expect(r.error, isNull);
-      expect(r.routes, isNull);
-    });
-
-    test('a non-JSON body throws FormatException out of request()', () async {
-      await expectLater(
-        directions('<html>502 Bad Gateway</html>', status: 502),
-        throwsA(isA<FormatException>()),
-      );
+      expect(step.intersections!.single.outIndex, 1);
     });
   });
 }

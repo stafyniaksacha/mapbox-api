@@ -1,8 +1,5 @@
-import 'dart:convert';
-
-import 'package:http/http.dart';
-
 import '../../mapbox_api.dart';
+import '../http_helpers.dart';
 import '../url_helpers.dart';
 
 /// The Mapbox Map Matching API snaps fuzzy,
@@ -34,6 +31,10 @@ class MapMatchingApi {
     List<String> waypointNames = const <String>[],
     List<List<double>> waypoints = const <List<double>>[],
   }) async {
+    if (api.accessToken == null) {
+      throw missingAccessToken();
+    }
+
     var url = '$endpoint/$version${profilePath(profile)}';
 
     if (coordinates.isNotEmpty) {
@@ -43,7 +44,7 @@ class MapMatchingApi {
     url += '?access_token=${api.accessToken!}';
 
     if (language != 'en') {
-      url += '&language=$language';
+      url += '&language=${encode(language)}';
     }
     if (steps) {
       url += '&steps=true';
@@ -59,19 +60,26 @@ class MapMatchingApi {
       url += '&approaches=curb';
     }
 
-    url += listParam('radiuses', radiuses.map(radiusValue), ',');
-    url += listParam('waypoint_names', waypointNames, ',');
+    url += listParam('radiuses', radiuses.map(radiusValue), ';');
+    url += listParam('waypoint_names', waypointNames.map(encode), ';');
     url += listParam('waypoints', waypoints.map(lonLat), ';');
     url += listParam('annotations', annotations.map((a) => a.value), ',');
+    url += listParam('timestamps', timestamps.map((t) => '$t'), ';');
+
+    final result = await fetchJson(url);
+    final json = result.json;
+    if (json == null) {
+      return MapMatchingApiResponse.withError(result.error!);
+    }
 
     try {
-      final response = await get(Uri.parse(url));
-      final json = jsonDecode(
-        response.body,
-      ) as Map<String, dynamic>;
-      return MapMatchingApiResponse.fromJson(json);
+      // Endpoint-specific errors (e.g. `code: NoRoute`) take precedence over
+      // the generic HTTP error.
+      return MapMatchingApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
-      return MapMatchingApiResponse.withError(error);
+      // On a non-2xx response, keep the HTTP error: the body may not have
+      // the shape of a successful response.
+      return MapMatchingApiResponse.withError(result.error ?? error);
     }
   }
 
@@ -89,9 +97,7 @@ class MapMatchingApiResponse {
     this.error,
   });
 
-  MapMatchingApiResponse.withError(Error error) {
-    error = error;
-  }
+  MapMatchingApiResponse.withError(Error this.error);
 
   MapMatchingApiResponse.fromJson(Map<String, dynamic> json) {
     code = json['code'] as String?;
@@ -126,13 +132,17 @@ class MapMatchingApiResponse {
     }
 
     if (json.containsKey('tracepoints') && json['tracepoints'] != null) {
-      tracepoints = List<NavigationTracepoint>.from(
-        (json['tracepoints'] as List<dynamic>).map(
-          (route) => NavigationTracepoint.fromJson(
-            route as Map<String, dynamic>,
-          ),
-        ),
-      );
+      // Unmatched input points are `null` in the response. They become an
+      // empty NavigationTracepoint (all fields null) so that indexes keep
+      // matching the input coordinates.
+      tracepoints = [
+        for (final tracepoint in json['tracepoints'] as List<dynamic>)
+          tracepoint == null
+              ? NavigationTracepoint()
+              : NavigationTracepoint.fromJson(
+                  tracepoint as Map<String, dynamic>,
+                ),
+      ];
     }
   }
 

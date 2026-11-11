@@ -8,6 +8,7 @@ import './src/search/forward_geocoding.dart';
 import './src/search/reverse_geocoding.dart';
 import './src/search/intersection.dart';
 
+export './src/errors.dart';
 export './src/navigation/globals.dart';
 export './src/navigation/directions.dart';
 export './src/navigation/isochrone.dart';

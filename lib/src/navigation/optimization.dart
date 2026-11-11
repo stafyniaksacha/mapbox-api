@@ -1,8 +1,5 @@
-import 'dart:convert';
-
-import 'package:http/http.dart';
-
 import '../../mapbox_api.dart';
+import '../http_helpers.dart';
 import '../url_helpers.dart';
 
 /// The Mapbox Optimization API returns a duration-optimized route
@@ -34,6 +31,10 @@ class OptimizationApi {
     bool steps = false,
     bool roundtrip = true,
   }) async {
+    if (api.accessToken == null) {
+      throw missingAccessToken();
+    }
+
     var url = '$endpoint/$version${profilePath(profile)}';
 
     if (coordinates.isNotEmpty) {
@@ -43,7 +44,7 @@ class OptimizationApi {
     url += '?access_token=${api.accessToken!}';
 
     if (language != 'en') {
-      url += '&language=$language';
+      url += '&language=${encode(language)}';
     }
     if (steps) {
       url += '&steps=true';
@@ -59,43 +60,38 @@ class OptimizationApi {
     }
 
     url += geometries.query;
-    // Known 1.1.0 bug: NONE sends `overview=false ` (trailing space).
-    url += overview == NavigationOverview.NONE
-        ? '&overview=false '
-        : overview.query;
-
-    // Known 1.1.0 bug: the separator depends on the number of coordinates,
-    // not of distributions. Kept as is until fixed deliberately.
-    for (var i = 0; i < distributions.length; i++) {
-      if (i == 0) {
-        url += '&distributions=';
-      }
-      url += '${distributions[i][0]},${distributions[i][1]}';
-      if (i != coordinates.length - 1) {
-        url += ';';
-      }
-    }
-
-    url += listParam('radiuses', radiuses.map(radiusValue), ',');
-    // Congestion is not supported; 1.1.0 sends an empty value for it.
+    url += overview.query;
+    url += listParam(
+      'distributions',
+      distributions.map((pair) => '${pair[0]},${pair[1]}'),
+      ';',
+    );
+    url += listParam('radiuses', radiuses.map(radiusValue), ';');
+    // The Optimization API does not support congestion annotations.
     url += listParam(
       'annotations',
-      annotations.map(
-        (a) => a == NavigationAnnotations.CONGESTION ? '' : a.value,
-      ),
+      annotations
+          .where((a) => a != NavigationAnnotations.CONGESTION)
+          .map((a) => a.value),
       ',',
     );
     url += listParam('bearings', bearings.map(bearingValue), ';');
     url += listParam('approaches', approaches.map((a) => a.value), ';');
 
+    final result = await fetchJson(url);
+    final json = result.json;
+    if (json == null) {
+      return OptimizationApiResponse.withError(result.error!);
+    }
+
     try {
-      final response = await get(Uri.parse(url));
-      final json = jsonDecode(
-        response.body,
-      ) as Map<String, dynamic>;
-      return OptimizationApiResponse.fromJson(json);
+      // Endpoint-specific errors (e.g. `code: NoRoute`) take precedence over
+      // the generic HTTP error.
+      return OptimizationApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
-      return OptimizationApiResponse.withError(error);
+      // On a non-2xx response, keep the HTTP error: the body may not have
+      // the shape of a successful response.
+      return OptimizationApiResponse.withError(result.error ?? error);
     }
   }
 
@@ -113,9 +109,7 @@ class OptimizationApiResponse {
     this.error,
   });
 
-  OptimizationApiResponse.withError(Error error) {
-    error = error;
-  }
+  OptimizationApiResponse.withError(Error this.error);
 
   OptimizationApiResponse.fromJson(Map<String, dynamic> json) {
     code = json['code'] as String?;

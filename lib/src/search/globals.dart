@@ -1,3 +1,5 @@
+import '../json_helpers.dart';
+
 enum GeocoderEndpoint {
   PLACES,
   PLACES_PERMANENT,
@@ -65,9 +67,7 @@ class GeocoderGeometry {
     omitted = json['omitted'] as bool?;
 
     if (json.containsKey('coordinates') && json['coordinates'] != null) {
-      coordinates = List<double>.from(
-        json['coordinates'] as List<dynamic>,
-      );
+      coordinates = doubleList(json['coordinates']);
     }
   }
 
@@ -105,13 +105,12 @@ class GeocoderRoutablePoints {
 
   GeocoderRoutablePoints.fromJson(Map<String, dynamic> json) {
     if (json.containsKey('points') && json['points'] != null) {
-      points = List<List<double>>.from(
-        (json['points'] as List<dynamic>).map(
-          (point) => List<double>.from(
-            point as List<dynamic>,
-          ),
-        ),
-      );
+      // Mapbox returns `{"coordinates": [lon, lat]}` objects; bare
+      // coordinate lists are still accepted.
+      points = [
+        for (final point in json['points'] as List<dynamic>)
+          doubleList(point is Map ? point['coordinates'] : point),
+      ];
     }
   }
 
@@ -227,9 +226,7 @@ class GeocoderFeature {
       );
     }
     if (json.containsKey('center') && json['center'] != null) {
-      center = List<double>.from(
-        json['center'] as List<dynamic>,
-      );
+      center = doubleList(json['center']);
     }
 
     if (json.containsKey('properties') && json['properties'] != null) {
@@ -347,9 +344,7 @@ class GeocodingApiResponse {
     this.error,
   });
 
-  GeocodingApiResponse.withError(Error error) {
-    error = error;
-  }
+  GeocodingApiResponse.withError(Error this.error);
 
   GeocodingApiResponse.fromJson(Map<String, dynamic> json) {
     final message = json['message'] as String?;

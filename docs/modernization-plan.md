@@ -83,6 +83,10 @@ pana (CI): 150/160. The 10 missing points come from documentation: only 42 of 39
 have dartdoc comments, and pub.dev wants 20 %. Documenting the main entry points (`MapboxApi`, each
 `*Api.request`, response classes) fixes it with no code change.
 
+B16 (open): v5 batch geocoding with ≥ 2 queries returns a JSON **array** of feature collections;
+`GeocodingApiResponse` holds one. Needs an additive API (e.g. `batchAll()` returning
+`List<GeocodingApiResponse>`) — Phase 5, or moot if Geocoding v6 replaces it.
+
 Also: line endings are mixed (`lib/src/navigation/*` CRLF, rest LF) — add a `.gitattributes` (`* text=auto eol=lf`) and normalize in one dedicated commit in Phase 2.
 
 ### 1.4 Practice gaps (non-bugs)
@@ -197,6 +201,13 @@ Without tests, "non-breaking" is unenforceable.
 
 ### Phase 4 — Behavior-changing bug fixes (non-breaking in API, but **your call** — decision D2)
 
+> **Status:** done for 1.2.0 (D2 = yes; D3 = **keep throwing**: what threw in 1.1.0 still throws
+> with the same types, only what 1.1.0 swallowed is reported in `.error`). Fixed: B1–B6, B8–B13, plus B15
+> (`;` separators for radiuses / waypoint_names / matrix sources+destinations, found against the
+> docs). Choices: matrix `null` cells → `double.infinity`; unmatched tracepoints → empty
+> `NavigationTracepoint`; isochrone geometry via additive `rawCoordinates`; `continueStraight` sends
+> only `true`.
+
 These change observable behavior (in the direction of correctness). Ship as a minor release with
 clear CHANGELOG entries.
 
@@ -249,5 +260,5 @@ class modifiers, Geocoding v6 as default, removal of deprecated members.
   still old) vs `^3.7/3.8` (tall formatter, newest language features; excludes Flutter < 3.29).
   Recommendation: **`^3.4.0`**.
 - **D2 – Ship the behavior fixes (Phase 4) in 1.x?** Recommendation: **yes**, they fix silent failures.
-- **D3 – Network/parse exceptions:** wrap into `.error` (consistent) vs keep throwing (status quo).
-  Recommendation: **wrap**, as `Error` subclasses so the field type stays `Error?`.
+- **D3 – Network/parse exceptions:** decided: **keep throwing** (status quo), to keep upgrades
+  painless; only failures 1.1.0 swallowed go to `.error`.

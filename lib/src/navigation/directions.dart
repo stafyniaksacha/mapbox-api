@@ -1,8 +1,5 @@
-import 'dart:convert';
-
-import 'package:http/http.dart';
-
 import '../../mapbox_api.dart';
+import '../http_helpers.dart';
 import '../url_helpers.dart';
 
 /// The Mapbox Directions API will show you how to get where you're going.
@@ -43,6 +40,10 @@ class DirectionsApi {
     double walkwayBias = 0,
     double alleyBias = 0,
   }) async {
+    if (api.accessToken == null) {
+      throw missingAccessToken();
+    }
+
     var url = '$endpoint/$version${profilePath(profile)}';
 
     if (coordinates.isNotEmpty) {
@@ -64,7 +65,7 @@ class DirectionsApi {
     }
 
     if (language != 'en') {
-      url += '&language=$language';
+      url += '&language=${encode(language)}';
     }
     if (steps) {
       url += '&steps=true';
@@ -81,6 +82,11 @@ class DirectionsApi {
     if (voiceInstructions) {
       url += '&voice_instructions=true';
     }
+    // Mapbox's default depends on the profile (true for driving, false for
+    // walking/cycling), so `false` means "API default" and is not sent.
+    if (continueStraight) {
+      url += '&continue_straight=true';
+    }
 
     url += geometries.query;
     url += overview.query;
@@ -91,20 +97,27 @@ class DirectionsApi {
       url += '&voice_units=metric';
     }
 
-    url += listParam('radiuses', radiuses.map(radiusValue), ',');
-    url += listParam('waypoint_names', waypointNames, ',');
+    url += listParam('radiuses', radiuses.map(radiusValue), ';');
+    url += listParam('waypoint_names', waypointNames.map(encode), ';');
     url += listParam('waypoint_targets', waypointTargets.map(lonLat), ';');
     url += listParam('waypoints', waypoints.map(lonLat), ';');
     url += listParam('annotations', annotations.map((a) => a.value), ',');
+    url += listParam('exclude', excludes.map((e) => e.value), ',');
+
+    final result = await fetchJson(url);
+    final json = result.json;
+    if (json == null) {
+      return DirectionsApiResponse.withError(result.error!);
+    }
 
     try {
-      final response = await get(Uri.parse(url));
-      final json = jsonDecode(
-        response.body,
-      ) as Map<String, dynamic>;
-      return DirectionsApiResponse.fromJson(json);
+      // Endpoint-specific errors (e.g. `code: NoRoute`) take precedence over
+      // the generic HTTP error.
+      return DirectionsApiResponse.fromJson(json)..error ??= result.error;
     } on Error catch (error) {
-      return DirectionsApiResponse.withError(error);
+      // On a non-2xx response, keep the HTTP error: the body may not have
+      // the shape of a successful response.
+      return DirectionsApiResponse.withError(result.error ?? error);
     }
   }
 
@@ -122,9 +135,7 @@ class DirectionsApiResponse {
     this.error,
   });
 
-  DirectionsApiResponse.withError(Error error) {
-    error = error;
-  }
+  DirectionsApiResponse.withError(Error this.error);
 
   DirectionsApiResponse.fromJson(Map<String, dynamic> json) {
     code = json['code'] as String?;
