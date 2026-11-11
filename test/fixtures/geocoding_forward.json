@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "query": ["tour", "eiffel"],
+  "attribution": "NOTICE: © 2026 Mapbox and its suppliers.",
+  "features": [
+    {
+      "id": "poi.123",
+      "type": "Feature",
+      "place_type": ["poi"],
+      "relevance": 1,
+      "properties": {
+        "landmark": true,
+        "wikidata": "Q243",
+        "category": "monument, landmark",
+        "maki": "monument"
+      },
+      "text": "Tour Eiffel",
+      "place_name": "Tour Eiffel, 5 Avenue Anatole France, Paris, 75007, France",
+      "bbox": [2.29, 48.85, 2.30, 48.86],
+      "center": [2.294481, 48.85837],
+      "geometry": {"type": "Point", "coordinates": [2.294481, 48.85837]},
+      "context": [
+        {"id": "postcode.1", "text": "75007"},
+        {"id": "place.2", "text": "Paris", "wikidata": "Q90"},
+        {"id": "country.3", "text": "France", "short_code": "fr", "wikidata": "Q142"}
+      ]
+    }
+  ]
+}

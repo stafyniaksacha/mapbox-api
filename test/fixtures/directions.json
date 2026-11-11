@@ -1,0 +1,109 @@
+{
+  "code": "Ok",
+  "uuid": "cjd51uqn5005447p8eu3d1ldx",
+  "waypoints": [
+    {"name": "Rue de Rivoli", "distance": 4.2, "location": [2.3522, 48.8566]},
+    {"name": "Avenue des Champs-Élysées", "distance": 1.5, "location": [2.3069, 48.8698]}
+  ],
+  "routes": [
+    {
+      "duration": 812.5,
+      "distance": 4321.1,
+      "weight_name": "auto",
+      "weight": 900.25,
+      "geometry": "o{~hHk~gM??",
+      "voiceLocale": "en-US",
+      "legs": [
+        {
+          "duration": 812.5,
+          "distance": 4321.1,
+          "summary": "Rue de Rivoli, Avenue des Champs-Élysées",
+          "annotation": {
+            "duration": [10.5, 20.25],
+            "distance": [100.5, 200.75],
+            "speed": [9.5, 9.9],
+            "congestion": ["low", "heavy"]
+          },
+          "steps": [
+            {
+              "duration": 30.5,
+              "distance": 120.5,
+              "geometry": "o{~hHk~gM",
+              "name": "Rue de Rivoli",
+              "driving_side": "right",
+              "mode": "driving",
+              "ref": "D1",
+              "maneuver": {
+                "bearing_before": 0,
+                "bearing_after": 270,
+                "instruction": "Drive west on Rue de Rivoli.",
+                "location": [2.3522, 48.8566],
+                "type": "depart"
+              },
+              "intersections": [
+                {
+                  "location": [2.3522, 48.8566],
+                  "bearings": [90, 270],
+                  "entry": [false, true],
+                  "in": 0,
+                  "out": 1,
+                  "geometry_index": 0,
+                  "duration": 2.5
+                }
+              ],
+              "voiceInstructions": [
+                {
+                  "distanceAlongGeometry": 120.5,
+                  "announcement": "Drive west on Rue de Rivoli.",
+                  "ssmlAnnouncement": "<speak>Drive west on Rue de Rivoli.</speak>"
+                }
+              ],
+              "bannerInstructions": [
+                {
+                  "distanceAlongGeometry": 120.5,
+                  "primary": {
+                    "text": "Place de la Concorde",
+                    "type": "roundabout",
+                    "modifier": "slight right",
+                    "degrees": 90.5,
+                    "driving_side": "right",
+                    "components": [{"text": "Place de la Concorde", "type": "text"}]
+                  }
+                }
+              ]
+            },
+            {
+              "duration": 40.5,
+              "distance": 150.5,
+              "name": "Place de la Concorde",
+              "driving_side": "right",
+              "mode": "driving",
+              "maneuver": {
+                "bearing_before": 270,
+                "bearing_after": 300,
+                "instruction": "Exit the roundabout onto Avenue des Champs-Élysées.",
+                "location": [2.3212, 48.8656],
+                "type": "exit roundabout",
+                "modifier": "slight right"
+              }
+            },
+            {
+              "duration": 0.5,
+              "distance": 0.5,
+              "name": "Avenue des Champs-Élysées",
+              "driving_side": "right",
+              "mode": "driving",
+              "maneuver": {
+                "bearing_before": 300,
+                "bearing_after": 0,
+                "instruction": "You have arrived at your destination.",
+                "location": [2.3069, 48.8698],
+                "type": "arrive"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

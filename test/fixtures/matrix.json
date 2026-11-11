@@ -1,0 +1,13 @@
+{
+  "code": "Ok",
+  "durations": [[0.0, 573.5], [579.25, 0.0]],
+  "distances": [[0.0, 4321.5], [4400.75, 0.0]],
+  "destinations": [
+    {"name": "Rue de Rivoli", "distance": 4.2, "location": [2.3522, 48.8566]},
+    {"name": "Avenue des Champs-Élysées", "distance": 1.5, "location": [2.3069, 48.8698]}
+  ],
+  "sources": [
+    {"name": "Rue de Rivoli", "distance": 4.2, "location": [2.3522, 48.8566]},
+    {"name": "Avenue des Champs-Élysées", "distance": 1.5, "location": [2.3069, 48.8698]}
+  ]
+}
