@@ -52,6 +52,44 @@ if (response.error == null) {
 
 See [`example/example.dart`](example/example.dart).
 
+### Electric vehicle routing (Mapbox private preview)
+
+EV routing needs access granted by Mapbox and the `driving` or
+`driving-traffic` profile. Charging stops come back as waypoints with
+`metadata`; issues such as insufficient charge are in the leg
+`notifications`.
+
+```dart
+final response = await mapbox.directions.request(
+  profile: NavigationProfile.DRIVING_TRAFFIC,
+  coordinates: <List<double>>[
+    <double>[48.8566, 2.3522], // Paris
+    <double>[45.7640, 4.8357], // Lyon
+  ],
+  waypointsPerRoute: true,
+  ev: const DirectionsEvOptions(
+    maxCharge: 80000, // Wh
+    initialCharge: 60000, // Wh
+    connectorTypes: [EvConnectorType.CCS_COMBO_TYPE2],
+    energyConsumptionCurve: [
+      (speedKph: 0, whPerKm: 300),
+      (speedKph: 120, whPerKm: 200),
+    ],
+    chargingCurve: [
+      (chargeWh: 0, powerW: 100000),
+      (chargeWh: 80000, powerW: 10000),
+    ],
+  ),
+);
+
+for (final waypoint in response.routes?.first.waypoints ?? []) {
+  final stop = waypoint.metadata;
+  if (stop?.type == 'charging-station') {
+    // stop.name, stop.chargeTime (s), stop.chargeTo (Wh), stop.powerKw
+  }
+}
+```
+
 ### Forward geocoding
 
 ```dart

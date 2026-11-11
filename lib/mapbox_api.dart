@@ -13,6 +13,7 @@ import './src/search/intersection.dart';
 export './src/errors.dart';
 export './src/navigation/globals.dart';
 export './src/navigation/directions.dart';
+export './src/navigation/ev.dart';
 export './src/navigation/isochrone.dart';
 export './src/navigation/map_matching.dart';
 export './src/navigation/matrix.dart';

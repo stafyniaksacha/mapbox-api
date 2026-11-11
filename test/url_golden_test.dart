@@ -25,13 +25,17 @@ const goldens = <String, String>{
   'directions/no-profile':
       'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token',
   'directions/all-options':
-      'https://api.mapbox.com/directions/v5/mapbox/driving-traffic/2.3,48.8;2.4,48.9;2.5,49.0?access_token=pk.test-token&language=fr&steps=true&alternatives=true&banner_instructions=true&roundabout_exits=true&voice_instructions=true&continue_straight=true&geometries=geojson&overview=full&approaches=curb;unrestricted&bearings=45.0,90.0;0.0,180.0&voice_units=metric&radiuses=10.0;unlimited;25.5&waypoint_names=Home;Work&waypoint_targets=2.31,48.81;2.51,49.01&waypoints=2.3,48.8;2.5,49.0&annotations=duration,distance,speed,congestion,maxspeed,congestion_numeric,closure&exclude=toll,ferry',
+      'https://api.mapbox.com/directions/v5/mapbox/driving-traffic/2.3,48.8;2.4,48.9;2.5,49.0?access_token=pk.test-token&language=fr&steps=true&alternatives=true&banner_instructions=true&roundabout_exits=true&voice_instructions=true&continue_straight=true&geometries=geojson&overview=full&approaches=curb;unrestricted&bearings=45.0,90.0;0.0,180.0&voice_units=metric&radiuses=10.0;unlimited;25.5&waypoint_names=Home;Work&waypoint_targets=2.31,48.81;2.51,49.01&waypoints=2.3,48.8;2.5,49.0&annotations=duration,distance,speed,congestion,maxspeed,congestion_numeric,closure,state_of_charge&exclude=toll,ferry',
   'directions/walking':
       'https://api.mapbox.com/directions/v5/mapbox/walking/2.0,1.0;4.0,3.0?access_token=pk.test-token&walking_speed=2.0&walkway_bias=0.5&alley_bias=-1.0&geometries=polyline6&overview=false',
   'directions/walking-params-ignored-when-not-walking':
       'https://api.mapbox.com/directions/v5/mapbox/cycling/2.0,1.0;4.0,3.0?access_token=pk.test-token',
   'directions/vehicle-time-include':
       'https://api.mapbox.com/directions/v5/mapbox/driving/2.3,48.8;2.4,48.9?access_token=pk.test-token&exclude=toll,motorway,ferry,unpaved,cash_only_tolls,country_border,state_border,tunnel&include=hov2,hov3,hot&max_height=4.2&max_width=2.55&max_weight=19.0&depart_at=2026-03-04T05:06:07Z&arrive_by=2026-12-31T23:59:00Z&avoid_maneuver_radius=300.0',
+  'directions/ev-minimal':
+      'https://api.mapbox.com/directions/v5/mapbox/driving-traffic/2.3522,48.8566;4.8357,45.764?access_token=pk.test-token&engine=electric&ev_max_charge=80000&ev_connector_types=ccs_combo_type2&energy_consumption_curve=0,300;20,160;120,212.5&ev_charging_curve=0,100000;40000,70000',
+  'directions/ev-all-options':
+      'https://api.mapbox.com/directions/v5/mapbox/driving/2.3522,48.8566;3.0,47.0;4.8357,45.764?access_token=pk.test-token&alternatives=true&overview=full&annotations=state_of_charge&waypoints_per_route=true&engine=electric&ev_max_charge=80000&ev_connector_types=ccs_combo_type2,chademo&energy_consumption_curve=0,300;120,200&ev_charging_curve=0,100000;80000,10000&ev_initial_charge=60000&ev_unconditioned_charging_curve=0,50000&ev_pre_conditioning_time=30&ev_max_ac_charging_power=11000&ev_min_charge_at_destination=12000&ev_min_charge_at_charging_station=8000&ev_ascent=3.5&ev_descent=2&ev_regeneration_efficiency=0.7&auxiliary_consumption=300&ev_add_charging_stops=false&ev_prefer_amenities=restroom,restaurant&ev_exclude_station_ids=st-1,st%202&ev_exclude_charge_point_provider_ids=prov-a&ev_prefer_charge_point_provider_ids=prov-b,prov-c&ev_prefer_charge_point_provider_weights=1,0.5&ev_exclude=tesla_exclusive&ev_max_charging_voltage=400&ev_max_charging_power_at_lower_voltage=50000&ev_min_energy_increment_at_charging_station=5000&waypoints.charging_station_power=;150000;&waypoints.charging_station_current_type=;dc;&waypoints.charging_station_id=;FR*ABC*E123;&waypoints.minimal_stop_time=;600;',
   'map_matching/minimal':
       'https://api.mapbox.com/matching/v5/mapbox/driving/2.0,1.0;4.0,3.0.json?access_token=pk.test-token',
   'map_matching/all-options':
@@ -151,7 +155,7 @@ const goldens = <String, String>{
   'edge/directions/voice_units-metric':
       'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token&voice_units=metric',
   'edge/directions/annotations-all':
-      'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token&annotations=duration,distance,speed,congestion,maxspeed,congestion_numeric,closure',
+      'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token&annotations=duration,distance,speed,congestion,maxspeed,congestion_numeric,closure,state_of_charge',
   'edge/map_matching/annotations-all':
       'https://api.mapbox.com/matching/v5/2.0,1.0;4.0,3.0.json?access_token=pk.test-token&annotations=duration,distance,speed,congestion',
   'edge/matrix/annotations-all':

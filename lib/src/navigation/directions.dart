@@ -27,6 +27,11 @@ class DirectionsApi {
   /// - [include] allows HOV/HOT lanes; [avoidManeuverRadius] (meters,
   ///   1–1000) avoids maneuvers right after the start, e.g. while moving.
   ///   It cannot be combined with [departAt] or [arriveBy].
+  /// - [ev] enables electric vehicle routing (Mapbox private preview); see
+  ///   [DirectionsEvOptions]. Charging stops come back as waypoints with
+  ///   [NavigationWaypoint.metadata].
+  /// - [waypointsPerRoute] returns the waypoints of each route in
+  ///   [NavigationRoute.waypoints] (needed for EV routes with alternatives).
   Future<DirectionsApiResponse> request({
     NavigationProfile? profile,
     List<List<double>> coordinates = const <List<double>>[],
@@ -58,6 +63,8 @@ class DirectionsApi {
     DateTime? departAt,
     DateTime? arriveBy,
     double? avoidManeuverRadius,
+    bool waypointsPerRoute = false,
+    DirectionsEvOptions? ev,
   }) async {
     if (api.accessToken == null) {
       throw missingAccessToken();
@@ -141,6 +148,12 @@ class DirectionsApi {
     }
     if (avoidManeuverRadius != null) {
       url += '&avoid_maneuver_radius=$avoidManeuverRadius';
+    }
+    if (waypointsPerRoute) {
+      url += '&waypoints_per_route=true';
+    }
+    if (ev != null) {
+      url += evQuery(ev);
     }
 
     final result = await fetchJson(api, url);

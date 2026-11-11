@@ -24,6 +24,9 @@ enum NavigationAnnotations {
   /// Live-traffic closures, returned in [NavigationLeg.closures].
   /// `driving-traffic` only.
   CLOSURE,
+
+  /// Battery state of charge in percent (beta at Mapbox). EV routing only.
+  STATE_OF_CHARGE,
 }
 
 /// Road types to avoid (`exclude`), best effort.
@@ -326,6 +329,7 @@ class NavigationWaypoint {
     this.name,
     this.location = const <double>[],
     this.distance,
+    this.metadata,
   });
 
   NavigationWaypoint.fromJson(Map<String, dynamic> json) {
@@ -335,11 +339,87 @@ class NavigationWaypoint {
     if (json.containsKey('location') && json['location'] != null) {
       location = doubleList(json['location']);
     }
+    if (json['metadata'] != null) {
+      metadata = NavigationWaypointMetadata.fromJson(
+        json['metadata'] as Map<String, dynamic>,
+      );
+    }
   }
 
   String? name;
   List<double>? location;
   double? distance;
+
+  /// Charging stop details, for waypoints added by EV routing
+  /// (`type == 'charging-station'`).
+  NavigationWaypointMetadata? metadata;
+}
+
+/// Details of a waypoint added by EV routing: a charging stop.
+///
+/// Station data comes from a third party: validate it before acting on it.
+class NavigationWaypointMetadata {
+  NavigationWaypointMetadata({
+    this.type,
+    this.name,
+    this.chargeTime,
+    this.chargeTo,
+    this.chargeAtArrival,
+    this.plugType,
+    this.currentType,
+    this.powerKw,
+    this.stationId,
+    this.providerNames,
+    this.minimalStopTime,
+  });
+
+  NavigationWaypointMetadata.fromJson(Map<String, dynamic> json)
+      : type = json['type'] as String?,
+        name = json['name'] as String?,
+        chargeTime = (json['charge_time'] as num?)?.toDouble(),
+        chargeTo = (json['charge_to'] as num?)?.toDouble(),
+        chargeAtArrival = (json['charge_at_arrival'] as num?)?.toDouble(),
+        plugType = json['plug_type'] as String?,
+        currentType = json['current_type'] as String?,
+        powerKw = (json['power_kw'] as num?)?.toDouble(),
+        stationId = json['station_id'] as String?,
+        providerNames = json['provider_names'] == null
+            ? null
+            : List<String>.from(json['provider_names'] as List<dynamic>),
+        minimalStopTime = (json['minimal_stop_time'] as num?)?.toDouble();
+
+  /// `charging-station` for charging stops.
+  String? type;
+
+  /// Station name.
+  String? name;
+
+  /// Charging time at the station, in seconds.
+  double? chargeTime;
+
+  /// Battery charge to reach at the station, in Wh.
+  double? chargeTo;
+
+  /// Battery charge on arrival, in Wh.
+  double? chargeAtArrival;
+
+  /// Connector used, e.g. `ccs_combo_type2`, `chademo`, `mennekes_type2`.
+  String? plugType;
+
+  /// `dc`, `single_phase_ac` or `three_phase_ac`.
+  String? currentType;
+
+  /// Maximum power of the connector, in kW.
+  double? powerKw;
+
+  /// Station identifier.
+  String? stationId;
+
+  /// Charge point provider names (not guaranteed stable).
+  List<String>? providerNames;
+
+  /// Requested minimal stop time, in seconds (user-provided stations).
+  double? minimalStopTime;
 }
 
 /// A waypoint of an optimized trip, with its position in the trip.
@@ -414,6 +494,7 @@ class NavigationRoute {
     this.geometry,
     this.legs = const <NavigationLeg>[],
     this.voiceLocale,
+    this.waypoints,
   });
 
   NavigationRoute.fromJson(Map<String, dynamic> json) {
@@ -433,6 +514,12 @@ class NavigationRoute {
         ),
       );
     }
+    if (json['waypoints'] != null) {
+      waypoints = [
+        for (final value in json['waypoints'] as List<dynamic>)
+          NavigationWaypoint.fromJson(value as Map<String, dynamic>),
+      ];
+    }
   }
 
   double? duration;
@@ -442,6 +529,10 @@ class NavigationRoute {
   dynamic geometry;
   List<NavigationLeg>? legs;
   String? voiceLocale;
+
+  /// Waypoints of this route, including EV charging stops, when requested
+  /// with `waypointsPerRoute: true`.
+  List<NavigationWaypoint>? waypoints;
 }
 
 /// A route matched to a GPS trace by the Map Matching API.
@@ -651,6 +742,7 @@ class NavigationAnnotation {
     this.congestion,
     this.maxspeed,
     this.congestionNumeric,
+    this.stateOfCharge,
   });
 
   NavigationAnnotation.fromJson(Map<String, dynamic> json) {
@@ -680,6 +772,12 @@ class NavigationAnnotation {
           (value as num?)?.toInt(),
       ];
     }
+    if (json['state_of_charge'] != null) {
+      stateOfCharge = [
+        for (final value in json['state_of_charge'] as List<dynamic>)
+          (value as num?)?.toDouble(),
+      ];
+    }
   }
 
   List<double>? duration;
@@ -693,6 +791,10 @@ class NavigationAnnotation {
   /// Congestion from 0 (none) to 100 (maximum) per segment; `null` when
   /// unknown ([NavigationAnnotations.CONGESTION_NUMERIC]).
   List<int?>? congestionNumeric;
+
+  /// Battery state of charge in percent per segment; negative when the
+  /// battery would run out ([NavigationAnnotations.STATE_OF_CHARGE]).
+  List<double?>? stateOfCharge;
 }
 
 /// Posted speed limit of a segment: either [speed] and [unit], or

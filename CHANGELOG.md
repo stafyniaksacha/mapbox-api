@@ -75,6 +75,13 @@ behavior: read **Behavior changes** before upgrading.
 
 ### Additions
 
+* Directions **EV routing** (Mapbox private preview): `ev: DirectionsEvOptions`
+  (`engine=electric` and the `ev_*` parameters, typed consumption/charging
+  curves, `EvConnectorType`, `EvAmenity`, `EvExclude`, user-provided stations
+  via `EvWaypointChargingStation`), `waypointsPerRoute`, charging-stop details
+  in `NavigationWaypoint.metadata` (`NavigationWaypointMetadata`),
+  `NavigationRoute.waypoints`, and the `STATE_OF_CHARGE` annotation
+  (`NavigationAnnotation.stateOfCharge`).
 * Directions: `maxHeight`, `maxWidth`, `maxWeight`, `departAt`, `arriveBy`
   (`DateTime`, sent as UTC `YYYY-MM-DDThh:mm:ssZ`), `include`
   (`NavigationInclude.HOV2/HOV3/HOT`) and `avoidManeuverRadius`.
