@@ -15,7 +15,7 @@ void main() async {
    *
    * Available APIs:
    *  - mapbox.directions
-   *  - mapbox.isochrome
+   *  - mapbox.isochrone
    *  - mapbox.mapMatching
    *  - mapbox.matrix
    *  - mapbox.optimization

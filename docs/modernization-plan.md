@@ -132,6 +132,8 @@ Three buckets. Each phase = one PR, mergeable on its own.
 
 ### Phase 0 — Safety net (prerequisite, no lib change)
 
+> **Status:** done (PR #11).
+
 Without tests, "non-breaking" is unenforceable.
 
 1. Add `dev_dependencies: test` and a `test/` folder.
@@ -150,12 +152,19 @@ Without tests, "non-breaking" is unenforceable.
 
 ### Phase 1 — Restore master to non-breaking
 
+> **Status:** done (PR #11).
+
 1. Re-add `EXIT_ROTARY`, `EXIT_ROUNDABOUT`, `ROUNDABOUT_TURN` to `NavigationManeuverType` with parse cases.
 2. Keep PR #9's additions (additive), but double-check `UPDOWN/UTURN/CLOSE/FLAG` against Mapbox docs.
 3. Remove the 4 `print` calls (unknown values → `null`, as in 1.1.0).
 4. Fill the CHANGELOG `Unreleased` section.
 
 ### Phase 2 — Tooling & metadata (safe)
+
+> **Status:** done, using the recommended defaults: SDK `^3.4.0`, `lints` kept on `^5` (D1). Super
+> parameters were applied only where they don't change defaults (`NavigationTracepoint` and
+> `NavigationMatchRoute` are kept explicit and pinned by tests). Tall-style reformatting does not
+> apply below language 3.7.
 
 1. `environment: sdk: ^3.4.0` (recommended — see decision D1), `http: ^1.2.0` kept as lower bound
    (widest compatibility; `^1.4.0` only if a newer http API is needed).
