@@ -22,9 +22,13 @@ jobs:
       matrix:
         include:
           # Lowest SDK where the dev dependencies (lints 5, test 1.25+) resolve.
-          # Move this to the package's SDK floor once it is raised (plan, Phase 2).
+          # Keep it in sync with the dev dependencies (plan, Phase 2).
+          # On this SDK only the runtime dependency (http) is downgraded to its
+          # lower bound: a full `pub downgrade` also downgrades the test
+          # framework's own dependencies to versions that do not compile on
+          # Dart 3. pana below checks full-downgrade analysis on stable.
           - sdk: '3.5.0'
-            deps: downgrade
+            deps: lower bound
           - sdk: stable
             deps: upgrade
     steps:
@@ -34,7 +38,10 @@ jobs:
       - uses: dart-lang/setup-dart@2286a0c042b44434fe26d292bbce8d34f7ec662b # v1.8.2
         with:
           sdk: ${{ matrix.sdk }}
-      - run: dart pub ${{ matrix.deps }}
+      - run: dart pub upgrade
+      - name: Use lowest allowed runtime dependency versions
+        if: matrix.deps == 'lower bound'
+        run: dart pub downgrade http
       - name: Check formatting
         if: matrix.sdk == 'stable'
         run: dart format --output=none --set-exit-if-changed .
@@ -59,13 +66,13 @@ jobs:
           --version-check-mode=onlyBreakingChanges
 
   pana:
+    # Reports the pub.dev score; does not fail on missing points.
     name: pub.dev score (informational)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: dart-lang/setup-dart@2286a0c042b44434fe26d292bbce8d34f7ec662b # v1.8.2
       - run: dart pub global activate pana
-      - run: dart pub global run pana --no-warning --exit-code-threshold 0 .
+      - run: dart pub global run pana --no-warning .

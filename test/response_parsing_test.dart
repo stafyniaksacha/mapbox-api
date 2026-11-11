@@ -4,6 +4,7 @@
 //
 // Tests under "known 1.1.0 bugs" describe current, wrong behavior on purpose.
 // When a bug is fixed, flip the expectation and note it in CHANGELOG.md.
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:mapbox_api/mapbox_api.dart';
@@ -101,6 +102,46 @@ void main() {
       expect(
           steps[1].maneuver!.modifier, NavigationManeuverModifier.SLIGHT_RIGHT);
       expect(steps[2].maneuver!.type, NavigationManeuverType.ARRIVE);
+    });
+
+    // Every maneuver type listed in the Mapbox Directions docs, including the
+    // three restored after the unreleased #9 regression.
+    const maneuverTypes = <String, NavigationManeuverType>{
+      'turn': NavigationManeuverType.TURN,
+      'new name': NavigationManeuverType.NEW_NAME,
+      'depart': NavigationManeuverType.DEPART,
+      'arrive': NavigationManeuverType.ARRIVE,
+      'merge': NavigationManeuverType.MERGE,
+      'on ramp': NavigationManeuverType.ON_RAMP,
+      'off ramp': NavigationManeuverType.OFF_RAMP,
+      'fork': NavigationManeuverType.FORK,
+      'end of road': NavigationManeuverType.END_OF_ROAD,
+      'continue': NavigationManeuverType.CONTINUE,
+      'roundabout': NavigationManeuverType.ROUNDABOUT,
+      'rotary': NavigationManeuverType.ROTARY,
+      'roundabout turn': NavigationManeuverType.ROUNDABOUT_TURN,
+      'notification': NavigationManeuverType.NOTIFICATION,
+      'exit roundabout': NavigationManeuverType.EXIT_ROUNDABOUT,
+      'exit rotary': NavigationManeuverType.EXIT_ROTARY,
+    };
+    for (final entry in maneuverTypes.entries) {
+      test('maneuver type "${entry.key}"', () {
+        final maneuver = NavigationManeuver.fromJson({'type': entry.key});
+        expect(maneuver.type, entry.value);
+      });
+    }
+
+    test('unknown maneuver type parses to null without printing', () {
+      final printed = <String>[];
+      final maneuver = Zone.current
+          .fork(
+            specification: ZoneSpecification(
+              print: (_, __, ___, line) => printed.add(line),
+            ),
+          )
+          .run(() => NavigationManeuver.fromJson({'type': 'teleport'}));
+      expect(maneuver.type, isNull);
+      expect(printed, isEmpty);
     });
 
     test('NoRoute code maps to NavigationNoRouteError', () async {

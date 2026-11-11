@@ -79,6 +79,10 @@ Found while writing the Phase 0 tests (each one is pinned in `test/` under "know
 | B13 | `NavigationFeatureGeometry.coordinates` typed `List<double>`; isochrone geometries are always nested | `navigation/globals.dart` | **every real isochrone response parses to `features == null`**. Fix needs a public type change → 2.0, or a new additive field in 1.x |
 | B5′ | `#` in user text starts a URL fragment | geocoding | the query string, **including the access token**, is never sent |
 
+pana (CI): 150/160. The 10 missing points come from documentation: only 42 of 390 public API elements (10.8 %)
+have dartdoc comments, and pub.dev wants 20 %. Documenting the main entry points (`MapboxApi`, each
+`*Api.request`, response classes) fixes it with no code change.
+
 Also: line endings are mixed (`lib/src/navigation/*` CRLF, rest LF) — add a `.gitattributes` (`* text=auto eol=lf`) and normalize in one dedicated commit in Phase 2.
 
 ### 1.4 Practice gaps (non-bugs)
@@ -156,6 +160,9 @@ Without tests, "non-breaking" is unenforceable.
 1. `environment: sdk: ^3.4.0` (recommended — see decision D1), `http: ^1.2.0` kept as lower bound
    (widest compatibility; `^1.4.0` only if a newer http API is needed).
 2. `lints: ^6.0.0` → requires dev SDK ≥ 3.8 for *contributors only*; consumers are unaffected by dev deps.
+   **Same PR:** move the CI floor job (`sdk: '3.5.0'`) to ≥ 3.8, since that job must resolve the dev
+   deps. Consumer support for 3.4–3.7 is then no longer tested in CI. If that matters, keep `lints ^5`
+   until the SDK floor reaches 3.8.
    Optionally stricter rules (`prefer_final_locals`, `unawaited_futures`, `public_member_api_docs` as info).
 3. `dart fix --apply` (10 × `use_super_parameters`) — no API change.
 4. `dart format` — if the language floor is ≥ 3.7, this is the tall style rewrite of 15 files:
@@ -186,10 +193,15 @@ clear CHANGELOG entries.
    (`statusCode`, `message`) — additive class, fits the existing `Error?` type.
 4. **B2** wrap `ClientException` / `FormatException` into an `Error` subclass (`MapboxNetworkError`)
    so the `.error` contract becomes consistent — *or* keep them throwing and document it. (Decision D3.)
-5. **B4** actually send `continue_straight`, `exclude`, `timestamps`. Defaults chosen so the URL is
-   unchanged when the user doesn't pass them (`continueStraight` default `false` is *not* Mapbox's
-   default for all profiles → only send it when explicitly set: needs a nullable internal path,
-   signature unchanged).
+5. **B4** actually send `continue_straight`, `exclude`, `timestamps`, with the URL unchanged when
+   the user doesn't pass them (`exclude` and `timestamps` default to empty lists, so this is free).
+   `continueStraight` is declared `bool continueStraight = false`, so an omitted argument and an
+   explicit `false` can't be told apart, and Mapbox's own default differs by profile. Compatible
+   option for 1.x: send `continue_straight=true` only when the value is `true`, and document that
+   `false` means "Mapbox default". Being able to force `false` needs `bool? continueStraight`
+   (default `null`). Callers that pass a `bool` keep compiling; only code that subclasses or
+   implements `DirectionsApi`, or stores `request` as a typed function, breaks. Low risk, but it is
+   a public signature change → 2.0, or 1.x only if the API check accepts it.
 6. **B5** percent-encode user-provided path/query values (`Uri.encodeComponent`). Plain ASCII queries
    produce identical URLs; only strings with reserved chars change (they were broken before).
 
