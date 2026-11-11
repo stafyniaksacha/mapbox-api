@@ -44,7 +44,7 @@ class OptimizationApi {
     url += '?access_token=${api.accessToken!}';
 
     if (language != 'en') {
-      url += '&language=$language';
+      url += '&language=${encode(language)}';
     }
     if (steps) {
       url += '&steps=true';
@@ -60,30 +60,19 @@ class OptimizationApi {
     }
 
     url += geometries.query;
-    // Known 1.1.0 bug: NONE sends `overview=false ` (trailing space).
-    url += overview == NavigationOverview.NONE
-        ? '&overview=false '
-        : overview.query;
-
-    // Known 1.1.0 bug: the separator depends on the number of coordinates,
-    // not of distributions. Kept as is until fixed deliberately.
-    for (var i = 0; i < distributions.length; i++) {
-      if (i == 0) {
-        url += '&distributions=';
-      }
-      url += '${distributions[i][0]},${distributions[i][1]}';
-      if (i != coordinates.length - 1) {
-        url += ';';
-      }
-    }
-
-    url += listParam('radiuses', radiuses.map(radiusValue), ',');
-    // Congestion is not supported; 1.1.0 sends an empty value for it.
+    url += overview.query;
+    url += listParam(
+      'distributions',
+      distributions.map((pair) => '${pair[0]},${pair[1]}'),
+      ';',
+    );
+    url += listParam('radiuses', radiuses.map(radiusValue), ';');
+    // The Optimization API does not support congestion annotations.
     url += listParam(
       'annotations',
-      annotations.map(
-        (a) => a == NavigationAnnotations.CONGESTION ? '' : a.value,
-      ),
+      annotations
+          .where((a) => a != NavigationAnnotations.CONGESTION)
+          .map((a) => a.value),
       ',',
     );
     url += listParam('bearings', bearings.map(bearingValue), ';');

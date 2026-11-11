@@ -84,6 +84,19 @@ extension GeocoderPlaceTypeValue on GeocoderPlaceType {
       };
 }
 
+extension NavigationExcludeValue on NavigationExclude {
+  String get value => switch (this) {
+        NavigationExclude.TOLL => 'toll',
+        NavigationExclude.MOTORWAY => 'motorway',
+        NavigationExclude.FERRY => 'ferry',
+      };
+}
+
+/// Percent-encodes user-provided text for a URL path segment or query value,
+/// so reserved characters (`&`, `#`, `?`, `/`, `;`, …) cannot change the
+/// request.
+String encode(String text) => Uri.encodeComponent(text);
+
 /// The geocoding `mapbox.places` / `mapbox.places-permanent` path segment.
 String geocoderEndpointPath(GeocoderEndpoint endpoint) =>
     endpoint == GeocoderEndpoint.PLACES_PERMANENT

@@ -130,7 +130,7 @@ class ReverseGeocodingApi {
     }
 
     if (language != null) {
-      url += '&language=$language';
+      url += '&language=${encode(language)}';
     }
 
     if (limit != null && limit != 5) {
@@ -141,7 +141,7 @@ class ReverseGeocodingApi {
       url += '&reverseMode=score';
     }
 
-    url += listParam('country', country ?? const [], ',');
+    url += listParam('country', (country ?? const []).map(encode), ',');
     url += listParam('types', (types ?? const []).map((t) => t.value), ',');
 
     return url;

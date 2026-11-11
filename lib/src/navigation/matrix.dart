@@ -45,22 +45,26 @@ class MatrixApi {
 
     url += '?access_token=${api.accessToken!}';
 
-    // The Matrix API does not support speed and congestion annotations.
-    // 1.1.0 sends an empty value for them (separator kept).
+    // The Matrix API only supports duration and distance annotations.
     url += listParam(
       'annotations',
-      annotations.map(
-        (a) => switch (a) {
-          NavigationAnnotations.SPEED || NavigationAnnotations.CONGESTION => '',
-          _ => a.value,
-        },
-      ),
+      annotations
+          .where(
+            (a) =>
+                a == NavigationAnnotations.DURATION ||
+                a == NavigationAnnotations.DISTANCE,
+          )
+          .map((a) => a.value),
       ',',
     );
     url += listParam('approaches', approaches.map((a) => a.value), ';');
-    // Known 1.1.0 bug: throws when `destinations` is omitted (null).
-    url += listParam('destinations', destinations!.map((d) => '$d'), ',');
-    url += listParam('sources', sources.map((s) => '$s'), ',');
+    // Omitted (null) or empty means "all coordinates" (API default).
+    url += listParam(
+      'destinations',
+      (destinations ?? const <int>[]).map((d) => '$d'),
+      ';',
+    );
+    url += listParam('sources', sources.map((s) => '$s'), ';');
 
     if (fallbackSpeed != 0) {
       url += '&fallback_speed=$fallbackSpeed';
@@ -112,6 +116,9 @@ class MatrixApiResponse {
     uuid = json['uuid'] as String?;
 
     switch (code) {
+      case 'NoRoute':
+        error = NavigationNoRouteError();
+        break;
       case 'ProfileNotFound':
         error = NavigationProfileNotFoundError();
         break;

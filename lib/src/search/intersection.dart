@@ -28,7 +28,7 @@ class IntersectionApi {
 
     var url = '${this.endpoint}/$version${geocoderEndpointPath(endpoint)}';
 
-    url += '/$street1 and $street2.json';
+    url += '/${encode('$street1 and $street2')}.json';
     url += '?access_token=${api.accessToken!}';
     url += listParam('types', types.map((t) => t.value), ',');
 

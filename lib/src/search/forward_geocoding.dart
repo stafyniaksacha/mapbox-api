@@ -34,7 +34,7 @@ class ForwardGeocodingApi {
 
     var url = '${this.endpoint}/$version${geocoderEndpointPath(endpoint)}';
 
-    url += '/$searchText.json';
+    url += '/${encode('$searchText')}.json';
 
     url += _urlQuery(
       autocomplete: autocomplete,
@@ -96,7 +96,7 @@ class ForwardGeocodingApi {
     }
 
     if (searchTexts.isNotEmpty) {
-      url += '/${searchTexts.join(';')}.json';
+      url += '/${searchTexts.map(encode).join(';')}.json';
     }
 
     url += _urlQuery(
@@ -152,7 +152,7 @@ class ForwardGeocodingApi {
     }
 
     if (language != null) {
-      url += '&language=$language';
+      url += '&language=${encode(language)}';
     }
 
     if (limit != null && limit != 5) {
@@ -163,7 +163,7 @@ class ForwardGeocodingApi {
       url += '&bbox=${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}';
     }
 
-    url += listParam('country', country ?? const [], ',');
+    url += listParam('country', (country ?? const []).map(encode), ',');
     url += listParam('types', (types ?? const []).map((t) => t.value), ',');
 
     if (proximity != null && proximity.isNotEmpty) {

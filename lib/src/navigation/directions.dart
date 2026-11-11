@@ -65,7 +65,7 @@ class DirectionsApi {
     }
 
     if (language != 'en') {
-      url += '&language=$language';
+      url += '&language=${encode(language)}';
     }
     if (steps) {
       url += '&steps=true';
@@ -82,6 +82,11 @@ class DirectionsApi {
     if (voiceInstructions) {
       url += '&voice_instructions=true';
     }
+    // Mapbox's default depends on the profile (true for driving, false for
+    // walking/cycling), so `false` means "API default" and is not sent.
+    if (continueStraight) {
+      url += '&continue_straight=true';
+    }
 
     url += geometries.query;
     url += overview.query;
@@ -92,11 +97,12 @@ class DirectionsApi {
       url += '&voice_units=metric';
     }
 
-    url += listParam('radiuses', radiuses.map(radiusValue), ',');
-    url += listParam('waypoint_names', waypointNames, ',');
+    url += listParam('radiuses', radiuses.map(radiusValue), ';');
+    url += listParam('waypoint_names', waypointNames.map(encode), ';');
     url += listParam('waypoint_targets', waypointTargets.map(lonLat), ';');
     url += listParam('waypoints', waypoints.map(lonLat), ';');
     url += listParam('annotations', annotations.map((a) => a.value), ',');
+    url += listParam('exclude', excludes.map((e) => e.value), ',');
 
     final result = await fetchJson(url);
     final json = result.json;

@@ -319,6 +319,15 @@ void main() {
       expect(g.error, isA<GeocoderError>());
     });
 
+    test('matrix NoRoute code maps to NavigationNoRouteError', () async {
+      final r = (await capture(
+        () => api.matrix!.request(coordinates: twoPoints),
+        responseBody: jsonEncode({'code': 'NoRoute'}),
+      ))
+          .result;
+      expect(r.error, isA<NavigationNoRouteError>());
+    });
+
     test('a non-JSON error body is a MapboxHttpError (was thrown)', () async {
       final r = await directions('<html>502 Bad Gateway</html>', status: 502);
       expect(

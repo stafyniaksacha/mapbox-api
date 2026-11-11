@@ -44,7 +44,7 @@ class MapMatchingApi {
     url += '?access_token=${api.accessToken!}';
 
     if (language != 'en') {
-      url += '&language=$language';
+      url += '&language=${encode(language)}';
     }
     if (steps) {
       url += '&steps=true';
@@ -60,10 +60,11 @@ class MapMatchingApi {
       url += '&approaches=curb';
     }
 
-    url += listParam('radiuses', radiuses.map(radiusValue), ',');
-    url += listParam('waypoint_names', waypointNames, ',');
+    url += listParam('radiuses', radiuses.map(radiusValue), ';');
+    url += listParam('waypoint_names', waypointNames.map(encode), ';');
     url += listParam('waypoints', waypoints.map(lonLat), ';');
     url += listParam('annotations', annotations.map((a) => a.value), ',');
+    url += listParam('timestamps', timestamps.map((t) => '$t'), ';');
 
     final result = await fetchJson(url);
     final json = result.json;

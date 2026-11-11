@@ -4,17 +4,15 @@
 // change behavior silently. If a change here is intended (e.g. a bug fix),
 // update the golden in the same commit and mention it in CHANGELOG.md.
 //
-// Known 1.1.0 bugs captured on purpose (do not "fix" the goldens alone):
-// - directions: `continueStraight` and `excludes` are never sent.
-// - map_matching: `timestamps` are never sent.
-// - matrix: omitting `destinations` throws (null check).
-// - optimization: the `;` after each distribution depends on the number of
-//   coordinates, so it can be missing or trailing.
-// - optimization: overview NONE sends `overview=false ` (trailing space).
-// - matrix drops SPEED/CONGESTION annotations and optimization drops
-//   CONGESTION, but both keep the `,` separator; place type EMPTY is ''.
-// - geocoding: user text is not percent-encoded; `#` starts a URL fragment,
-//   which drops the query string (including the access token).
+// Request fixes made in 1.2.0 (goldens updated deliberately):
+// - directions: `continueStraight` (only `true` is sent) and `excludes`.
+// - map_matching: `timestamps`.
+// - radiuses, waypoint_names, matrix sources/destinations use `;`.
+// - matrix: omitting `destinations` no longer throws.
+// - optimization: `distributions` separator, `overview=false` trailing
+//   space; unsupported annotations are dropped instead of sent empty.
+// - user text is percent-encoded (search text, street names, waypoint
+//   names, language, country).
 import 'package:mapbox_api/mapbox_api.dart';
 import 'package:test/test.dart';
 
@@ -27,7 +25,7 @@ const goldens = <String, String>{
   'directions/no-profile':
       'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token',
   'directions/all-options':
-      'https://api.mapbox.com/directions/v5/mapbox/driving-traffic/2.3,48.8;2.4,48.9;2.5,49.0?access_token=pk.test-token&language=fr&steps=true&alternatives=true&banner_instructions=true&roundabout_exits=true&voice_instructions=true&geometries=geojson&overview=full&approaches=curb;unrestricted&bearings=45.0,90.0;0.0,180.0&voice_units=metric&radiuses=10.0,unlimited,25.5&waypoint_names=Home,Work&waypoint_targets=2.31,48.81;2.51,49.01&waypoints=2.3,48.8;2.5,49.0&annotations=duration,distance,speed,congestion',
+      'https://api.mapbox.com/directions/v5/mapbox/driving-traffic/2.3,48.8;2.4,48.9;2.5,49.0?access_token=pk.test-token&language=fr&steps=true&alternatives=true&banner_instructions=true&roundabout_exits=true&voice_instructions=true&continue_straight=true&geometries=geojson&overview=full&approaches=curb;unrestricted&bearings=45.0,90.0;0.0,180.0&voice_units=metric&radiuses=10.0;unlimited;25.5&waypoint_names=Home;Work&waypoint_targets=2.31,48.81;2.51,49.01&waypoints=2.3,48.8;2.5,49.0&annotations=duration,distance,speed,congestion&exclude=toll,ferry',
   'directions/walking':
       'https://api.mapbox.com/directions/v5/mapbox/walking/2.0,1.0;4.0,3.0?access_token=pk.test-token&walking_speed=2.0&walkway_bias=0.5&alley_bias=-1.0&geometries=polyline6&overview=false',
   'directions/walking-params-ignored-when-not-walking':
@@ -35,7 +33,7 @@ const goldens = <String, String>{
   'map_matching/minimal':
       'https://api.mapbox.com/matching/v5/mapbox/driving/2.0,1.0;4.0,3.0.json?access_token=pk.test-token',
   'map_matching/all-options':
-      'https://api.mapbox.com/matching/v5/mapbox/walking/2.0,1.0;4.0,3.0;6.0,5.0.json?access_token=pk.test-token&language=de&steps=true&tidy=true&geometries=geojson&overview=full&approaches=curb&radiuses=5.0,10.0,15.0&waypoint_names=A,B&waypoints=2.0,1.0;6.0,5.0&annotations=distance,speed',
+      'https://api.mapbox.com/matching/v5/mapbox/walking/2.0,1.0;4.0,3.0;6.0,5.0.json?access_token=pk.test-token&language=de&steps=true&tidy=true&geometries=geojson&overview=full&approaches=curb&radiuses=5.0;10.0;15.0&waypoint_names=A;B&waypoints=2.0,1.0;6.0,5.0&annotations=distance,speed&timestamps=1000;1010;1020',
   'isochrone/minimal':
       'https://api.mapbox.com/isochrone/v1/mapbox/driving/2.35,48.85?access_token=pk.test-token&contours_minutes=10',
   'isochrone/all-options':
@@ -43,17 +41,17 @@ const goldens = <String, String>{
   'matrix/minimal':
       'https://api.mapbox.com/directions-matrix/v1/mapbox/driving/2.0,1.0;4.0,3.0?access_token=pk.test-token',
   'matrix/all-options':
-      'https://api.mapbox.com/directions-matrix/v1/mapbox/driving-traffic/2.0,1.0;4.0,3.0;6.0,5.0?access_token=pk.test-token&annotations=duration,distance&approaches=curb;unrestricted;curb&destinations=1,2&sources=0&fallback_speed=13',
+      'https://api.mapbox.com/directions-matrix/v1/mapbox/driving-traffic/2.0,1.0;4.0,3.0;6.0,5.0?access_token=pk.test-token&annotations=duration,distance&approaches=curb;unrestricted;curb&destinations=1;2&sources=0&fallback_speed=13',
   'optimization/minimal':
       'https://api.mapbox.com/optimized-trips/v1/mapbox/driving/2.0,1.0;4.0,3.0?access_token=pk.test-token',
   'optimization/all-options':
-      'https://api.mapbox.com/optimized-trips/v1/mapbox/walking/2.0,1.0;4.0,3.0;6.0,5.0?access_token=pk.test-token&language=es&steps=true&roundtrip=false&destination=last&source=first&geometries=polyline6&overview=full&distributions=0,2;&radiuses=unlimited,5.0,5.0&annotations=speed&bearings=10.0,20.0&approaches=unrestricted;curb;curb',
+      'https://api.mapbox.com/optimized-trips/v1/mapbox/walking/2.0,1.0;4.0,3.0;6.0,5.0?access_token=pk.test-token&language=es&steps=true&roundtrip=false&destination=last&source=first&geometries=polyline6&overview=full&distributions=0,2&radiuses=unlimited;5.0;5.0&annotations=speed&bearings=10.0,20.0&approaches=unrestricted;curb;curb',
   'forward/minimal':
       'https://api.mapbox.com/geocoding/v5/mapbox.places/tour%20eiffel.json?access_token=pk.test-token',
   'forward/all-options':
       'https://api.mapbox.com/geocoding/v5/mapbox.places-permanent/paris.json?access_token=pk.test-token&autocomplete=false&fuzzyMatch=false&routing=true&language=fr&limit=3&bbox=2.2,48.8,2.5,48.9&country=fr,be&types=address,poi&proximity=2.28602,48.858638',
   'forward/reserved-characters':
-      'https://api.mapbox.com/geocoding/v5/mapbox.places/a&b#c.json?access_token=pk.test-token',
+      'https://api.mapbox.com/geocoding/v5/mapbox.places/a%26b%23c.json?access_token=pk.test-token',
   'forward/batch':
       'https://api.mapbox.com/geocoding/v5/mapbox.places-permanent/paris;lyon.json?access_token=pk.test-token&limit=1',
   'reverse/minimal':
@@ -141,7 +139,7 @@ const goldens = <String, String>{
   'edge/map_matching/overview-none':
       'https://api.mapbox.com/matching/v5/2.0,1.0;4.0,3.0.json?access_token=pk.test-token&overview=false',
   'edge/optimization/overview-none':
-      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token&overview=false%20',
+      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token&overview=false',
   'edge/map_matching/approaches-unrestricted':
       'https://api.mapbox.com/matching/v5/2.0,1.0;4.0,3.0.json?access_token=pk.test-token',
   'edge/map_matching/approaches-curb':
@@ -155,9 +153,9 @@ const goldens = <String, String>{
   'edge/map_matching/annotations-all':
       'https://api.mapbox.com/matching/v5/2.0,1.0;4.0,3.0.json?access_token=pk.test-token&annotations=duration,distance,speed,congestion',
   'edge/matrix/annotations-all':
-      'https://api.mapbox.com/directions-matrix/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token&annotations=duration,distance,,',
+      'https://api.mapbox.com/directions-matrix/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token&annotations=duration,distance',
   'edge/optimization/annotations-all':
-      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token&annotations=duration,distance,speed,',
+      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token&annotations=duration,distance,speed',
   'edge/forward/types-all':
       'https://api.mapbox.com/geocoding/v5/mapbox.places/x.json?access_token=pk.test-token&types=country,region,postcode,district,place,locality,neighborhood,address,poi,',
   'edge/forward/batch-types-all':
@@ -177,9 +175,9 @@ const goldens = <String, String>{
   'edge/directions/no-coordinates':
       'https://api.mapbox.com/directions/v5?access_token=pk.test-token',
   'edge/optimization/distributions-more-than-coordinates':
-      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token&distributions=0,1;1,00,1;',
+      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token&distributions=0,1;1,0;0,1',
   'edge/optimization/distributions-fewer-than-coordinates':
-      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0;6.0,5.0?access_token=pk.test-token&distributions=0,1;1,2;',
+      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0;6.0,5.0?access_token=pk.test-token&distributions=0,1;1,2',
   'edge/directions/single-elements':
       'https://api.mapbox.com/directions/v5/123456789012345680000.0,1e-7;4.0,3.0?access_token=pk.test-token&approaches=unrestricted&bearings=1.0,2.0&radiuses=unlimited&waypoint_names=only',
 };
@@ -197,28 +195,50 @@ void main() {
     });
   }
 
-  group('known 1.1.0 bugs', () {
-    test('matrix throws when destinations is omitted', () async {
+  group('request fixes (1.2.0)', () {
+    test('matrix without destinations sends no destinations', () async {
       final api = MapboxApi(accessToken: testToken);
-      await expectLater(
-        capture(
-          () => api.matrix!.request(
-            profile: NavigationProfile.DRIVING,
-            coordinates: [
-              [1.0, 2.0],
-              [3.0, 4.0],
-            ],
-          ),
+      final captured = await capture(
+        () => api.matrix!.request(
+          profile: NavigationProfile.DRIVING,
+          coordinates: [
+            [1.0, 2.0],
+            [3.0, 4.0],
+          ],
         ),
-        throwsA(isA<TypeError>()),
       );
+      expect(
+          captured.requests.single.url.queryParameters.keys, ['access_token']);
     });
 
-    test('a "#" in search text pushes the token into the fragment', () async {
-      final captured = await capture(urlCases['forward/reserved-characters']!);
+    test('reserved characters in search text cannot inject parameters',
+        () async {
+      final api = MapboxApi(accessToken: testToken);
+      final captured = await capture(
+        () => api.forwardGeocoding.request(searchText: 'a&b#c?d/e;f'),
+      );
       final uri = captured.requests.single.url;
-      expect(uri.queryParameters, isEmpty);
-      expect(uri.fragment, contains('access_token'));
+      expect(uri.fragment, isEmpty);
+      expect(uri.queryParameters, {'access_token': testToken});
+      expect(uri.pathSegments.last, 'a&b#c?d/e;f.json');
+    });
+
+    test('waypoint names with separators stay one name each', () async {
+      final api = MapboxApi(accessToken: testToken);
+      final captured = await capture(
+        () => api.directions.request(
+          coordinates: [
+            [1.0, 2.0],
+            [3.0, 4.0],
+          ],
+          waypointNames: ['A; B', 'C, D'],
+        ),
+      );
+      // `;` separates names on the wire, so a `;` inside a name is encoded.
+      expect(
+        captured.requests.single.url.query,
+        contains('waypoint_names=A%3B%20B;C%2C%20D'),
+      );
     });
   });
 }
