@@ -305,6 +305,9 @@ class NavigationOptimizedWaypoint {
 }
 
 class NavigationTracepoint extends NavigationWaypoint {
+  // Not using super parameters on purpose: they would inherit the parent's
+  // default (`const []`) instead of passing null, which changes behavior.
+  // ignore: use_super_parameters
   NavigationTracepoint({
     this.matchingsIndex,
     this.waypointIndex,
@@ -377,6 +380,9 @@ class NavigationRoute {
 }
 
 class NavigationMatchRoute extends NavigationRoute {
+  // Not using super parameters on purpose: they would inherit the parent's
+  // default (`const []`) instead of passing null, which changes behavior.
+  // ignore: use_super_parameters
   NavigationMatchRoute({
     this.confidence,
     double? duration,
@@ -1112,64 +1118,48 @@ class NavigationError extends Error {
 
 class NavigationNoMatchError extends NavigationError {
   NavigationNoMatchError({
-    String? message,
-  }) : super(
-          message: message,
-        );
+    super.message,
+  });
 }
 
 class NavigationNoTripsError extends NavigationError {
   NavigationNoTripsError({
-    String? message,
-  }) : super(
-          message: message,
-        );
+    super.message,
+  });
 }
 
 class NavigationNotImplementedError extends NavigationError {
   NavigationNotImplementedError({
-    String? message,
-  }) : super(
-          message: message,
-        );
+    super.message,
+  });
 }
 
 class NavigationTooManyCoordinatesError extends NavigationError {
   NavigationTooManyCoordinatesError({
-    String? message,
-  }) : super(
-          message: message,
-        );
+    super.message,
+  });
 }
 
 class NavigationNoRouteError extends NavigationError {
   NavigationNoRouteError({
-    String? message,
-  }) : super(
-          message: message,
-        );
+    super.message,
+  });
 }
 
 class NavigationNoSegmentError extends NavigationError {
   NavigationNoSegmentError({
-    String? message,
-  }) : super(
-          message: message,
-        );
+    super.message,
+  });
 }
 
 class NavigationProfileNotFoundError extends NavigationError {
   NavigationProfileNotFoundError({
-    String? message,
-  }) : super(
-          message: message,
-        );
+    super.message,
+  });
 }
 
 class NavigationInvalidInputError extends NavigationError {
   NavigationInvalidInputError({
-    String? message,
-  }) : super(
-          message: message,
-        );
+    super.message,
+  });
 }

@@ -252,6 +252,24 @@ void main() {
     });
   });
 
+  group('constructor defaults (1.1.0)', () {
+    // Subclass constructors forward null to the parent, overriding its
+    // `const []` default. Guards against an automatic super-parameter fix.
+    test('NavigationTracepoint().location is null', () {
+      expect(NavigationTracepoint().location, isNull);
+      expect(NavigationWaypoint().location, isEmpty);
+    });
+
+    test('NavigationMatchRoute().legs is null', () {
+      expect(NavigationMatchRoute().legs, isNull);
+      expect(NavigationRoute().legs, isEmpty);
+    });
+
+    test('error subclasses keep their message', () {
+      expect(NavigationNoRouteError(message: 'm').message, 'm');
+    });
+  });
+
   group('known 1.1.0 bugs', () {
     test('withError never stores the error (self-assignment)', () async {
       // `durations` is a string: the cast throws a TypeError, which is caught
