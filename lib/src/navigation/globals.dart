@@ -1,5 +1,6 @@
 import '../json_helpers.dart';
 
+/// Routing profile: mode of travel and data used.
 enum NavigationProfile {
   DRIVING_TRAFFIC,
   DRIVING,
@@ -7,6 +8,7 @@ enum NavigationProfile {
   CYCLING,
 }
 
+/// Metadata to return for each route segment (`annotations`).
 enum NavigationAnnotations {
   DURATION,
   DISTANCE,
@@ -14,34 +16,40 @@ enum NavigationAnnotations {
   CONGESTION,
 }
 
+/// Road types to avoid (`exclude`), best effort.
 enum NavigationExclude {
   TOLL,
   MOTORWAY,
   FERRY,
 }
 
+/// Format of returned geometries.
 enum NavigationGeometries {
   GEOJSON,
   POLYLINE,
   POLYLINE6,
 }
 
+/// Detail level of the route overview geometry.
 enum NavigationOverview {
   FULL,
   SIMPLIFIED,
   NONE,
 }
 
+/// Side of the road from which to approach a waypoint.
 enum NavigationApproaches {
   UNRESTRICTED,
   CURB,
 }
 
+/// Unit system of voice instructions.
 enum NavigationVoiceUnits {
   IMPERIAL,
   METRIC,
 }
 
+/// Mode of transportation of a step.
 enum NavigationStepMode {
   DRIVING,
   FERRY,
@@ -51,6 +59,7 @@ enum NavigationStepMode {
   TRAIN,
 }
 
+/// Maneuver type of a banner instruction.
 enum NavigationInstructionType {
   TURN,
   MERGE,
@@ -71,6 +80,7 @@ enum NavigationInstructionType {
   FLAG,
 }
 
+/// Direction modifier of a banner instruction.
 enum NavigationInstructionModifier {
   UTURN,
   SHARP_RIGHT,
@@ -82,11 +92,13 @@ enum NavigationInstructionModifier {
   SHARP_LEFT,
 }
 
+/// Side of the road on which traffic drives.
 enum NavigationDrivingSide {
   LEFT,
   RIGHT,
 }
 
+/// Type of a banner instruction component.
 enum NavigationPropertyComponentType {
   TEXT,
   ICON,
@@ -96,12 +108,14 @@ enum NavigationPropertyComponentType {
   LANE,
 }
 
+/// Driving direction of a lane indication.
 enum NavigationDirection {
   LEFT,
   RIGHT,
   STRAIGHT,
 }
 
+/// Road classes at an intersection.
 enum NavigationIntersectionClass {
   UNKNOWN,
   TOLL,
@@ -111,6 +125,7 @@ enum NavigationIntersectionClass {
   TUNNEL,
 }
 
+/// Arrow shown for a lane.
 enum NavigationIndicationType {
   NONE,
   UTURN,
@@ -123,6 +138,7 @@ enum NavigationIndicationType {
   SHARP_LEFT,
 }
 
+/// Direction modifier of a maneuver.
 enum NavigationManeuverModifier {
   UTURN,
   SHARP_RIGHT,
@@ -134,6 +150,7 @@ enum NavigationManeuverModifier {
   SHARP_LEFT,
 }
 
+/// Type of a maneuver, as documented by the Directions API.
 enum NavigationManeuverType {
   TURN,
   NEW_NAME,
@@ -157,16 +174,19 @@ enum NavigationManeuverType {
   FLAG,
 }
 
+/// Whether an optimized trip must end at the last coordinate.
 enum NavigationDestination {
   ANY,
   LAST,
 }
 
+/// Whether an optimized trip must start at the first coordinate.
 enum NavigationSource {
   ANY,
   FIRST,
 }
 
+/// Bearing constraint for a coordinate: `angle` and allowed deviation `degree`, in degrees.
 class NavigationBearings {
   NavigationBearings(
     this.angle,
@@ -182,6 +202,7 @@ class NavigationBearings {
   double? degree;
 }
 
+/// A GeoJSON feature returned by the Isochrone API (one contour).
 class NavigationFeature {
   NavigationFeature({
     this.type,
@@ -210,6 +231,7 @@ class NavigationFeature {
   NavigationFeatureGeometry? geometry;
 }
 
+/// Properties of an isochrone contour: minutes and display colors.
 class NavigationFeatureProperty {
   NavigationFeatureProperty({
     this.contour,
@@ -237,6 +259,7 @@ class NavigationFeatureProperty {
   double? fillOpacity;
 }
 
+/// GeoJSON geometry of a [NavigationFeature].
 class NavigationFeatureGeometry {
   NavigationFeatureGeometry({
     this.coordinates,
@@ -270,6 +293,7 @@ class NavigationFeatureGeometry {
   String? type;
 }
 
+/// A requested coordinate snapped to the road network.
 class NavigationWaypoint {
   NavigationWaypoint({
     this.name,
@@ -291,6 +315,7 @@ class NavigationWaypoint {
   double? distance;
 }
 
+/// A waypoint of an optimized trip, with its position in the trip.
 class NavigationOptimizedWaypoint {
   NavigationOptimizedWaypoint({
     this.name,
@@ -315,6 +340,9 @@ class NavigationOptimizedWaypoint {
   int? waypointIndex;
 }
 
+/// An input point of a Map Matching request, snapped to the road.
+///
+/// Unmatched points have every field `null`.
 class NavigationTracepoint extends NavigationWaypoint {
   // Not using super parameters on purpose: they would inherit the parent's
   // default (`const []`) instead of passing null, which changes behavior.
@@ -349,6 +377,7 @@ class NavigationTracepoint extends NavigationWaypoint {
   int? alternativesCount;
 }
 
+/// A route between waypoints (also an Optimization API trip).
 class NavigationRoute {
   NavigationRoute({
     this.duration,
@@ -388,6 +417,7 @@ class NavigationRoute {
   String? voiceLocale;
 }
 
+/// A route matched to a GPS trace by the Map Matching API.
 class NavigationMatchRoute extends NavigationRoute {
   // Not using super parameters on purpose: they would inherit the parent's
   // default (`const []`) instead of passing null, which changes behavior.
@@ -434,6 +464,7 @@ class NavigationMatchRoute extends NavigationRoute {
   double? confidence;
 }
 
+/// The part of a route between two waypoints.
 class NavigationLeg {
   NavigationLeg({
     this.duration,
@@ -471,6 +502,7 @@ class NavigationLeg {
   NavigationAnnotation? annotation;
 }
 
+/// Per-segment metadata of a route leg, requested with `annotations`.
 class NavigationAnnotation {
   NavigationAnnotation({
     this.duration,
@@ -502,6 +534,7 @@ class NavigationAnnotation {
   List<String>? congestion;
 }
 
+/// A single maneuver and the road travelled until the next one.
 class NavigationStep {
   NavigationStep({
     this.maneuver,
@@ -618,6 +651,7 @@ class NavigationStep {
   List<NavigationBannerInstruction>? bannerInstructions;
 }
 
+/// Spoken instruction along a step (`voice_instructions=true`).
 class NavigationVoiceInstruction {
   NavigationVoiceInstruction({
     this.distanceAlongGeometry,
@@ -636,6 +670,7 @@ class NavigationVoiceInstruction {
   String? ssmlAnnouncement;
 }
 
+/// Visual instruction shown along a step (`banner_instructions=true`).
 class NavigationBannerInstruction {
   NavigationBannerInstruction({
     this.distanceAlongGeometry,
@@ -670,6 +705,7 @@ class NavigationBannerInstruction {
   NavigationInstructionProperty? sub;
 }
 
+/// Primary, secondary or sub text of a [NavigationBannerInstruction].
 class NavigationInstructionProperty {
   NavigationInstructionProperty({
     this.text,
@@ -799,6 +835,7 @@ class NavigationInstructionProperty {
   List<NavigationInstructionPropertyComponent>? components;
 }
 
+/// A piece of a banner instruction text (text, icon, lane, exit, …).
 class NavigationInstructionPropertyComponent {
   NavigationInstructionPropertyComponent({
     this.type,
@@ -865,6 +902,7 @@ class NavigationInstructionPropertyComponent {
   bool? active;
 }
 
+/// An intersection passed along a step.
 class NavigationIntersection {
   NavigationIntersection({
     this.location,
@@ -943,6 +981,7 @@ class NavigationIntersection {
   double? duration;
 }
 
+/// A lane at an intersection, with its valid directions.
 class NavigationIntersectionLane {
   NavigationIntersectionLane({
     this.valid,
@@ -986,6 +1025,7 @@ class NavigationIntersectionLane {
   List<NavigationIndicationType>? indications;
 }
 
+/// The maneuver that starts a step.
 class NavigationManeuver {
   NavigationManeuver({
     this.bearingBefore,
@@ -1107,6 +1147,7 @@ class NavigationManeuver {
   NavigationManeuverType? type;
 }
 
+/// Base class of the errors returned by the navigation APIs.
 class NavigationError extends Error {
   NavigationError({
     this.message,
@@ -1115,48 +1156,56 @@ class NavigationError extends Error {
   String? message;
 }
 
+/// The input could not be matched to the road network (`code: NoMatch`).
 class NavigationNoMatchError extends NavigationError {
   NavigationNoMatchError({
     super.message,
   });
 }
 
+/// No trip could be found by the Optimization API (`code: NoTrips`).
 class NavigationNoTripsError extends NavigationError {
   NavigationNoTripsError({
     super.message,
   });
 }
 
+/// The request is not supported by the API (`code: NotImplemented`).
 class NavigationNotImplementedError extends NavigationError {
   NavigationNotImplementedError({
     super.message,
   });
 }
 
+/// The request has too many coordinates (`code: TooManyCoordinates`).
 class NavigationTooManyCoordinatesError extends NavigationError {
   NavigationTooManyCoordinatesError({
     super.message,
   });
 }
 
+/// No route was found between the coordinates (`code: NoRoute`).
 class NavigationNoRouteError extends NavigationError {
   NavigationNoRouteError({
     super.message,
   });
 }
 
+/// A coordinate could not be snapped to the road network (`code: NoSegment`).
 class NavigationNoSegmentError extends NavigationError {
   NavigationNoSegmentError({
     super.message,
   });
 }
 
+/// The routing profile does not exist (`code: ProfileNotFound`).
 class NavigationProfileNotFoundError extends NavigationError {
   NavigationProfileNotFoundError({
     super.message,
   });
 }
 
+/// The request was invalid (`code: InvalidInput`).
 class NavigationInvalidInputError extends NavigationError {
   NavigationInvalidInputError({
     super.message,

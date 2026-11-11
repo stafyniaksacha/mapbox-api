@@ -100,6 +100,7 @@ class OptimizationApi {
   MapboxApi api;
 }
 
+/// Response of [OptimizationApi.request]. Check [error] first.
 class OptimizationApiResponse {
   OptimizationApiResponse({
     this.code,

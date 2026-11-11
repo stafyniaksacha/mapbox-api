@@ -126,6 +126,7 @@ class DirectionsApi {
   MapboxApi api;
 }
 
+/// Response of [DirectionsApi.request]. Check [error] first.
 class DirectionsApiResponse {
   DirectionsApiResponse({
     this.code,

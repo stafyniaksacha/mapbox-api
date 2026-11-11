@@ -88,6 +88,7 @@ class MapMatchingApi {
   MapboxApi api;
 }
 
+/// Response of [MapMatchingApi.request]. Check [error] first.
 class MapMatchingApiResponse {
   MapMatchingApiResponse({
     this.code,

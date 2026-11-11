@@ -88,6 +88,7 @@ class MatrixApi {
   }
 }
 
+/// Response of [MatrixApi.request]. Check [error] first.
 class MatrixApiResponse {
   String? code;
   List<NavigationWaypoint>? destinations;

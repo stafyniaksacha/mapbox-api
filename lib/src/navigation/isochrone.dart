@@ -77,6 +77,7 @@ class IsochroneApi {
   MapboxApi api;
 }
 
+/// Response of [IsochroneApi.request]. Check [error] first.
 class IsochroneApiResponse {
   IsochroneApiResponse({
     this.code,
