@@ -8,7 +8,11 @@
 // - directions: `continueStraight` and `excludes` are never sent.
 // - map_matching: `timestamps` are never sent.
 // - matrix: omitting `destinations` throws (null check).
-// - optimization: `distributions` ends with a trailing `;`.
+// - optimization: the `;` after each distribution depends on the number of
+//   coordinates, so it can be missing or trailing.
+// - optimization: overview NONE sends `overview=false ` (trailing space).
+// - matrix drops SPEED/CONGESTION annotations and optimization drops
+//   CONGESTION, but both keep the `,` separator; place type EMPTY is ''.
 // - geocoding: user text is not percent-encoded; `#` starts a URL fragment,
 //   which drops the query string (including the access token).
 import 'package:mapbox_api/mapbox_api.dart';
@@ -62,6 +66,122 @@ const goldens = <String, String>{
       'https://api.mapbox.com/geocoding/v5/mapbox.places/market%20street%20and%20fremont%20street.json?access_token=pk.test-token',
   'intersection/all-options':
       'https://api.mapbox.com/geocoding/v5/mapbox.places/market%20street%20and%20fremont%20street.json?access_token=pk.test-token&types=address&proximity=-122.39,37.79',
+  'edge/directions/profile-driving_traffic':
+      'https://api.mapbox.com/directions/v5/mapbox/driving-traffic/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/map_matching/profile-driving_traffic':
+      'https://api.mapbox.com/matching/v5/mapbox/driving-traffic/2.0,1.0;4.0,3.0.json?access_token=pk.test-token',
+  'edge/isochrone/profile-driving_traffic':
+      'https://api.mapbox.com/isochrone/v1/mapbox/driving-traffic/2.0,1.0?access_token=pk.test-token&contours_minutes=5',
+  'edge/matrix/profile-driving_traffic':
+      'https://api.mapbox.com/directions-matrix/v1/mapbox/driving-traffic/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/optimization/profile-driving_traffic':
+      'https://api.mapbox.com/optimized-trips/v1/mapbox/driving-traffic/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/directions/profile-driving':
+      'https://api.mapbox.com/directions/v5/mapbox/driving/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/map_matching/profile-driving':
+      'https://api.mapbox.com/matching/v5/mapbox/driving/2.0,1.0;4.0,3.0.json?access_token=pk.test-token',
+  'edge/isochrone/profile-driving':
+      'https://api.mapbox.com/isochrone/v1/mapbox/driving/2.0,1.0?access_token=pk.test-token&contours_minutes=5',
+  'edge/matrix/profile-driving':
+      'https://api.mapbox.com/directions-matrix/v1/mapbox/driving/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/optimization/profile-driving':
+      'https://api.mapbox.com/optimized-trips/v1/mapbox/driving/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/directions/profile-walking':
+      'https://api.mapbox.com/directions/v5/mapbox/walking/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/map_matching/profile-walking':
+      'https://api.mapbox.com/matching/v5/mapbox/walking/2.0,1.0;4.0,3.0.json?access_token=pk.test-token',
+  'edge/isochrone/profile-walking':
+      'https://api.mapbox.com/isochrone/v1/mapbox/walking/2.0,1.0?access_token=pk.test-token&contours_minutes=5',
+  'edge/matrix/profile-walking':
+      'https://api.mapbox.com/directions-matrix/v1/mapbox/walking/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/optimization/profile-walking':
+      'https://api.mapbox.com/optimized-trips/v1/mapbox/walking/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/directions/profile-cycling':
+      'https://api.mapbox.com/directions/v5/mapbox/cycling/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/map_matching/profile-cycling':
+      'https://api.mapbox.com/matching/v5/mapbox/cycling/2.0,1.0;4.0,3.0.json?access_token=pk.test-token',
+  'edge/isochrone/profile-cycling':
+      'https://api.mapbox.com/isochrone/v1/mapbox/cycling/2.0,1.0?access_token=pk.test-token&contours_minutes=5',
+  'edge/matrix/profile-cycling':
+      'https://api.mapbox.com/directions-matrix/v1/mapbox/cycling/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/optimization/profile-cycling':
+      'https://api.mapbox.com/optimized-trips/v1/mapbox/cycling/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/directions/geometries-geojson':
+      'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token&geometries=geojson',
+  'edge/map_matching/geometries-geojson':
+      'https://api.mapbox.com/matching/v5/2.0,1.0;4.0,3.0.json?access_token=pk.test-token&geometries=geojson',
+  'edge/optimization/geometries-geojson':
+      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token&geometries=geojson',
+  'edge/directions/geometries-polyline':
+      'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/map_matching/geometries-polyline':
+      'https://api.mapbox.com/matching/v5/2.0,1.0;4.0,3.0.json?access_token=pk.test-token',
+  'edge/optimization/geometries-polyline':
+      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/directions/geometries-polyline6':
+      'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token&geometries=polyline6',
+  'edge/map_matching/geometries-polyline6':
+      'https://api.mapbox.com/matching/v5/2.0,1.0;4.0,3.0.json?access_token=pk.test-token&geometries=polyline6',
+  'edge/optimization/geometries-polyline6':
+      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token&geometries=polyline6',
+  'edge/directions/overview-full':
+      'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token&overview=full',
+  'edge/map_matching/overview-full':
+      'https://api.mapbox.com/matching/v5/2.0,1.0;4.0,3.0.json?access_token=pk.test-token&overview=full',
+  'edge/optimization/overview-full':
+      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token&overview=full',
+  'edge/directions/overview-simplified':
+      'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/map_matching/overview-simplified':
+      'https://api.mapbox.com/matching/v5/2.0,1.0;4.0,3.0.json?access_token=pk.test-token',
+  'edge/optimization/overview-simplified':
+      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/directions/overview-none':
+      'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token&overview=false',
+  'edge/map_matching/overview-none':
+      'https://api.mapbox.com/matching/v5/2.0,1.0;4.0,3.0.json?access_token=pk.test-token&overview=false',
+  'edge/optimization/overview-none':
+      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token&overview=false%20',
+  'edge/map_matching/approaches-unrestricted':
+      'https://api.mapbox.com/matching/v5/2.0,1.0;4.0,3.0.json?access_token=pk.test-token',
+  'edge/map_matching/approaches-curb':
+      'https://api.mapbox.com/matching/v5/2.0,1.0;4.0,3.0.json?access_token=pk.test-token&approaches=curb',
+  'edge/directions/voice_units-imperial':
+      'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token',
+  'edge/directions/voice_units-metric':
+      'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token&voice_units=metric',
+  'edge/directions/annotations-all':
+      'https://api.mapbox.com/directions/v5/2.0,1.0;4.0,3.0?access_token=pk.test-token&annotations=duration,distance,speed,congestion',
+  'edge/map_matching/annotations-all':
+      'https://api.mapbox.com/matching/v5/2.0,1.0;4.0,3.0.json?access_token=pk.test-token&annotations=duration,distance,speed,congestion',
+  'edge/matrix/annotations-all':
+      'https://api.mapbox.com/directions-matrix/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token&annotations=duration,distance,,',
+  'edge/optimization/annotations-all':
+      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token&annotations=duration,distance,speed,',
+  'edge/forward/types-all':
+      'https://api.mapbox.com/geocoding/v5/mapbox.places/x.json?access_token=pk.test-token&types=country,region,postcode,district,place,locality,neighborhood,address,poi,',
+  'edge/forward/batch-types-all':
+      'https://api.mapbox.com/geocoding/v5/mapbox.places-permanent/x.json?access_token=pk.test-token&types=country,region,postcode,district,place,locality,neighborhood,address,poi,',
+  'edge/reverse/types-all':
+      'https://api.mapbox.com/geocoding/v5/mapbox.places/2.0,1.0.json?access_token=pk.test-token&types=country,region,postcode,district,place,locality,neighborhood,address,poi,',
+  'edge/reverse/batch-types-all':
+      'https://api.mapbox.com/geocoding/v5/mapbox.places-permanent/2.0,1.0.json?access_token=pk.test-token&types=country,region,postcode,district,place,locality,neighborhood,address,poi,',
+  'edge/intersection/types-all':
+      'https://api.mapbox.com/geocoding/v5/mapbox.places/a%20and%20b.json?access_token=pk.test-token&types=country,region,postcode,district,place,locality,neighborhood,address,poi,',
+  'edge/forward/batch-empty':
+      'https://api.mapbox.com/geocoding/v5/mapbox.places-permanent?access_token=pk.test-token',
+  'edge/reverse/batch-empty':
+      'https://api.mapbox.com/geocoding/v5/mapbox.places-permanent?access_token=pk.test-token',
+  'edge/map_matching/no-coordinates':
+      'https://api.mapbox.com/matching/v5?access_token=pk.test-token',
+  'edge/directions/no-coordinates':
+      'https://api.mapbox.com/directions/v5?access_token=pk.test-token',
+  'edge/optimization/distributions-more-than-coordinates':
+      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0?access_token=pk.test-token&distributions=0,1;1,00,1;',
+  'edge/optimization/distributions-fewer-than-coordinates':
+      'https://api.mapbox.com/optimized-trips/v1/2.0,1.0;4.0,3.0;6.0,5.0?access_token=pk.test-token&distributions=0,1;1,2;',
+  'edge/directions/single-elements':
+      'https://api.mapbox.com/directions/v5/123456789012345680000.0,1e-7;4.0,3.0?access_token=pk.test-token&approaches=unrestricted&bearings=1.0,2.0&radiuses=unlimited&waypoint_names=only',
 };
 
 void main() {

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 
 import '../../mapbox_api.dart';
+import '../url_helpers.dart';
 
 /// The Mapbox Matrix API returns travel times between many points.
 ///
@@ -34,112 +35,33 @@ class MatrixApi {
     int fallbackSpeed = 0,
     List<int> sources = const <int>[],
   }) async {
-    var url = '$endpoint/$version';
+    var url = '$endpoint/$version${profilePath(profile)}';
 
-    if (profile != null) {
-      switch (profile) {
-        case NavigationProfile.DRIVING_TRAFFIC:
-          url += '/mapbox/driving-traffic';
-          break;
-        case NavigationProfile.DRIVING:
-          url += '/mapbox/driving';
-          break;
-        case NavigationProfile.CYCLING:
-          url += '/mapbox/cycling';
-          break;
-        case NavigationProfile.WALKING:
-          url += '/mapbox/walking';
-          break;
-      }
-    }
-
-    for (var i = 0; i < coordinates.length; i++) {
-      if (i == 0) {
-        url += '/';
-      }
-
-      url += coordinates[i][LONGITUDE].toString();
-      url += ',';
-      url += coordinates[i][LATITUDE].toString();
-
-      if (i != coordinates.length - 1) {
-        url += ';';
-      }
+    if (coordinates.isNotEmpty) {
+      url += '/${coordinates.map(lonLat).join(';')}';
     }
 
     url += '?access_token=${api.accessToken!}';
 
-    for (var i = 0; i < annotations.length; i++) {
-      if (i == 0) {
-        url += '&annotations=';
-      }
-
-      switch (annotations[i]) {
-        case NavigationAnnotations.DURATION:
-          url += 'duration';
-          break;
-        case NavigationAnnotations.DISTANCE:
-          url += 'distance';
-          break;
-        case NavigationAnnotations.SPEED:
-        case NavigationAnnotations.CONGESTION:
-          // not supported
-          break;
-      }
-
-      if (i != annotations.length - 1) {
-        url += ',';
-      }
-    }
-
-    if (approaches.isNotEmpty) {
-      for (var i = 0; i < approaches.length; i++) {
-        if (i == 0) {
-          url += '&approaches=';
-        }
-
-        switch (approaches[i]) {
-          case NavigationApproaches.CURB:
-            url += 'curb';
-            break;
-          case NavigationApproaches.UNRESTRICTED:
-            url += 'unrestricted';
-            break;
-        }
-
-        if (i != approaches.length - 1) {
-          url += ';';
-        }
-      }
-    }
-
-    for (var i = 0; i < destinations!.length; i++) {
-      if (i == 0) {
-        url += '&destinations=';
-      }
-
-      url += destinations[i].toString();
-
-      if (i != destinations.length - 1) {
-        url += ',';
-      }
-    }
-
-    for (var i = 0; i < sources.length; i++) {
-      if (i == 0) {
-        url += '&sources=';
-      }
-
-      url += sources[i].toString();
-
-      if (i != sources.length - 1) {
-        url += ',';
-      }
-    }
+    // The Matrix API does not support speed and congestion annotations.
+    // 1.1.0 sends an empty value for them (separator kept).
+    url += listParam(
+      'annotations',
+      annotations.map(
+        (a) => switch (a) {
+          NavigationAnnotations.SPEED || NavigationAnnotations.CONGESTION => '',
+          _ => a.value,
+        },
+      ),
+      ',',
+    );
+    url += listParam('approaches', approaches.map((a) => a.value), ';');
+    // Known 1.1.0 bug: throws when `destinations` is omitted (null).
+    url += listParam('destinations', destinations!.map((d) => '$d'), ',');
+    url += listParam('sources', sources.map((s) => '$s'), ',');
 
     if (fallbackSpeed != 0) {
-      url += '&fallback_speed=';
-      url += fallbackSpeed.toString();
+      url += '&fallback_speed=$fallbackSpeed';
     }
 
     try {

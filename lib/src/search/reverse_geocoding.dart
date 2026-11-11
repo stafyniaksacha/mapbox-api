@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 
 import '../../mapbox_api.dart';
+import '../url_helpers.dart';
 
 /// The reverse geocoding query type allows you to look up a
 /// single pair of coordinates and returns the geographic feature
@@ -28,15 +29,9 @@ class ReverseGeocodingApi {
     bool routing = false,
     List<GeocoderPlaceType> types = const <GeocoderPlaceType>[],
   }) async {
-    var url = '${this.endpoint}/$version';
+    var url = '${this.endpoint}/$version${geocoderEndpointPath(endpoint)}';
 
-    if (endpoint == GeocoderEndpoint.PLACES_PERMANENT) {
-      url += '/mapbox.places-permanent';
-    } else {
-      url += '/mapbox.places';
-    }
-
-    url += '/${coordinate[LONGITUDE]},${coordinate[LATITUDE]}.json';
+    url += '/${lonLat(coordinate)}.json';
 
     url += _urlQuery(
       country: country,
@@ -84,19 +79,7 @@ class ReverseGeocodingApi {
     }
 
     if (coordinates.isNotEmpty) {
-      for (var i = 0; i < coordinates.length; i++) {
-        if (i == 0) {
-          url += '/';
-        }
-
-        url += '${coordinates[i][LONGITUDE]},${coordinates[i][LATITUDE]}';
-
-        if (i != coordinates.length - 1) {
-          url += ';';
-        } else {
-          url += '.json';
-        }
-      }
+      url += '/${coordinates.map(lonLat).join(';')}.json';
     }
 
     url += _urlQuery(
@@ -141,74 +124,12 @@ class ReverseGeocodingApi {
       url += '&limit=$limit';
     }
 
-    if (reverseMode != null) {
-      switch (reverseMode) {
-        case GeocoderReverseMode.SCORE:
-          url += '&reverseMode=score';
-          break;
-        case GeocoderReverseMode.DISTANCE:
-          break;
-      }
+    if (reverseMode == GeocoderReverseMode.SCORE) {
+      url += '&reverseMode=score';
     }
 
-    if (country != null && country.isNotEmpty) {
-      for (var i = 0; i < country.length; i++) {
-        if (i == 0) {
-          url += '&country=';
-        }
-
-        url += country[i];
-
-        if (i != country.length - 1) {
-          url += ',';
-        }
-      }
-    }
-
-    if (types != null && types.isNotEmpty) {
-      for (var i = 0; i < types.length; i++) {
-        if (i == 0) {
-          url += '&types=';
-        }
-
-        switch (types[i]) {
-          case GeocoderPlaceType.COUNTRY:
-            url += 'country';
-            break;
-          case GeocoderPlaceType.REGION:
-            url += 'region';
-            break;
-          case GeocoderPlaceType.POSTCODE:
-            url += 'postcode';
-            break;
-          case GeocoderPlaceType.DISTRICT:
-            url += 'district';
-            break;
-          case GeocoderPlaceType.PLACE:
-            url += 'place';
-            break;
-          case GeocoderPlaceType.LOCALITY:
-            url += 'locality';
-            break;
-          case GeocoderPlaceType.NEIGHBORHOOD:
-            url += 'neighborhood';
-            break;
-          case GeocoderPlaceType.ADDRESS:
-            url += 'address';
-            break;
-          case GeocoderPlaceType.POI:
-            url += 'poi';
-            break;
-          case GeocoderPlaceType.EMPTY:
-            url += '';
-            break;
-        }
-
-        if (i != types.length - 1) {
-          url += ',';
-        }
-      }
-    }
+    url += listParam('country', country ?? const [], ',');
+    url += listParam('types', (types ?? const []).map((t) => t.value), ',');
 
     return url;
   }

@@ -48,6 +48,63 @@ jobs:
       - run: dart analyze --fatal-infos
       - run: dart test
 
+  consumer-floor:
+    # Checks the declared SDK floor from a consumer's point of view. A path
+    # dependency does not resolve the package's dev dependencies, so this
+    # can run on an SDK older than the one the test job needs.
+    name: consumer (Dart ${{ matrix.sdk }}, ${{ matrix.deps }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: ['3.4.0']
+        deps: [upgrade, downgrade]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          path: mapbox_api
+      - uses: dart-lang/setup-dart@2286a0c042b44434fe26d292bbce8d34f7ec662b # v1.8.2
+        with:
+          sdk: ${{ matrix.sdk }}
+      - name: Create consumer package
+        run: |
+          mkdir -p consumer/bin
+          cat > consumer/pubspec.yaml <<'EOF'
+          name: consumer
+          publish_to: none
+          environment:
+            sdk: ^3.4.0
+          dependencies:
+            mapbox_api:
+              path: ../mapbox_api
+          EOF
+          cat > consumer/bin/consumer.dart <<'EOF'
+          import 'package:mapbox_api/mapbox_api.dart';
+
+          void main() {
+            final api = MapboxApi(accessToken: 'pk.test');
+            // Touch every API object so the whole public surface compiles.
+            print([
+              api.directions,
+              api.mapMatching,
+              api.isochrone,
+              api.matrix,
+              api.optimization,
+              api.forwardGeocoding,
+              api.reverseGeocoding,
+              api.intersection,
+            ].length);
+          }
+          EOF
+      - name: Resolve (${{ matrix.deps }})
+        working-directory: consumer
+        run: dart pub ${{ matrix.deps }}
+      - working-directory: consumer
+        run: dart analyze --fatal-infos
+      - working-directory: consumer
+        run: dart run bin/consumer.dart
+
   api-compat:
     name: public API vs 1.1.0
     runs-on: ubuntu-latest
