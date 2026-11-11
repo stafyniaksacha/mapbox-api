@@ -232,6 +232,13 @@ clear CHANGELOG entries.
 
 ### Phase 5 — Additive features (optional, non-breaking)
 
+> **Status:** split into three PRs.
+> - **5a (done):** `client` + `timeout`, README, dartdoc on every public type.
+> - **5b:** newer Directions params incl. EV routing.
+> - **5c:** Geocoding v6 as a new API, which also resolves B16.
+>
+> Dropped from 1.x: `CYCLING` alias, because parsing can't switch values without a behavior break → 2.0.
+
 1. Optional `http.Client? client` and `Duration? timeout` named params on `MapboxApi(...)`
    (additive, defaults keep current behavior). Enables connection reuse and testing.
 2. `NavigationStepMode.CYCLING` added, `CYLCING` `@Deprecated`.

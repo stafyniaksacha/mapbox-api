@@ -75,6 +75,9 @@ behavior: read **Behavior changes** before upgrading.
 
 ### Additions
 
+* `MapboxApi(client: ..., timeout: ...)`: optional `http.Client` reused for
+  every request, and a per-request timeout (throws `TimeoutException`).
+  Defaults keep the 1.1.0 behavior.
 * `MapboxHttpError`, `MapboxRequestError` (both extend `Error`; their
   `toString()` never includes the request URL, which carries the token, and
   `MapboxHttpError.toString()` redacts token-like values in the server
@@ -92,6 +95,9 @@ behavior: read **Behavior changes** before upgrading.
 * Minimum Dart SDK is now 3.4. The previous `>=2.12.0` constraint was not
   resolvable below Dart 3.2 anyway, because `http ^1.2.0` requires it.
 * Pub metadata: `repository`, `issue_tracker`, `topics`.
+* Documentation: README rewritten (error handling, token security, client and
+  timeout, Flutter guidance); dartdoc on every public type. The
+  commented-out `mapbox_gl` example was removed.
 * Test suite (URL goldens for every endpoint and enum value, response
   fixtures, enum compatibility), GitHub Actions CI (including a Dart 3.4
   consumer check and a public API check against 1.1.0), Dependabot.
